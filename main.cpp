@@ -412,16 +412,7 @@ int main2 ( int argc , char *argv[] ) {
 	g_conf.m_runAsDaemon = false;
 	g_conf.m_logToFile = false;
 
-#ifndef CYGWIN
-	// appears that linux 2.4.17 kernel would crash with this?
-	// let's try again on gk127 to make sure
-	// YES! gk0 cluster has run for months with this just fine!!
-	mlockall(MCL_CURRENT|MCL_FUTURE);
-#endif
 
-	//g_timedb.makeStartKey ( 0 );
-
-	// Anchor the stack start point at the first stack variable
 	// in main.
 	char stackPointTestAnchor;
 	g_mem.setStackPointer( &stackPointTestAnchor );
@@ -1608,84 +1599,6 @@ int main2 ( int argc , char *argv[] ) {
 	// down to where we set this back to true
 	g_conf.m_save = false;
 	
-
-	//
-	// run our smoketests
-	//
-	/*
-	if ( strcmp ( cmd, "qa" ) == 0 ||
-	     strcmp ( cmd, "qainject" ) == 0 ||
-	     strcmp ( cmd, "qaspider" ) == 0 ) {
-		// let's ensure our core file can dump
-		struct rlimit lim;
-		lim.rlim_cur = lim.rlim_max = RLIM_INFINITY;
-		if ( setrlimit(RLIMIT_CORE,&lim) )
-			log("qa::setrlimit: %s", mstrerror(errno) );
-		// in build mode we store downloaded http replies in the
-		// /qa subdir
-		//g_conf.m_qaBuildMode = 0;
-		//if (  cmdarg+1 < argc )
-		//	g_conf.m_qaBuildMode = atoi(argv[cmdarg+1]);
-		// 50MB
-		g_conf.m_maxMem = 50000000;
-		// init our table for doing zobrist hashing
-		if ( ! hashinit() ) {
-			log("qa::hashinit failed" ); return 0; }
-		// init memory class after conf since it gets maxMem from Conf
-		if ( ! g_mem.init ( 200000000 ) ) {
-			log("qa::Mem init failed" ); return 0; }
-		if (!ucInit(g_hostdb.m_dir)) {
-			log("Unicode initialization failed!");
-			return 1;
-		}
-		g_conf.m_askRootNameservers = true;
-		//g_conf.m_dnsIps  [0]    = atoip ( "192.168.0.1", 11 );
-		//g_conf.m_dnsClientPort  = 9909;
-		g_conf.m_dnsMaxCacheMem = 1024*10;
-		// hack http server port to -1 (none)
-		//g_conf.m_httpPort           = 0;
-		g_conf.m_httpMaxSockets     = 200;
-		//g_conf.m_httpMaxReadBufSize = 102*1024*1024;
-		g_conf.m_httpMaxSendBufSize = 16*1024;
-		// init the loop
-		if ( ! g_loop.init() ) {
-			log("qa::Loop init failed" ); return 0; }
-		// . then dns client
-		// . server should listen to a socket and register with g_loop
-		if ( ! g_dns.init(14834)        ) {
-			log("qa::Dns client init failed" ); return 0; }
-		// . then webserver
-		// . server should listen to a socket and register with g_loop
-		// . use -1 for both http and https ports to mean do not
-		//   listen on any ports. we are a client only.
-		if ( ! g_httpServer.init( -1 , -1 ) ) {
-			log("qa::HttpServer init failed" ); return 0; }
-		// set our new pid
-		g_mem.setPid();
-		g_threads.setPid();
-		g_log.setPid();
-		//
-		// beging the qaloop
-		//
-		if ( strcmp(cmd,"qa") == 0 )
-			qatest();
-		else if ( strcmp(cmd,"qaspider") == 0 )
-			qaspider();
-		else if ( strcmp(cmd,"qainject") == 0 )
-			qainject();
-
-		//
-		// wait for some i/o signals
-		//
-		if ( ! g_loop.runLoop()    ) {
-			log("db: runLoop failed." ); 
-			return 1; 
-		}
-		// no error, return 0
-		return 0;
-	}
-	*/
-
 
 	//Put this here so that now we can log messages
   	if ( strcmp ( cmd , "proxy" ) == 0 ) {

@@ -9,3 +9,13 @@
 *.conf
 /diskusage
 *.cache
+
+.vscode/
+.editorconfig
+coll.main.7/
+gb
+gb.oldsave
+html/.ipynb_checkpoints/
+html/nohup.out
+log000
+trash/
