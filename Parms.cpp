@@ -2474,7 +2474,6 @@ bool Parms::printParm(SafeBuf* sb,
  //
  // repeat for off position
  //
- //if ( ! lastRow || m->m_page != PAGE_FILTERS )  {
  //	sb->safePrintf(" Off:<input type=radio ");
  //	if ( m->m_page == PAGE_FILTERS)
  //		sb->safePrintf("id=id_%s ",cgi);
@@ -2936,16 +2935,16 @@ char *Parms::getTHIS ( HttpRequest *r , int32_t page ) {
 // now we use this to set SearchInput and GigablastRequest
 /**
  * @brief Http请求体参数存入g_parms中
- * 
- * @param r 		
- * @param s 
- * @param newcr 
- * @param THIS 
- * @param objType 
- * @return true 
- * @return false 
+ *
+ * @param r
+ * @param s
+ * @param newcr
+ * @param THIS
+ * @param objType
+ * @return true
+ * @return false
  */
-bool Parms::setFromRequest(HttpRequest* r, TcpSocket* s, CollectionRec* newcr, char* returnPage, int32_t objType) {
+bool Parms::setFromRequest(HttpRequest* r, TcpSocket* s, CollectionRec* newcr, char* inputFromSearch, int32_t objType) {
 
 	// get the page from the path... like /sockets --> PAGE_SOCKETS
 	//int32_t page = g_pages.getDynamicPageNumber ( r );
@@ -2956,7 +2955,7 @@ bool Parms::setFromRequest(HttpRequest* r, TcpSocket* s, CollectionRec* newcr, c
 	if (objType == OBJ_CONF) { char* xx = NULL;*xx = 0; }
 
 	// ensure valid
-	if (!returnPage) {
+	if (!inputFromSearch) {
 		// it is null when no collection explicitly specified...
 		log(LOG_LOGIC, "admin: THIS is null for setFromRequest");
 		char* xx = NULL;*xx = 0;
@@ -2993,13 +2992,12 @@ bool Parms::setFromRequest(HttpRequest* r, TcpSocket* s, CollectionRec* newcr, c
 			m->m_type != TYPE_STRING &&
 			m->m_type != TYPE_STRINGBOX) continue;
 		// set it
-		setParm((char*)returnPage, m, j, 0, v, false,//not html enc
+		setParm((char*)inputFromSearch, m, j, 0, v, false,//not html enc
 			false);//true );
 	}
 
 	return true;
 }
-
 
 bool Parms::insertParm(int32_t i, int32_t an, char* THIS) {
 	Parm* m = &m_parms[i];
@@ -3084,65 +3082,58 @@ bool Parms::removeParm(int32_t i, int32_t an, char* THIS) {
 }
 
 /**
- * @brief 
+ * @brief 存入对象到全局参数数组中
  * 
- * @param THIS 
- * @param m 
- * @param mm 
+ * @param objForSetting 	保存对象
+ * @param m					保存到的参数指针 
+ * @param mm 				
  * @param j 
  * @param s 
  * @param isHtmlEncoded 
  * @param fromRequest 
  */
-void Parms::setParm(char* THIS, Parm* m, int32_t mm, int32_t j, char* s,
-	bool isHtmlEncoded, bool fromRequest) {
-
-	if (fromRequest) { char* xx = NULL;*xx = 0; }
+void Parms::setParm(char* objForSetting, Parm* parm, int32_t index, int32_t j, char* value, bool isHtmlEncoded, bool fromRequest) {
 
 	// . this is just for setting CollectionRecs, so skip if offset < 0
 	// . some parms are just for SearchInput (search parms)
-	if (m->m_off < 0) return;
+	if (parm->m_off < 0) return;
 
-	if (m->m_obj == OBJ_NONE) return;
+	if (parm->m_obj == OBJ_NONE) return;
 
 	float oldVal = 0;
 	float newVal = 0;
 
-	if (!s &&
-		m->m_type != TYPE_CHARPTR &&
-		m->m_type != TYPE_FILEUPLOADBUTTON &&
-		m->m_defOff == -1) {
-		s = "0";
-		char* tit = m->m_title;
-		if (!tit || !tit[0]) tit = m->m_xml;
-		log(LOG_LOGIC, "admin: Parm \"%s\" had NULL default value. "
-			"Forcing to 0.",
-			tit);
-		//char *xx = NULL; *xx = 0;
+	if (!value &&
+		parm->m_type != TYPE_CHARPTR &&
+		parm->m_type != TYPE_FILEUPLOADBUTTON &&
+		parm->m_defOff == -1) {
+		value = "0";
+		char* title = parm->m_title;
+		if (!title || !title[0]) title = parm->m_xml;
+		log(LOG_LOGIC, "admin: Parm \"%s\" had NULL default value. Forcing to 0.", title);
 	}
 
 	// sanity check
-	if (&m_parms[mm] != m) {
+	if (&m_parms[index] != parm) {
 		log(LOG_LOGIC, "admin: Not sane parameters.");
-		char* xx = NULL; *xx = 0;
 	}
 
 	// if attempting to add beyond array max, bail out
-	if (j >= m->m_max && j >= m->m_fixed) {
+	if (j >= parm->m_max && j >= parm->m_fixed) {
 		log("admin: Attempted to set parm beyond limit. Aborting.");
 		return;
 	}
 
 	// ensure array count at least j+1
-	if (m->m_max > 1) {
+	if (parm->m_max > 1) {
 		// . is this element we're adding bumping up the count?
 		// . array count is 4 bytes before the array
-		char* pos = (char*)THIS + m->m_off - 4;
+		char* pos = objForSetting + parm->m_off - 4;
 		// set the count to it if it is bigger than current count
 		if (j + 1 > *(int32_t*)pos) *(int32_t*)pos = j + 1;
 	}
 
-	char  t = m->m_type;
+	char  t = parm->m_type;
 
 	if (t == TYPE_CHAR ||
 		t == TYPE_CHAR2 ||
@@ -3156,38 +3147,41 @@ void Parms::setParm(char* THIS, Parm* m, int32_t mm, int32_t j, char* s,
 		t == TYPE_PRIORITY_BOXES ||
 		t == TYPE_RETRIES ||
 		t == TYPE_FILTER) {
-		if (fromRequest && *(char*)(THIS + m->m_off + j) == atol(s))
+		if (fromRequest && *(char*)(objForSetting + parm->m_off + j) == atol(value))
 			return;
-		if (fromRequest)oldVal = (float)*(char*)(THIS + m->m_off + j);
-		*(char*)(THIS + m->m_off + j) = atol(s);
-		newVal = (float)*(char*)(THIS + m->m_off + j);
+		
+		if (fromRequest) 
+			oldVal = (float)*(char*)(objForSetting + parm->m_off + j);
+	
+		*(char*)(objForSetting + parm->m_off + j) = atol(value);
+		newVal = (float)*(char*)(objForSetting + parm->m_off + j);
 		goto changed;
 	}
 	else if (t == TYPE_CHARPTR) {
 		// "s" might be NULL or m->m_def...
-		*(char**)(THIS + m->m_off + j) = s;
+		*(char**)(objForSetting + parm->m_off + j) = value;
 	}
 	else if (t == TYPE_FILEUPLOADBUTTON) {
 		// "s" might be NULL or m->m_def...
-		*(char**)(THIS + m->m_off + j) = s;
+		*(char**)(objForSetting + parm->m_off + j) = value;
 	}
 	else if (t == TYPE_CMD) {
 		log(LOG_LOGIC, "conf: Parms: TYPE_CMD is not a cgi var.");
 		return;
 	}
 	else if (t == TYPE_DATE2 || t == TYPE_DATE) {
-		int32_t v = (int32_t)atotime(s);
-		if (fromRequest && *(int32_t*)(THIS + m->m_off + 4 * j) == v)
+		int32_t v = (int32_t)atotime(value);
+		if (fromRequest && *(int32_t*)(objForSetting + parm->m_off + 4 * j) == v)
 			return;
-		*(int32_t*)(THIS + m->m_off + 4 * j) = v;
+		*(int32_t*)(objForSetting + parm->m_off + 4 * j) = v;
 		if (v < 0) log("conf: Date for <%s> of \""
 			"%s\" is not in proper format like: "
-			"01 Jan 1980 22:45", m->m_xml, s);
+			"01 Jan 1980 22:45", parm->m_xml, value);
 		goto changed;
 	}
 	else if (t == TYPE_FLOAT) {
 		if (fromRequest &&
-			*(float*)(THIS + m->m_off + 4 * j) == (float)atof(s))
+			*(float*)(objForSetting + parm->m_off + 4 * j) == (float)atof(value))
 			return;
 		// if changed within .00001 that is ok too, do not count
 		// as changed, the atof() has roundoff errors
@@ -3195,68 +3189,68 @@ void Parms::setParm(char* THIS, Parm* m, int32_t mm, int32_t j, char* s,
 		//float newVal = atof(s);
 		//if ( newVal < curVal && newVal + .000001 >= curVal ) return;
 		//if ( newVal > curVal && newVal - .000001 <= curVal ) return;
-		if (fromRequest) oldVal = *(float*)(THIS + m->m_off + 4 * j);
-		*(float*)(THIS + m->m_off + 4 * j) = (float)atof(s);
-		newVal = *(float*)(THIS + m->m_off + 4 * j);
+		if (fromRequest) oldVal = *(float*)(objForSetting + parm->m_off + 4 * j);
+		*(float*)(objForSetting + parm->m_off + 4 * j) = (float)atof(value);
+		newVal = (float)atof(value);
 		goto changed;
 	}
 	else if (t == TYPE_DOUBLE) {
 		if (fromRequest &&
-			*(double*)(THIS + m->m_off + 4 * j) == (double)atof(s))
+			*(double*)(objForSetting + parm->m_off + 4 * j) == (double)atof(value))
 			return;
-		if (fromRequest) oldVal = *(double*)(THIS + m->m_off + 4 * j);
-		*(double*)(THIS + m->m_off + 4 * j) = (double)atof(s);
-		newVal = *(double*)(THIS + m->m_off + 4 * j);
+		if (fromRequest) oldVal = *(double*)(objForSetting + parm->m_off + 4 * j);
+		*(double*)(objForSetting + parm->m_off + 4 * j) = (double)atof(value);
+		newVal = (double)atof(value);
 		goto changed;
 	}
 	else if (t == TYPE_IP) {
-		if (fromRequest && *(int32_t*)(THIS + m->m_off + 4 * j) ==
-			(int32_t)atoip(s, gbstrlen(s)))
+		if (fromRequest && *(int32_t*)(objForSetting + parm->m_off + 4 * j) ==
+			(int32_t)atoip(value, gbstrlen(value)))
 			return;
-		*(int32_t*)(THIS + m->m_off + 4 * j) = (int32_t)atoip(s, gbstrlen(s));
+		*(int32_t*)(objForSetting + parm->m_off + 4 * j) = (int32_t)atoip(value, gbstrlen(value));
 		goto changed;
 	}
 	else if (t == TYPE_LONG || t == TYPE_LONG_CONST || t == TYPE_RULESET ||
 		t == TYPE_SITERULE) {
-		int32_t v = atol(s);
+		int32_t v = atol(value);
 		// min is considered valid if >= 0
-		if (m->m_min >= 0 && v < m->m_min) v = m->m_min;
-		if (fromRequest && *(int32_t*)(THIS + m->m_off + 4 * j) == v)
+		if (parm->m_min >= 0 && v < parm->m_min) v = parm->m_min;
+		if (fromRequest && *(int32_t*)(objForSetting + parm->m_off + 4 * j) == v)
 			return;
-		if (fromRequest)oldVal = (float)*(int32_t*)(THIS + m->m_off + 4 * j);
-		*(int32_t*)(THIS + m->m_off + 4 * j) = v;
-		newVal = (float)*(int32_t*)(THIS + m->m_off + 4 * j);
+		if (fromRequest)oldVal = (float)*(int32_t*)(objForSetting + parm->m_off + 4 * j);
+		*(int32_t*)(objForSetting + parm->m_off + 4 * j) = v;
+		newVal = (float)*(int32_t*)(objForSetting + parm->m_off + 4 * j);
 		goto changed;
 	}
 	else if (t == TYPE_LONG_LONG) {
 		if (fromRequest &&
-			*(uint64_t*)(THIS + m->m_off + 8 * j) ==
-			strtoull(s, NULL, 10))
+			*(uint64_t*)(objForSetting + parm->m_off + 8 * j) ==
+			strtoull(value, NULL, 10))
 			return;
-		*(int64_t*)(THIS + m->m_off + 8 * j) = strtoull(s, NULL, 10);
+		*(int64_t*)(objForSetting + parm->m_off + 8 * j) = strtoull(value, NULL, 10);
 		goto changed;
 	}
 	// like TYPE_STRING but dynamically allocates
 	else if (t == TYPE_SAFEBUF) {
-		int32_t len = gbstrlen(s);
+		int32_t len = gbstrlen(value);
 		// no need to truncate since safebuf is dynamic
 		//if ( len >= m->m_size ) len = m->m_size - 1; // truncate!!
 		//char *dst = THIS + m->m_off + m->m_size*j ;
 		// point to the safebuf, in the case of an array of
 		// SafeBufs "j" is the # in the array, starting at 0
-		SafeBuf* sb = (SafeBuf*)(THIS + m->m_off + (j * sizeof(SafeBuf)));
+		SafeBuf* sb = (SafeBuf*)(objForSetting + parm->m_off + (j * sizeof(SafeBuf)));
 		int32_t oldLen = sb->length();
 		// why was this commented out??? we need it now that we
 		// send email alerts when parms change!
 		if (fromRequest &&
 			!isHtmlEncoded && oldLen == len &&
-			memcmp(sb->getBufStart(), s, len) == 0)
+			memcmp(sb->getBufStart(), value, len) == 0)
 			return;
 		// nuke it
 		sb->purge();
 		// this means that we can not use string POINTERS as parms!!
-		if (!isHtmlEncoded) sb->safeMemcpy(s, len);
-		else                   len = sb->htmlDecode(s, len, false, 0);
+		if (!isHtmlEncoded) sb->safeMemcpy(value, len);
+		else                   len = sb->htmlDecode(value, len, false, 0);
 		// tag it
 		sb->setLabel("parm1");
 		// ensure null terminated
@@ -3280,23 +3274,23 @@ void Parms::setParm(char* THIS, Parm* m, int32_t mm, int32_t j, char* s,
 		t == TYPE_STRINGBOX ||
 		t == TYPE_STRINGNONEMPTY ||
 		t == TYPE_TIME) {
-		int32_t len = gbstrlen(s);
-		if (len >= m->m_size) len = m->m_size - 1; // truncate!!
-		char* dst = THIS + m->m_off + m->m_size * j;
+		int32_t len = gbstrlen(value);
+		if (len >= parm->m_size) len = parm->m_size - 1; // truncate!!
+		char* dst = objForSetting + parm->m_off + parm->m_size * j;
 		// why was this commented out??? we need it now that we
 		// send email alerts when parms change!
 		if (fromRequest &&
 			!isHtmlEncoded && (int32_t)gbstrlen(dst) == len &&
-			memcmp(dst, s, len) == 0)
+			memcmp(dst, value, len) == 0)
 			return;
 		// this means that we can not use string POINTERS as parms!!
-		if (!isHtmlEncoded) { gbmemcpy(dst, s, len); }
-		else                   len = htmlDecode(dst, s, len, false, 0);
+		if (!isHtmlEncoded) { gbmemcpy(dst, value, len); }
+		else                   len = htmlDecode(dst, value, len, false, 0);
 		dst[len] = '\0';
 		// . might have to set length
 		// . used for CollectionRec::m_htmlHeadLen and m_htmlTailLen
-		if (m->m_plen >= 0)
-			*(int32_t*)(THIS + m->m_plen) = len;
+		if (parm->m_plen >= 0)
+			*(int32_t*)(objForSetting + parm->m_plen) = len;
 		goto changed;
 	}
 changed:
@@ -3316,7 +3310,7 @@ changed:
 	if (!fromRequest) return;
 
 	// note it in the log
-	log("admin: parm \"%s\" changed value", m->m_title);
+	log("admin: parm \"%s\" changed value", parm->m_title);
 
 	int64_t nowms = gettimeofdayInMillisecondsLocal();
 
@@ -3327,7 +3321,7 @@ changed:
 		nowms,
 		nowms,
 		0, // value
-		m->m_hash, // parmHash
+		parm->m_hash, // parmHash
 		oldVal,
 		newVal);
 
@@ -3343,12 +3337,12 @@ changed:
 	// send an email alert notifying the admins that this parm was changed
 	// BUT ALWAYS send it if email alerts were just TURNED OFF 
 	// ("sea" = Send Email Alerts)
-	if (!g_conf.m_sendEmailAlerts && strcmp(m->m_cgi, "sea") != 0)
+	if (!g_conf.m_sendEmailAlerts && strcmp(parm->m_cgi, "sea") != 0)
 		return;
 
 	// if spiders we turned on, do not send an email alert, cuz we
 	// turn them on when we restart the cluster
-	if (strcmp(m->m_cgi, "se") == 0 && g_conf.m_spideringEnabled)
+	if (strcmp(parm->m_cgi, "se") == 0 && g_conf.m_spideringEnabled)
 		return;
 
 
@@ -3356,7 +3350,7 @@ changed:
 	Host* h0 = g_hostdb.getHost(0);
 	int32_t ip0 = 0;
 	if (h0) ip0 = h0->m_ip;
-	sprintf(tmp, "%s: parm \"%s\" changed value", iptoa(ip0), m->m_title);
+	sprintf(tmp, "%s: parm \"%s\" changed value", iptoa(ip0), parm->m_title);
 	g_pingServer.sendEmail(NULL, // Host ptr
 		tmp, // msg
 		true, // sendToAdmin
@@ -3382,7 +3376,7 @@ Parm* Parms::getParmFromParmHash(int32_t parmHash) {
 }
 
 
-void Parms::setToDefault(char* THIS, char objType, CollectionRec* argcr) {
+void Parms::setToDefault(char* obj, char objType, CollectionRec* argcr) {
 	// init if we should
 	init();
 
@@ -3397,17 +3391,14 @@ void Parms::setToDefault(char* THIS, char objType, CollectionRec* argcr) {
 
 	for (int32_t i = 0; i < m_numParms; i++) {
 		Parm* m = &m_parms[i];
-		if (m->m_obj != objType) continue;
-		if (m->m_obj == OBJ_NONE) continue;
+		if (m->m_obj != objType) continue;		
+		if (m->m_obj == OBJ_NONE) continue;				// **bug** 若objType == OBJ_NONE || objType == TYPE_COMMENT等, 下方代码永远无法执行？？？
 		if (m->m_type == TYPE_COMMENT) continue;
-		// no, we gotta set GigablastRequest::m_contentFile to NULL
-		//if ( m->m_type == TYPE_FILEUPLOADBUTTON ) 
-		//	continue;
 		if (m->m_type == TYPE_MONOD2) continue;
 		if (m->m_type == TYPE_MONOM2) continue;
 		if (m->m_type == TYPE_CMD) continue;
-		if (THIS == (char*)&g_conf && m->m_obj != OBJ_CONF) continue;
-		if (THIS != (char*)&g_conf && m->m_obj == OBJ_CONF) continue;
+		if (obj == (char*)&g_conf && m->m_obj != OBJ_CONF) continue;
+		if (obj != (char*)&g_conf && m->m_obj == OBJ_CONF) continue;
 		// what is this?
 		//if ( m->m_obj == OBJ_COLL ) {
 		//	CollectionRec *cr = (CollectionRec *)THIS;
@@ -3418,52 +3409,40 @@ void Parms::setToDefault(char* THIS, char objType, CollectionRec* argcr) {
 			m->m_off > (int32_t)sizeof(CollectionRec)) {
 			log(LOG_LOGIC, "admin: Parm in Parms.cpp should use "
 				"OBJ_COLL not OBJ_CONF");
-			char* xx = NULL; *xx = 0;
 		}
-		//if ( m->m_page == PAGE_PRIORITIES )
-		//	log("hey");
-		// or 
 		if (m->m_page > PAGE_API && // CGIPARMS &&
 			m->m_page != PAGE_NONE &&
 			m->m_obj == OBJ_CONF) {
 			log(LOG_LOGIC, "admin: Page can not reference "
 				"g_conf and be declared AFTER PAGE_CGIPARMS in "
 				"Pages.h. Title=%s", m->m_title);
-			char* xx = NULL; *xx = 0;
 		}
 		// if defOff >= 0 get from cr like for searchInput vals
 		// whose default is from the collectionRec...
 		if (m->m_defOff >= 0 && argcr) {
 			if (!argcr) { char* xx = NULL;*xx = 0; }
 			char* def = m->m_defOff + (char*)argcr;
-			char* dst = (char*)THIS + m->m_off;
+			char* dst = (char*)obj + m->m_off;
 			gbmemcpy(dst, def, m->m_size);
 			continue;
 		}
 		// leave arrays empty, set everything else to default
 		if (m->m_max <= 1) {
-			//if ( i == 282 )  // "query" parm
-			//	log("hey");
-			//if ( ! m->m_def ) { char *xx=NULL;*xx=0; }
-			setParm(THIS, m, i, 0, m->m_def, false/*not enc.*/,
+			setParm(obj, m, i, 0, m->m_def, false/*not enc.*/,
 				false);
-			//((CollectionRec *)THIS)->m_orig[i] = 1;
-			//m->m_orig = 0; // set in setToDefaults()
 		}
 		// these are special, fixed size arrays
 		if (m->m_fixed > 0) {
 			for (int32_t k = 0; k < m->m_fixed; k++) {
-				setParm(THIS, m, i, k, m->m_def, false/*not enc.*/,
+				setParm(obj, m, i, k, m->m_def, false/*not enc.*/,
 					false);
-				//m->m_orig = 0; // set in setToDefaults()
-				//((CollectionRec *)THIS)->m_orig[i] = 1;
 			}
 			continue;
 		}
 		// make array sizes 0
 		if (m->m_max <= 1) continue;
 		// otherwise, array is not fixed size
-		char* s = THIS + m->m_off;
+		char* s = obj + m->m_off;
 		// set count to 1 if a default is present
 		//if (   m->m_def[0] ) *(int32_t *)(s-4) = 1;
 		//else                 *(int32_t *)(s-4) = 0;

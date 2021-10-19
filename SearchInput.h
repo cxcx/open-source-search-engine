@@ -124,7 +124,6 @@ class SearchInput {
 	TopicGroup     m_topicGroups [ MAX_TOPIC_GROUPS ];// msg40
 	SafeBuf m_sbuf1;
 	SafeBuf m_sbuf2;
-	SafeBuf m_sbuf3;
 
 	int32_t m_catId;
 	bool m_isRTL;

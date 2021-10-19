@@ -1310,64 +1310,6 @@ bool Msg40::launchMsg20s ( bool recalled ) {
 	// titledbMaxCacheAge was set way too high
 	if ( m_si->m_rcache ) maxAge = g_conf.m_searchResultsMaxCacheAge;
 
-	/*
-	// "need" = how many more msg20 replies do we need to get back to
-	// get the required number of search results?
-	int32_t sample        = 0;
-	int32_t good          = 0;
-	int32_t gaps          = 0;
-	int32_t goodAfterGaps = 0;
-	// loop up to the last msg20 request we actually launched
-	for ( int32_t i = 0 ; i <= m_maxiLaunched ; i++ ) {
-		// if Msg51 had initially clustered (CR_CLUSTERED) this away 
-		// we never actually gave it a msg20 ptr, so it is NULL. it
-		// m_msg3a.m_clusterLevel[i] != CR_OK ever.
-		if ( ! m_msg20[i] ) continue;
-		// do not count if reply not received yet. it is a gap.
-		if ( ! m_msg20[i]->m_gotReply ) { gaps++; continue; }
-		// ok, we had launched it and got a reply for it, it is 
-		// therefore in our "sample", used to make the visibility ratio
-		sample++;
-		// . skip if not "good" (visible)
-		// . if msg20 has error, sets cluster level to CR_ERROR_SUMMARY
-		if ( m_msg3a.m_clusterLevels[i] != CR_OK ) continue;
-		// count as good. it is visible.
-		if ( gaps ) goodAfterGaps++;
-		else        good++;
-	}
-	// how many MORE docs to we need to get? subtract what was desired from
-	// what we already have that is visible as int32_t as it is before any gap
-	int32_t need = m_docsToGetVisible - good ;
-	// if we fill in the gaps, we get "goodAfterGaps" more visible results
-	if ( need >= gaps ) {
-		// so no need to get these then
-		need -= goodAfterGaps ;
-		// but watch out for flooding!
-		if ( need < gaps ) need = gaps;
-	}
-	// how many total good?
-	int32_t allGood = good + goodAfterGaps;
-	// get the visibility ratio from the replies we did get back
-	float ratio ;
-	if ( allGood > 0 ) ratio = (float)sample / (float)allGood;
-	else               ratio = (float)sample / 1.0        ;
-	// give a 5% boost
-	ratio *= 1.05;
-	// assume some of what we "need" will be invisible, make up for that
-	if ( sample > 0 ) need = (int32_t)((float)need * ratio);
-	// . restrict "need" to no more than 50 at a time
-	// . we are using it for a "max outstanding" msg20s
-	// . do not overflow the udpservers
-	if ( need > 50 ) need = 50;
-
-	if ( m_si->m_debug || g_conf.m_logDebugQuery )
-		logf(LOG_DEBUG,"query: msg40: can launch %"INT32" more msg20s. "
-		     "%"INT32" out. %"INT32" completed. %"INT32" visible. %"INT32" gaps. "
-		     "%"INT32" contiguous. %"INT32" toGet. ",
-		     need,m_numRequests-m_numReplies,sample,allGood,gaps,
-		     m_numContiguous,m_docsToGet);
-	*/
-
 	int32_t bigSampleRadius = 0;
 	int32_t bigSampleMaxLen = 0;
 	// NOTE: pqr needs gigabits for all pages
@@ -1404,16 +1346,6 @@ bool Msg40::launchMsg20s ( bool recalled ) {
 		    m_si->m_firstResultNum);
 	}
 
-	// if not doing deduping or site clustering, let's not get like
-	// 100 summaries at a time when we only wanted 10 results
-	// for performance reasons
-	// if ( m_si && 
-	//      ! m_si->m_doDupContentRemoval &&
-	//      ! m_si->m_doSiteClustering &&
-	//       maxOut > m_si->m_docsWanted ) 
-	// 	maxOut = m_si->m_docsWanted;
-
-
 	// . launch a msg20 getSummary() for each docid
 	// . m_numContiguous should preceed any gap, see below
 	for ( int32_t i = m_lastProcessedi+1 ; i < m_msg3a.m_numDocIds ;i++ ) {
@@ -1438,57 +1370,10 @@ bool Msg40::launchMsg20s ( bool recalled ) {
 		     i >= m_printi + MAX_OUTSTANDING_MSG20S - 1 )
 			break;
 
-		// if we have printed enough summaries then do not launch
-		// any more, wait for them to come back in.
-		/// this is causing problems because we have a bunch of
-		// m_printi < m_msg3a.m_numDocIds checks that kinda expect
-		// us to get all summaries for every docid. but when we
-		// do federated search we can get a ton of docids.
-		// if ( m_printi >= m_docsToGetVisible ) {
-		// 	logf(LOG_DEBUG,"query: got %"INT32" >= %"INT32" "
-		// 	     "summaries. done. "
-		// 	     "waiting on remaining "
-		// 	     "%"INT32" to return."
-		// 	     , m_printi
-		// 	     , m_docsToGetVisible
-		// 	     , m_numRequests-m_numReplies);
-		// 	// wait for all msg20 replies to come in
-		// 	if ( m_numRequests != m_numReplies ) break;
-		// 	// then let's hack fix this then so we can call
-		// 	// printSearchResultsTail()
-		// 	m_printi   = m_msg3a.m_numDocIds;
-		// 	// set these to max so they do not launch another
-		// 	// summary request, just in case, below
-		// 	m_numRequests = m_msg3a.m_numDocIds;
-		// 	m_numReplies  = m_msg3a.m_numDocIds;
-		// 	break;
-		// }
-
 		// do not double count!
 		//if ( i <= m_lastProcessedi ) continue;
 		// do not repeat for this i
 		m_lastProcessedi = i;
-
-
-		// if we have printed enough summaries then do not launch
-		// any more, wait for them to come back in.
-		/// this is causing problems because we have a bunch of
-		// m_printi < m_msg3a.m_numDocIds checks that kinda expect
-		// us to get all summaries for every docid. but when we
-		// do federated search we can get a ton of docids.
-		// if ( m_printi >= m_docsToGetVisible ) {
-		// 	logf(LOG_DEBUG,"query: got %"INT32" >= %"INT32" "
-		// 	     "summaries. done. "
-		// 	     "waiting on remaining "
-		// 	     "%"INT32" to return."
-		// 	     , m_printi
-		// 	     , m_docsToGetVisible
-		// 	     , m_numRequests-m_numReplies);
-		// 	m_numRequests++;
-		// 	m_numReplies++;
-		// 	continue;
-		// }
-
 
 		// start up a Msg20 to get the summary
 		Msg20 *m = NULL;
@@ -1589,25 +1474,9 @@ bool Msg40::launchMsg20s ( bool recalled ) {
 			req.size_hqbuf = gbstrlen(req.ptr_hqbuf)+1;
 		}
 
-		//int32_t q3size = m_si->m_sbuf3.length()+1;
-		//if ( q3size == 1 ) q3size = 0;
-		//req.ptr_q2buf             = m_si->m_sbuf3.getBufStart();
-		//req.size_q2buf            = q3size;
-		
 		req.m_isMasterAdmin             = m_si->m_isMasterAdmin;
 
-		//req.m_rulesetFilter      = m_si->m_ruleset;
-
-		//req.m_getTitleRec         = m_si->m_getTitleRec;
-
-		//req.m_isSuperTurk       = m_si->m_isSuperTurk;
-
-
 		req.m_highlightQueryTerms = m_si->m_doQueryHighlighting;
-		//req.m_highlightDates      = m_si->m_doDateHighlighting;
-
-		//req.ptr_coll             = m_si->m_coll2;
-		//req.size_coll            = m_si->m_collLen2+1;
 
 		req.m_isDebug            = (bool)m_si->m_debug;
 
@@ -1694,12 +1563,6 @@ bool Msg40::launchMsg20s ( bool recalled ) {
 			req.m_computeLinkInfo = true;
 		if ( m_si->m_displayOutlinks )
 			req.m_getOutlinks     = true;
-
-		// buzz still wants the SitePop, computed fresh from Msg25,
-		// even if they do not say "&inlinks=4" ... but they do
-		// seem to specify getsitepops, so use that too
-		//if ( m_si->m_getSitePops )
-		//	req.m_computeLinkInfo = true;
 
 		if (m_si->m_queryMatchOffsets)
 			req.m_getMatches = true;

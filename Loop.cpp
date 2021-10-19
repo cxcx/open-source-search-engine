@@ -39,7 +39,7 @@
 bool g_isHot = true;
 
 // extern this for all to use
-bool g_inSigHandler = false ;
+bool g_inSigHandler = false;
 
 // so we know if interrupts are supposed to be enabled/disabled
 bool g_interruptsOn = false;
@@ -73,34 +73,34 @@ char g_niceness = 0;
 
 // we make sure the same callback/handler is not hogging the cpu when it is
 // niceness 0 and we do not interrupt it, so this is a critical check
-class UdpSlot *g_callSlot = NULL;
-int32_t g_lastTransId  = 0;
+class UdpSlot* g_callSlot = NULL;
+int32_t g_lastTransId = 0;
 int32_t g_transIdCount = 0;
 
 // keep the sig wait time static so we can change it based on m_minTick
-static struct timespec s_sigWaitTime ;
-static struct timespec s_sigWaitTime2 ;
-static struct timespec* s_sigWaitTimePtr ;
+static struct timespec s_sigWaitTime;
+static struct timespec s_sigWaitTime2;
+static struct timespec* s_sigWaitTimePtr;
 
 // use this in case we unregister the "next" callback
-static Slot *s_callbacksNext;
+static Slot* s_callbacksNext;
 
 // this is defined in main.cpp
 //extern bool mainShutdown ( bool urgent );
 
 // set it from milliseconds
-void Loop::setSigWaitTime ( int32_t ms ) {
+void Loop::setSigWaitTime(int32_t ms) {
 	int32_t secs = ms / 1000;
 	ms -= secs * 1000;
-	s_sigWaitTime.tv_sec  = secs;
+	s_sigWaitTime.tv_sec = secs;
 	s_sigWaitTime.tv_nsec = ms * 1000000;
 }
 
 // free up all our mem
 void Loop::reset() {
-	if ( m_slots ) {
-		log(LOG_DEBUG,"db: resetting loop");
-		mfree ( m_slots , MAX_SLOTS * sizeof(Slot) , "Loop" );
+	if (m_slots) {
+		log(LOG_DEBUG, "db: resetting loop");
+		mfree(m_slots, MAX_SLOTS * sizeof(Slot), "Loop");
 	}
 	m_slots = NULL;
 	/*
@@ -125,33 +125,33 @@ void Loop::reset() {
 
 //static void sigHandler_r  ( int x , siginfo_t *info , void *v ) ;
 //static void sigHandlerRT  ( int x , siginfo_t *info , void *v ) ;
-static void sigbadHandler ( int x , siginfo_t *info , void *y ) ;
-static void sigpwrHandler ( int x , siginfo_t *info , void *y ) ;
-static void sighupHandler ( int x , siginfo_t *info , void *y ) ;
+static void sigbadHandler(int x, siginfo_t* info, void* y);
+static void sigpwrHandler(int x, siginfo_t* info, void* y);
+static void sighupHandler(int x, siginfo_t* info, void* y);
 //static void sigioHandler  ( int x , siginfo_t *info , void *y ) ;
-static void sigalrmHandler( int x , siginfo_t *info , void *y ) ;
-static void sigvtalrmHandler( int x , siginfo_t *info , void *y ) ;
+static void sigalrmHandler(int x, siginfo_t* info, void* y);
+static void sigvtalrmHandler(int x, siginfo_t* info, void* y);
 
 //int32_t g_fdWriteBits[MAX_NUM_FDS/32];
 //int32_t g_fdReadBits [MAX_NUM_FDS/32];
 
-void Loop::unregisterReadCallback ( int fd, void *state ,
-				    void (* callback)(int fd,void *state),
-				    bool silent ){
-	if ( fd < 0 ) return;
+void Loop::unregisterReadCallback(int fd, void* state,
+	void (*callback)(int fd, void* state),
+	bool silent) {
+	if (fd < 0) return;
 	// from reading
-	unregisterCallback ( m_readSlots,fd, state , callback, silent,true );
+	unregisterCallback(m_readSlots, fd, state, callback, silent, true);
 }
 
-void Loop::unregisterWriteCallback ( int fd, void *state ,
-				    void (* callback)(int fd,void *state)){
+void Loop::unregisterWriteCallback(int fd, void* state,
+	void (*callback)(int fd, void* state)) {
 	// from writing
-	unregisterCallback ( m_writeSlots , fd  , state,callback,false,false);
+	unregisterCallback(m_writeSlots, fd, state, callback, false, false);
 }
 
-void Loop::unregisterSleepCallback ( void *state ,
-				     void (* callback)(int fd,void *state)){
-	unregisterCallback (m_readSlots,MAX_NUM_FDS,state,callback,false,true);
+void Loop::unregisterSleepCallback(void* state,
+	void (*callback)(int fd, void* state)) {
+	unregisterCallback(m_readSlots, MAX_NUM_FDS, state, callback, false, true);
 }
 
 static fd_set s_selectMaskRead;
@@ -163,69 +163,71 @@ static int32_t s_numReadFds = 0;
 static int s_writeFds[MAX_NUM_FDS];
 static int32_t s_numWriteFds = 0;
 
-void Loop::unregisterCallback ( Slot **slots , int fd , void *state ,
-				void (* callback)(int fd,void *state) ,
-				bool silent , bool forReading ) {
+void Loop::unregisterCallback(Slot** slots, int fd, void* state,
+	void (*callback)(int fd, void* state),
+	bool silent, bool forReading) {
 	// bad fd
-	if ( fd < 0 ) {log(LOG_LOGIC,
-			   "loop: fd to unregister is negative.");return;}
+	if (fd < 0) {
+		log(LOG_LOGIC,
+			"loop: fd to unregister is negative.");return;
+	}
 	// set a flag if we found it
 	bool found = false;
 	// slots is m_readSlots OR m_writeSlots
-	Slot *s        = slots [ fd ];
-	Slot *lastSlot = NULL;
+	Slot* s = slots[fd];
+	Slot* lastSlot = NULL;
 	// . keep track of new min tick for sleep callbacks
 	// . sleep a min of 40ms so g_now is somewhat up to date
-	int32_t min     = 40; // 0x7fffffff;
+	int32_t min = 40; // 0x7fffffff;
 	int32_t lastMin = min;
 
 	// chain through all callbacks registerd with this fd
-	while ( s ) {
+	while (s) {
 		// get the next slot (NULL if no more)
-		Slot *next = s->m_next;
+		Slot* next = s->m_next;
 		// if we're unregistering a sleep callback
 		// we might have to recalculate m_minTick 
-		if ( s->m_tick < min ) { lastMin = min; min = s->m_tick; }
+		if (s->m_tick < min) { lastMin = min; min = s->m_tick; }
 		// skip this slot if callbacks don't match
-		if ( s->m_callback != callback ) { lastSlot = s; goto skip; }
+		if (s->m_callback != callback) { lastSlot = s; goto skip; }
 		// skip this slot if states    don't match
-		if ( s->m_state    != state    ) { lastSlot = s; goto skip; }
+		if (s->m_state != state) { lastSlot = s; goto skip; }
 		// free this slot since it callback matches "callback"
 		//mfree ( s , sizeof(Slot) , "Loop" );
-		returnSlot ( s );
+		returnSlot(s);
 		found = true;
 		// if the last one, then remove the FD from s_fdList
 		// so and clear a bit so doPoll() function is fast
-		if ( slots[fd] == s && s->m_next == NULL ) {
-			for (int32_t i = 0; i < s_numReadFds ; i++ ) {
-				if ( ! forReading ) break;
-				if ( s_readFds[i] != fd ) continue;
-				s_readFds[i] = s_readFds[s_numReadFds-1];
+		if (slots[fd] == s && s->m_next == NULL) {
+			for (int32_t i = 0; i < s_numReadFds; i++) {
+				if (!forReading) break;
+				if (s_readFds[i] != fd) continue;
+				s_readFds[i] = s_readFds[s_numReadFds - 1];
 				s_numReadFds--;
 				// remove from select mask too
-				FD_CLR(fd,&s_selectMaskRead );
-				if ( g_conf.m_logDebugLoop ||
-				     g_conf.m_logDebugTcp )
+				FD_CLR(fd, &s_selectMaskRead);
+				if (g_conf.m_logDebugLoop ||
+					g_conf.m_logDebugTcp)
 					log("loop: unregistering read "
-					    "callback for fd=%i",fd);
+						"callback for fd=%i", fd);
 				break;
 			}
-			for (int32_t i = 0; i < s_numWriteFds ; i++ ) {
-				if ( forReading ) break;
-			 	if ( s_writeFds[i] != fd ) continue;
-			 	s_writeFds[i] = s_writeFds[s_numWriteFds-1];
-			 	s_numWriteFds--;
-			 	// remove from select mask too
-			 	FD_CLR(fd,&s_selectMaskWrite);
-				if ( g_conf.m_logDebugLoop ||
-				     g_conf.m_logDebugTcp )
+			for (int32_t i = 0; i < s_numWriteFds; i++) {
+				if (forReading) break;
+				if (s_writeFds[i] != fd) continue;
+				s_writeFds[i] = s_writeFds[s_numWriteFds - 1];
+				s_numWriteFds--;
+				// remove from select mask too
+				FD_CLR(fd, &s_selectMaskWrite);
+				if (g_conf.m_logDebugLoop ||
+					g_conf.m_logDebugTcp)
 					log("loop: unregistering write "
-					    "callback for fd=%"INT32" from "
-					    "write #wrts=%"INT32"",
-					    (int32_t)fd,
-					    (int32_t)s_numWriteFds);
-			// 	FD_CLR(fd,&s_selectMaskExcept);
-			 	break;
+						"callback for fd=%"INT32" from "
+						"write #wrts=%"INT32"",
+						(int32_t)fd,
+						(int32_t)s_numWriteFds);
+				// 	FD_CLR(fd,&s_selectMaskExcept);
+				break;
 			}
 		}
 		// debug msg
@@ -233,103 +235,103 @@ void Loop::unregisterCallback ( Slot **slots , int fd , void *state ,
 		// revert back to old min if this is the Slot we're removing
 		min = lastMin;
 		// excise the previous slot from linked list
-		if   ( lastSlot ) lastSlot->m_next = next;
-		else              slots[fd]        = next;
+		if (lastSlot) lastSlot->m_next = next;
+		else              slots[fd] = next;
 		// watch out if we're in the previous callback, we need to
 		// fix the linked list in callCallbacks_ass
-		if ( s_callbacksNext == s ) s_callbacksNext = next;
+		if (s_callbacksNext == s) s_callbacksNext = next;
 	skip:
 		// advance to the next slot
 		s = next;
-	}	
+	}
 	// set our new minTick if we were unregistering a sleep callback
-	if ( fd == MAX_NUM_FDS ) {
+	if (fd == MAX_NUM_FDS) {
 		m_minTick = min;
 		// . set s_sigWaitTime to m_minTick
 		// . 1 billion nanoseconds = 1 second	
 		// . m_minTick is in milliseconds, 1000 ms in a second
 		// . multiply m_minTick in ms by 1 million to get nano
-		setSigWaitTime ( m_minTick );
+		setSigWaitTime(m_minTick);
 	}
 
 	// return now if found
-	if ( found ) return;
+	if (found) return;
 	// . otherwise, bitch if we're not silent
 	// . HttpServer.cpp always calls this even if it did not register its
 	//   File's fd just to make sure.
-	if ( silent ) return;
+	if (silent) return;
 
 	return;
 	// sometimes the socket is abruptly closed and that calls the
 	// unregisterWriteCallback() for us... so skip this
 	log(LOG_LOGIC,
-	    "loop: unregisterCallback: callback not found (fd=%i).",fd);
+		"loop: unregisterCallback: callback not found (fd=%i).", fd);
 }
 
-bool Loop::registerReadCallback  ( int fd,
-				   void *state, 
-				   void (* callback)(int fd,void *state ) ,
-				   int32_t  niceness ) {
+bool Loop::registerReadCallback(int fd,
+	void* state,
+	void (*callback)(int fd, void* state),
+	int32_t  niceness) {
 	// the "true" answers the question "for reading?"
-	if ( addSlot ( true, fd, state, callback, niceness ) ) return true;
+	if (addSlot(true, fd, state, callback, niceness)) return true;
 	return log("loop: Unable to register read callback.");
 }
 
 
-bool Loop::registerWriteCallback ( int fd,
-				   void *state, 
-				   void (* callback)(int fd, void *state ) ,
-				   int32_t  niceness ) {
+bool Loop::registerWriteCallback(int fd,
+	void* state,
+	void (*callback)(int fd, void* state),
+	int32_t  niceness) {
 	// the "false" answers the question "for reading?"
-	if ( addSlot ( false, fd, state, callback, niceness ) )return true;
+	if (addSlot(false, fd, state, callback, niceness))return true;
 	return log("loop: Unable to register write callback.");
 }
 
 // tick is in milliseconds
-bool Loop::registerSleepCallback ( int32_t tick ,
-				   void *state, 
-				   void (* callback)(int fd,void *state ) ,
-				   int32_t niceness ) {
-	if ( ! addSlot ( true, MAX_NUM_FDS, state, callback , niceness ,tick) )
+bool Loop::registerSleepCallback(int32_t tick,
+	void* state,
+	void (*callback)(int fd, void* state),
+	int32_t niceness) {
+	if (!addSlot(true, MAX_NUM_FDS, state, callback, niceness, tick))
 		return log("loop: Unable to register sleep callback");
-	if ( tick < m_minTick ) m_minTick = tick;
+	if (tick < m_minTick) m_minTick = tick;
 	// wait this int32_t in the sig wait loop
-	setSigWaitTime ( m_minTick );
+	setSigWaitTime(m_minTick);
 	return true;
 }
 
 // . returns false and sets g_errno on error
-bool Loop::addSlot ( bool forReading , int fd, void *state, 
-		     void (* callback)(int fd, void *state), int32_t niceness ,
-		     int32_t tick ) {
+bool Loop::addSlot(bool forReading, int fd, void* state,
+	void (*callback)(int fd, void* state), int32_t niceness,
+	int32_t tick) {
 
 	// ensure fd is >= 0
-	if ( fd < 0 ) {
+	if (fd < 0) {
 		g_errno = EBADENGINEER;
-		return log(LOG_LOGIC,"loop: fd to register is negative.");
+		return log(LOG_LOGIC, "loop: fd to register is negative.");
 	}
 	// sanity
-	if ( fd > MAX_NUM_FDS ) {
-		log("loop: bad fd of %"INT32"",(int32_t)fd);
-		char *xx=NULL;*xx=0; 
+	if (fd > MAX_NUM_FDS) {
+		log("loop: bad fd of %"INT32"", (int32_t)fd);
+		char* xx = NULL;*xx = 0;
 	}
 	// debug note
-	if (  forReading && (g_conf.m_logDebugLoop || g_conf.m_logDebugTcp) )
-		log("loop: registering read callback sd=%i",fd);
-	else if ( g_conf.m_logDebugLoop || g_conf.m_logDebugTcp )
-		log("loop: registering write callback sd=%i",fd);
+	if (forReading && (g_conf.m_logDebugLoop || g_conf.m_logDebugTcp))
+		log("loop: registering read callback sd=%i", fd);
+	else if (g_conf.m_logDebugLoop || g_conf.m_logDebugTcp)
+		log("loop: registering write callback sd=%i", fd);
 
 	// . ensure fd not already registered with this callback/state
 	// . prevent dups so you can keep calling register w/o fear
-	Slot *s;
-	if ( forReading ) s = m_readSlots  [ fd ];
-	else              s = m_writeSlots [ fd ];
-	while ( s ) {
-		if ( s->m_callback == callback &&
-		     s->m_state    == state      ) {
+	Slot* s;
+	if (forReading) s = m_readSlots[fd];
+	else              s = m_writeSlots[fd];
+	while (s) {
+		if (s->m_callback == callback &&
+			s->m_state == state) {
 			// don't set g_errno for this anymore, just bitch
 			//g_errno = EBADENGINEER;
-			log(LOG_LOGIC,"loop: fd=%i is already registered.",fd);
+			log(LOG_LOGIC, "loop: fd=%i is already registered.", fd);
 			return true;
 		}
 		s = s->m_next;
@@ -337,20 +339,20 @@ bool Loop::addSlot ( bool forReading , int fd, void *state,
 	// . make a new slot
 	// . TODO: implement mprimealloc() to pre-alloc slots for us for speed
 	//s = (Slot *) mmalloc ( sizeof(Slot ) ,"Loop");
-	s = getEmptySlot ( );
-	if ( ! s ) return false;
+	s = getEmptySlot();
+	if (!s) return false;
 	// for pointing to slot already in position for fd
-	Slot *next ;
+	Slot* next;
 	// store ourselves in the slot for this fd
-	if ( forReading ) {
-		next = m_readSlots [ fd ];
-		m_readSlots  [ fd ] = s;
+	if (forReading) {
+		next = m_readSlots[fd];
+		m_readSlots[fd] = s;
 		// if not already registered, add to list
-		if ( fd<MAX_NUM_FDS && ! FD_ISSET ( fd,&s_selectMaskRead ) ) {
+		if (fd < MAX_NUM_FDS && !FD_ISSET(fd, &s_selectMaskRead)) {
 			s_readFds[s_numReadFds++] = fd;
-			FD_SET ( fd,&s_selectMaskRead  );
+			FD_SET(fd, &s_selectMaskRead);
 			// sanity
-			if ( s_numReadFds>MAX_NUM_FDS){char *xx=NULL;*xx=0;}
+			if (s_numReadFds > MAX_NUM_FDS) { char* xx = NULL;*xx = 0; }
 		}
 		// fd == MAX_NUM_FDS if it's a sleep callback
 		//if ( fd < MAX_NUM_FDS ) {
@@ -359,56 +361,56 @@ bool Loop::addSlot ( bool forReading , int fd, void *state,
 		//}
 	}
 	else {
-	 	next = m_writeSlots [ fd ];
-	 	m_writeSlots [ fd ] = s;
-	 	//FD_SET ( fd , &m_writefds );
-	 	// if not already registered, add to list
-	 	if ( fd<MAX_NUM_FDS && ! FD_ISSET ( fd,&s_selectMaskWrite ) ) {
-	 		s_writeFds[s_numWriteFds++] = fd;
-	 		FD_SET ( fd,&s_selectMaskWrite  );
-	 		// sanity
-	 		if ( s_numWriteFds>MAX_NUM_FDS){char *xx=NULL;*xx=0;}
-	 	}
+		next = m_writeSlots[fd];
+		m_writeSlots[fd] = s;
+		//FD_SET ( fd , &m_writefds );
+		// if not already registered, add to list
+		if (fd < MAX_NUM_FDS && !FD_ISSET(fd, &s_selectMaskWrite)) {
+			s_writeFds[s_numWriteFds++] = fd;
+			FD_SET(fd, &s_selectMaskWrite);
+			// sanity
+			if (s_numWriteFds > MAX_NUM_FDS) { char* xx = NULL;*xx = 0; }
+		}
 	}
 	// set our callback and state
-	s->m_callback  = callback;
-	s->m_state     = state;
+	s->m_callback = callback;
+	s->m_state = state;
 	// point to the guy that was registered for fd before us
-	s->m_next      = next;
+	s->m_next = next;
 	// save our niceness for doPoll()
-	s->m_niceness  = niceness;
+	s->m_niceness = niceness;
 	// store the tick for sleep wrappers (should be max for others)
-	s->m_tick      = tick;
+	s->m_tick = tick;
 	// and the last called time for sleep wrappers only really
-	if ( fd == MAX_NUM_FDS ) s->m_lastCall = gettimeofdayInMilliseconds();
+	if (fd == MAX_NUM_FDS) s->m_lastCall = gettimeofdayInMilliseconds();
 	// debug msg
 	//log("Loop::registered fd=%i state=%"UINT32"",fd,state);
 	// if fd == MAX_NUM_FDS if it's a sleep callback
-	if ( fd == MAX_NUM_FDS ) return true;
+	if (fd == MAX_NUM_FDS) return true;
 	// watch out for big bogus fds used for thread exit callbacks
-	if ( fd >  MAX_NUM_FDS ) return true;
+	if (fd > MAX_NUM_FDS) return true;
 	// set fd non-blocking
-	return setNonBlocking ( fd , niceness ) ;
+	return setNonBlocking(fd, niceness);
 }
 
 // . now make sure we're listening for an interrupt on this fd
 // . set it non-blocing and enable signal catching for it
 // . listen for an interrupt for this fd
-bool Loop::setNonBlocking ( int fd , int32_t niceness ) {
- retry:
-	int flags = fcntl ( fd , F_GETFL ) ;
-	if ( flags < 0 ) {
+bool Loop::setNonBlocking(int fd, int32_t niceness) {
+retry:
+	int flags = fcntl(fd, F_GETFL);
+	if (flags < 0) {
 		// valgrind
-		if ( errno == EINTR ) goto retry;
+		if (errno == EINTR) goto retry;
 		g_errno = errno;
-		return log("loop: fcntl(F_GETFL): %s.",strerror(errno));
+		return log("loop: fcntl(F_GETFL): %s.", strerror(errno));
 	}
- retry9:
-	if ( fcntl ( fd, F_SETFL, flags|O_NONBLOCK|O_ASYNC) < 0 ) {
+retry9:
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK | O_ASYNC) < 0) {
 		// valgrind
-		if ( errno == EINTR ) goto retry9;
+		if (errno == EINTR) goto retry9;
 		g_errno = errno;
-		return log("loop: fcntl(NONBLOCK): %s.",strerror(errno));
+		return log("loop: fcntl(NONBLOCK): %s.", strerror(errno));
 	}
 
 	// we use select()/poll now so skip stuff below
@@ -452,8 +454,8 @@ bool Loop::setNonBlocking ( int fd , int32_t niceness ) {
 // . if "forReading" is true  call callbacks registered for reading on "fd" 
 // . if "forReading" is false call callbacks registered for writing on "fd" 
 // . if fd is MAX_NUM_FDS and "forReading" is true call all sleepy callbacks
-void Loop::callCallbacks_ass ( bool forReading , int fd , int64_t now ,
-			       int32_t niceness ) {
+void Loop::callCallbacks_ass(bool forReading, int fd, int64_t now,
+	int32_t niceness) {
 
 	// debug msg
 	//if ( g_conf.m_logDebugUdp ) log("callCallbacks_ass start");
@@ -464,35 +466,37 @@ void Loop::callCallbacks_ass ( bool forReading , int fd , int64_t now ,
 	// save the g_errno to send to all callbacks
 	int saved_errno = g_errno;
 	// get the first Slot in the chain that is waiting on this fd
-	Slot *s ;
-	if ( forReading ) s = m_readSlots  [ fd ];
-	else              s = m_writeSlots [ fd ];
+	Slot* s;
+	if (forReading) s = m_readSlots[fd];
+	else              s = m_writeSlots[fd];
 	//s = m_readSlots [ fd ];
 	// ensure we called something
 	int32_t numCalled = 0;
 
 	// a hack fix
-	if ( niceness == -1 && m_inQuickPoll ) niceness = 0;
+	if (niceness == -1 && m_inQuickPoll) niceness = 0;
 
 	// . now call all the callbacks
 	// . most will re-register themselves (i.e. call registerCallback...()
 	//int64_t startTime = gettimeofdayInMilliseconds();
-	while ( s ) {
+	while (s) {
 		// skip this slot if he has no callback
-		if ( ! s->m_callback ) continue;
+		if (!s->m_callback) continue;
 		// NOTE: callback can unregister fd for Slot s, so get next
 		//Slot *next = s->m_next;
 		s_callbacksNext = s->m_next;
 		// watch out if clock was set back
-		if ( s->m_lastCall > now ) s->m_lastCall = now;
+		if (s->m_lastCall > now) s->m_lastCall = now;
 		// if we're a sleep callback, check to make sure not premature
-		if ( fd == MAX_NUM_FDS && s->m_lastCall + s->m_tick > now ) {
-			s = s_callbacksNext; continue; }
+		if (fd == MAX_NUM_FDS && s->m_lastCall + s->m_tick > now) {
+			s = s_callbacksNext; continue;
+		}
 		// skip if not a niceness match
-		if ( niceness == 0 && s->m_niceness != 0 ) {
-			s = s_callbacksNext; continue; }
+		if (niceness == 0 && s->m_niceness != 0) {
+			s = s_callbacksNext; continue;
+		}
 		// update the lastCall timestamp for this slot
-		if ( fd == MAX_NUM_FDS ) s->m_lastCall = now;
+		if (fd == MAX_NUM_FDS) s->m_lastCall = now;
 		// . debug msg
 		// . this is called a lot cuz we process all dgrams/whatever
 		//   in one clump so there's a lot of redundant signals
@@ -506,49 +510,49 @@ void Loop::callCallbacks_ass ( bool forReading , int fd , int64_t now ,
 		/*
 		if(g_conf.m_profilingEnabled){
 			address=(int32_t)s->m_callback;
-			g_profiler.startTimer(address, 
-					      __PRETTY_FUNCTION__);
-		      //profilerStart=gettimeofdayInMillisecondsLocal();
-		      //statStart = gettimeofdayInMilliseconds();
+			g_profiler.startTimer(address,
+						  __PRETTY_FUNCTION__);
+			  //profilerStart=gettimeofdayInMillisecondsLocal();
+			  //statStart = gettimeofdayInMilliseconds();
 		}
 		*/
 		//startBlockedCpuTimer();
 
 		// log it now
-		if (  g_conf.m_logDebugLoop )
-			log(LOG_DEBUG,"loop: enter fd callback fd=%"INT32" "
-			    "nice=%"INT32"",(int32_t)fd,(int32_t)s->m_niceness);
+		if (g_conf.m_logDebugLoop)
+			log(LOG_DEBUG, "loop: enter fd callback fd=%"INT32" "
+				"nice=%"INT32"", (int32_t)fd, (int32_t)s->m_niceness);
 
 		// sanity check. -1 no longer supported
-		if ( s->m_niceness < 0 ) { char *xx=NULL;*xx=0; }
+		if (s->m_niceness < 0) { char* xx = NULL;*xx = 0; }
 
 		// save it
 		int32_t saved = g_niceness;
 		// set the niceness
 		g_niceness = s->m_niceness;
 		// make sure not 2
-		if ( g_niceness >= 2 ) g_niceness = 1;
+		if (g_niceness >= 2) g_niceness = 1;
 
 		// sanity check -- need to be able to quickpoll!
 		//if ( s->m_niceness > 0 && ! g_loop.m_canQuickPoll ) {
 		//	char *xx=NULL;*xx=0; }
 
-		s->m_callback ( fd , s->m_state );
+		s->m_callback(fd, s->m_state);
 
 		// restore it
 		g_niceness = saved;
 
 		// log it now
-		if ( g_conf.m_logDebugLoop )
-			log(LOG_DEBUG,"loop: exit fd callback fd=%"INT32" "
-			    "nice=%"INT32"", (int32_t)fd,(int32_t)s->m_niceness);
+		if (g_conf.m_logDebugLoop)
+			log(LOG_DEBUG, "loop: exit fd callback fd=%"INT32" "
+				"nice=%"INT32"", (int32_t)fd, (int32_t)s->m_niceness);
 
 		/*
 		if(g_conf.m_profilingEnabled){
 			//profilerEnd =gettimeofdayInMillisecondsLocal();
 			if(!g_profiler.endTimer(address, __PRETTY_FUNCTION__))
 				log(LOG_WARN,"admin: Couldn't add the fn %"INT32"",
-				    (int32_t)address);
+					(int32_t)address);
 		}
 		*/
 		// . debug msg
@@ -564,48 +568,48 @@ void Loop::callCallbacks_ass ( bool forReading , int fd , int64_t now ,
 		s = s_callbacksNext;
 	}
 	s_callbacksNext = NULL;
-// 	int64_t now2 = gettimeofdayInMilliseconds();
-// 	int64_t took = now2 - startTime;
+	// 	int64_t now2 = gettimeofdayInMilliseconds();
+	// 	int64_t took = now2 - startTime;
 
-// 	if(g_conf.m_profilingEnabled && took > 10) {	
-// 		g_stats.addStat_r ( 0      , 
-// 				    startTime, 
-// 				    now2,
-// 				    0 ,
-// 				    STAT_GENERIC,
-// 				    __PRETTY_FUNCTION__,__LINE__);
+	// 	if(g_conf.m_profilingEnabled && took > 10) {	
+	// 		g_stats.addStat_r ( 0      , 
+	// 				    startTime, 
+	// 				    now2,
+	// 				    0 ,
+	// 				    STAT_GENERIC,
+	// 				    __PRETTY_FUNCTION__,__LINE__);
 
 
-// 		if(g_conf.m_sequentialProfiling) {
-// 			log(LOG_TIMING, 
-// 			    "admin: loop time to do %"INT32" callbacks: %"INT64" ms", 
-// 			    numCalled,took);
-// 		}
-// 	}
+	// 		if(g_conf.m_sequentialProfiling) {
+	// 			log(LOG_TIMING, 
+	// 			    "admin: loop time to do %"INT32" callbacks: %"INT64" ms", 
+	// 			    numCalled,took);
+	// 		}
+	// 	}
 
-	// log an error if nothing called
-	//if ( ! called ) log("Loop::callCallbacks: no callback for signal");
-	// debug msg
-	//if ( g_conf.m_logDebugUdp ) log("callCallbacks_ass end");
+		// log an error if nothing called
+		//if ( ! called ) log("Loop::callCallbacks: no callback for signal");
+		// debug msg
+		//if ( g_conf.m_logDebugUdp ) log("callCallbacks_ass end");
 }
 
-Loop::Loop ( ) {
+Loop::Loop() {
 	// . default sig wait time to 10 ms (10,000,000 nanoseconds)
 	// . 1 billion nanoseconds = 1 second	
-	setSigWaitTime ( 1000 /*ms*/ );
+	setSigWaitTime(1000 /*ms*/);
 
-	s_sigWaitTime2.tv_sec  = 0;
+	s_sigWaitTime2.tv_sec = 0;
 	s_sigWaitTime2.tv_nsec = 0;
 	s_sigWaitTimePtr = &s_sigWaitTime;
 
-	m_inQuickPoll      = false;
+	m_inQuickPoll = false;
 	m_needsToQuickPoll = false;
-	m_canQuickPoll     = false;
-	m_isDoingLoop      = false;
+	m_canQuickPoll = false;
+	m_isDoingLoop = false;
 
 	// set all callbacks to NULL so we know they're empty
-	for ( int32_t i = 0 ; i < MAX_NUM_FDS+2 ; i++ ) {
-		m_readSlots [i] = NULL;
+	for (int32_t i = 0; i < MAX_NUM_FDS + 2; i++) {
+		m_readSlots[i] = NULL;
 		m_writeSlots[i] = NULL;
 	}
 	// the extra sleep slots
@@ -614,24 +618,24 @@ Loop::Loop ( ) {
 }
 
 // free all slots from addSlots
-Loop::~Loop ( ) {
+Loop::~Loop() {
 	reset();
 }
 
 // returns NULL and sets g_errno if none are left
-Slot *Loop::getEmptySlot ( ) {
-	Slot *s = m_head;
-	if ( ! s ) {
-		g_errno = EBUFTOOSMALL; 
+Slot* Loop::getEmptySlot() {
+	Slot* s = m_head;
+	if (!s) {
+		g_errno = EBUFTOOSMALL;
 		log("loop: No empty slots available. "
-		    "Increase #define MAX_SLOTS.");
+			"Increase #define MAX_SLOTS.");
 		return NULL;
 	}
 	m_head = s->m_nextAvail;
 	return s;
 }
 
-void Loop::returnSlot ( Slot *s ) {
+void Loop::returnSlot(Slot* s) {
 	s->m_nextAvail = m_head;
 	m_head = s;
 }
@@ -645,10 +649,10 @@ void Loop::returnSlot ( Slot *s ) {
 //   so we can handle/process the queued signals properly. 'man sleep'
 //   states "sleep()  makes  the  calling  process  sleep until seconds 
 //   seconds have elapsed or a signal arrives which is not ignored."
-void sigHandlerQueue_r ( int x , siginfo_t *info , void *v ) {
+void sigHandlerQueue_r(int x, siginfo_t* info, void* v) {
 
 	// if we just needed to cleanup a thread
-	if ( info->si_signo == SIGCHLD ) {
+	if (info->si_signo == SIGCHLD) {
 		g_numSigChlds++;
 		// this has no fd really, Threads.cpp just sends it when
 		// the thread is done
@@ -656,17 +660,17 @@ void sigHandlerQueue_r ( int x , siginfo_t *info , void *v ) {
 		return;
 	}
 
-	if ( info->si_signo == SIGPIPE ) {
+	if (info->si_signo == SIGPIPE) {
 		g_numSigPipes++;
 		return;
 	}
 
-	if ( info->si_signo == SIGIO ) {
+	if (info->si_signo == SIGIO) {
 		g_numSigIOs++;
 		return;
 	}
 
-	if ( info->si_code == SI_QUEUE ) {
+	if (info->si_code == SI_QUEUE) {
 		g_numSigQueues++;
 		//log("admin: got sigqueue");
 		// the thread is done
@@ -693,15 +697,15 @@ void sigHandlerQueue_r ( int x , siginfo_t *info , void *v ) {
 	}
 
 	// set the right callback
-	
+
 	// info->si_band values:
-	//#define POLLIN      0x0001    // There is data to read 
-        //#define POLLPRI     0x0002    // There is urgent data to read 
-	//#define POLLOUT     0x0004    // Writing now will not block 
-	//#define POLLERR     0x0008    // Error condition 
-	//#define POLLHUP     0x0010    // Hung up 
+	//#define POLLIN      0x0001    // There is data to read
+		//#define POLLPRI     0x0002    // There is urgent data to read
+	//#define POLLOUT     0x0004    // Writing now will not block
+	//#define POLLERR     0x0008    // Error condition
+	//#define POLLHUP     0x0010    // Hung up
 	//#define POLLNVAL    0x0020    // Invalid request: fd not open
-	int band = info->si_band;  
+	int band = info->si_band;
 	// translate SIGPIPE's to band of POLLHUP
 	if ( info->si_signo == SIGPIPE ) {
 		band = POLLHUP;
@@ -712,13 +716,13 @@ void sigHandlerQueue_r ( int x , siginfo_t *info , void *v ) {
 	// . TODO: bitch if no callback to handle the read!!!!!!!
 	// . NOTE: when it's connected it sets both POLLIN and POLLOUT
 	// . NOTE: or when a socket is trying to connect to it if it's listener
-	//if      ( band & (POLLIN | POLLOUT) == (POLLIN | POLLOUT) ) 
+	//if      ( band & (POLLIN | POLLOUT) == (POLLIN | POLLOUT) )
 	// g_loop.callCallbacks_ass ( true , fd ); // for reading
 	if ( band & POLLIN  ) {
 		// keep stats on this now since some linuxes dont work right
 		g_stats.m_readSignals++;
 		//log("Loop: read %"INT64" fd=%i",gettimeofdayInMilliseconds(),fd);
-		//g_loop.callCallbacks_ass ( true  , fd ); 
+		//g_loop.callCallbacks_ass ( true  , fd );
 		g_fdReadBits[fd/32] = 1<<(fd%32);
 	}
 	else if ( band & POLLPRI ) {
@@ -732,19 +736,19 @@ void sigHandlerQueue_r ( int x , siginfo_t *info , void *v ) {
 		// keep stats on this now since some linuxes dont work right
 		g_stats.m_writeSignals++;
 		//log("Loop: write %"INT64" fd=%i",gettimeofdayInMilliseconds(),fd)
-		//g_loop.callCallbacks_ass ( false , fd ); 
+		//g_loop.callCallbacks_ass ( false , fd );
 		g_fdWriteBits[fd/32] = 1<<(fd%32);
 	}
 	// fix qainject1() test with this
 	else if ( band & POLLERR )  {
 		//log(LOG_INFO,"loop: got POLLERR on fd=%i.",fd);
 	}
-	//g_loop.callCallbacks_ass ( false , fd ); 
+	//g_loop.callCallbacks_ass ( false , fd );
 	// this happens if the socket closes abruptly
 	// or out of band data, etc... see "man 2 poll" for more info
-	else if ( band & POLLHUP ) { 
+	else if ( band & POLLHUP ) {
 		// i see these all the time for fd == 0, so don't print it
-		//if ( fd != 0 ) 
+		//if ( fd != 0 )
 		//	log(LOG_INFO,"loop: Received hangup on fd=%i.",fd);
 		// it is ready for writing i guess
 		g_fdWriteBits[fd/32] = 1<<(fd%32);
@@ -754,7 +758,7 @@ void sigHandlerQueue_r ( int x , siginfo_t *info , void *v ) {
 
 
 
-bool Loop::init ( ) {
+bool Loop::init() {
 
 	// clear this up here before using in doPoll()
 	FD_ZERO(&s_selectMaskRead);
@@ -762,29 +766,29 @@ bool Loop::init ( ) {
 	FD_ZERO(&s_selectMaskExcept);
 
 	// redhat 9's NPTL doesn't like our async signals
-	if ( ! g_conf.m_allowAsyncSignals ) g_isHot = false;
+	if (!g_conf.m_allowAsyncSignals) g_isHot = false;
 #ifdef _VALGRIND_
 	g_isHot = false;
 #endif
 	// sighupHandler() will set this to true so we know when to shutdown
-	m_shutdown  = 0;
+	m_shutdown = 0;
 	// . reset this cuz we have no sleep callbacks right now
 	// . sleep a min of 40ms so g_now is somewhat up to date
 	m_minTick = 40; //0x7fffffff;
 	// reset the need to poll flag
 	m_needToPoll = false;
 	// let 'em know if we're hot
-	if ( g_isHot ) log ( LOG_INIT , "loop: Using asynchronous signals "
-			     "for udp server.");
+	if (g_isHot) log(LOG_INIT, "loop: Using asynchronous signals "
+		"for udp server.");
 	// make slots
-	m_slots = (Slot *) mmalloc ( MAX_SLOTS * (int32_t)sizeof(Slot) , "Loop" );
-	if ( ! m_slots ) return false;
+	m_slots = (Slot*)mmalloc(MAX_SLOTS * (int32_t)sizeof(Slot), "Loop");
+	if (!m_slots) return false;
 	// log it
-	log(LOG_DEBUG,"loop: Allocated %"INT32" bytes for %"INT32" callbacks.",
-	     MAX_SLOTS * (int32_t)sizeof(Slot),(int32_t)MAX_SLOTS);
+	log(LOG_DEBUG, "loop: Allocated %"INT32" bytes for %"INT32" callbacks.",
+		MAX_SLOTS * (int32_t)sizeof(Slot), (int32_t)MAX_SLOTS);
 	// init link list ptr
-	for ( int32_t i = 0 ; i < MAX_SLOTS - 1 ; i++ ) {
-		m_slots[i].m_nextAvail = &m_slots[i+1];
+	for (int32_t i = 0; i < MAX_SLOTS - 1; i++) {
+		m_slots[i].m_nextAvail = &m_slots[i + 1];
 	}
 	m_slots[MAX_SLOTS - 1].m_nextAvail = NULL;
 	m_head = &m_slots[0];
@@ -803,15 +807,15 @@ bool Loop::init ( ) {
 	//sigfillset ( &sigs );
 	// set of signals to block
 	sigset_t sigs;
-	sigemptyset ( &sigs                );	
-	sigaddset   ( &sigs , SIGPIPE      ); //if we write to a close socket
+	sigemptyset(&sigs);
+	sigaddset(&sigs, SIGPIPE); //if we write to a close socket
 // #ifndef _VALGRIND_
 // 	sigaddset   ( &sigs , GB_SIGRTMIN     );
 // #endif
 // 	sigaddset   ( &sigs , GB_SIGRTMIN + 1 );
 // 	sigaddset   ( &sigs , GB_SIGRTMIN + 2 );
 // 	sigaddset   ( &sigs , GB_SIGRTMIN + 3 );
-	sigaddset   ( &sigs , SIGCHLD      );
+	sigaddset(&sigs, SIGCHLD);
 
 #ifdef PTHREADS
 	// now since we took out SIGIO... (see below)
@@ -819,7 +823,7 @@ bool Loop::init ( ) {
 	// process since we took out the SIGIO handler because newer kernels
 	// were throwing SIGIO signals ALL the time, on every datagram
 	// send/receive it seemed and bogged us down.
-	sigaddset   ( &sigs , SIGIO );
+	sigaddset(&sigs, SIGIO);
 #endif
 	// . block on any signals in this set (in addition to current sigs)
 	// . use SIG_UNBLOCK to remove signals from block list
@@ -846,20 +850,20 @@ bool Loop::init ( ) {
 	//   handling a SIGIO signal, so don't worry about that
 	// . what sigs should be blocked when in our handler? the same
 	//   sigs we are handling i guess
-	gbmemcpy ( &sa2.sa_mask , &sigs , sizeof(sigs) );
-	sa2.sa_flags = SA_SIGINFO ; //| SA_ONESHOT;
+	gbmemcpy(&sa2.sa_mask, &sigs, sizeof(sigs));
+	sa2.sa_flags = SA_SIGINFO; //| SA_ONESHOT;
 	// call this function
 	sa2.sa_sigaction = sigHandlerQueue_r;
 	g_errno = 0;
-	if ( sigaction ( SIGPIPE, &sa2, 0 ) < 0 ) g_errno = errno;
+	if (sigaction(SIGPIPE, &sa2, 0) < 0) g_errno = errno;
 	// if ( sigaction ( GB_SIGRTMIN    , &sa2, 0 ) < 0 ) g_errno = errno;
 	// if ( sigaction ( GB_SIGRTMIN + 1, &sa2, 0 ) < 0 ) g_errno = errno;
 	// if ( sigaction ( GB_SIGRTMIN + 2, &sa2, 0 ) < 0 ) g_errno = errno;
 	// if ( sigaction ( GB_SIGRTMIN + 3, &sa2, 0 ) < 0 ) g_errno = errno;
-	if ( sigaction ( SIGCHLD, &sa2, 0 ) < 0 ) g_errno = errno;
-	if ( sigaction ( SIGIO, &sa2, 0 ) < 0 ) g_errno = errno;
-	if ( g_errno ) log("loop: sigaction(): %s.", mstrerror(g_errno) );
-	
+	if (sigaction(SIGCHLD, &sa2, 0) < 0) g_errno = errno;
+	if (sigaction(SIGIO, &sa2, 0) < 0) g_errno = errno;
+	if (g_errno) log("loop: sigaction(): %s.", mstrerror(g_errno));
+
 
 	// . we turn this signal on/off to turn interrupts off/on
 	// . clear all signals from the set	
@@ -923,28 +927,28 @@ bool Loop::init ( ) {
 	//   we're handling the signal, make this empty
 	// . GB_SIGRTMIN signals will be automatically blocked while we're
 	//   handling a SIGIO signal, so don't worry about that
-	sigemptyset (&sa.sa_mask);
-	sa.sa_flags = SA_SIGINFO ; // | SA_ONESHOT;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO; // | SA_ONESHOT;
 
 	// handle HUP signals gracefully by saving and shutting down
 	sa.sa_sigaction = sighupHandler;
-	if ( sigaction ( SIGHUP , &sa, 0 ) < 0 ) g_errno = errno;
-	if ( g_errno ) log("loop: sigaction SIGHUP: %s.", mstrerror(errno));
-	if ( sigaction ( SIGTERM, &sa, 0 ) < 0 ) g_errno = errno;
-	if ( g_errno ) log("loop: sigaction SIGTERM: %s.", mstrerror(errno));
+	if (sigaction(SIGHUP, &sa, 0) < 0) g_errno = errno;
+	if (g_errno) log("loop: sigaction SIGHUP: %s.", mstrerror(errno));
+	if (sigaction(SIGTERM, &sa, 0) < 0) g_errno = errno;
+	if (g_errno) log("loop: sigaction SIGTERM: %s.", mstrerror(errno));
 	// if ( sigaction ( SIGABRT, &sa, 0 ) < 0 ) g_errno = errno;
 	// if ( g_errno ) log("loop: sigaction SIGTERM: %s.",mstrerror(errno));
 
 	// we should save our data on segv, sigill, sigfpe, sigbus
 	sa.sa_sigaction = sigbadHandler;
-	if ( sigaction ( SIGSEGV, &sa, 0 ) < 0 ) g_errno = errno;
-	if ( g_errno ) log("loop: sigaction SIGSEGV: %s.", mstrerror(errno));
-	if ( sigaction ( SIGILL , &sa, 0 ) < 0 ) g_errno = errno;
-	if ( g_errno ) log("loop: sigaction SIGILL: %s.", mstrerror(errno));
-	if ( sigaction ( SIGFPE , &sa, 0 ) < 0 ) g_errno = errno;
-	if ( g_errno ) log("loop: sigaction SIGFPE: %s.", mstrerror(errno));
-	if ( sigaction ( SIGBUS , &sa, 0 ) < 0 ) g_errno = errno;
-	if ( g_errno ) log("loop: sigaction SIGBUS: %s.", mstrerror(errno));
+	if (sigaction(SIGSEGV, &sa, 0) < 0) g_errno = errno;
+	if (g_errno) log("loop: sigaction SIGSEGV: %s.", mstrerror(errno));
+	if (sigaction(SIGILL, &sa, 0) < 0) g_errno = errno;
+	if (g_errno) log("loop: sigaction SIGILL: %s.", mstrerror(errno));
+	if (sigaction(SIGFPE, &sa, 0) < 0) g_errno = errno;
+	if (g_errno) log("loop: sigaction SIGFPE: %s.", mstrerror(errno));
+	if (sigaction(SIGBUS, &sa, 0) < 0) g_errno = errno;
+	if (g_errno) log("loop: sigaction SIGBUS: %s.", mstrerror(errno));
 	// if ( sigaction ( SIGQUIT , &sa, 0 ) < 0 ) g_errno = errno;
 	// if ( g_errno ) log("loop: sigaction SIGBUS: %s.", mstrerror(errno));
 	// if ( sigaction ( SIGSYS , &sa, 0 ) < 0 ) g_errno = errno;
@@ -953,7 +957,7 @@ bool Loop::init ( ) {
 
 	// if the UPS is about to go off it sends a SIGPWR
 	sa.sa_sigaction = sigpwrHandler;
-	if ( sigaction ( SIGPWR, &sa, 0 ) < 0 ) g_errno = errno;
+	if (sigaction(SIGPWR, &sa, 0) < 0) g_errno = errno;
 
 
 	//now set up our alarm for quickpoll
@@ -970,10 +974,10 @@ bool Loop::init ( ) {
 	m_realInterrupt.it_interval.tv_usec = 1 * 1000;
 
 
- 	m_noInterrupt.it_value.tv_sec = 0;
- 	m_noInterrupt.it_value.tv_usec = 0;
- 	m_noInterrupt.it_interval.tv_sec = 0;
- 	m_noInterrupt.it_interval.tv_usec = 0;
+	m_noInterrupt.it_value.tv_sec = 0;
+	m_noInterrupt.it_value.tv_usec = 0;
+	m_noInterrupt.it_interval.tv_sec = 0;
+	m_noInterrupt.it_interval.tv_usec = 0;
 	//m_realInterrupt.it_value.tv_sec = 0;
 	//m_realInterrupt.it_value.tv_usec = QUICKPOLL_INTERVAL * 1000;
 
@@ -987,26 +991,26 @@ bool Loop::init ( ) {
 
 	sa.sa_sigaction = sigalrmHandler;
 	// it's gotta be real time, not virtual cpu time now
-	if ( sigaction ( SIGALRM, &sa, 0 ) < 0 ) g_errno = errno;
-	if ( g_errno ) return log("loop: sigaction: %s.", mstrerror(errno));
+	if (sigaction(SIGALRM, &sa, 0) < 0) g_errno = errno;
+	if (g_errno) return log("loop: sigaction: %s.", mstrerror(errno));
 
 	// block sigvtalarm
 	sa.sa_sigaction = sigvtalrmHandler;
-	if ( sigaction ( SIGVTALRM, &sa, 0 ) < 0 ) g_errno = errno;
-	if ( g_errno ) log("loop: sigaction SIGVTALRM: %s.", mstrerror(errno));
+	if (sigaction(SIGVTALRM, &sa, 0) < 0) g_errno = errno;
+	if (g_errno) log("loop: sigaction SIGVTALRM: %s.", mstrerror(errno));
 
 	// success
 	return true;
 }
 
 // TODO: if we get a segfault while saving, what then?
-void sigpwrHandler ( int x , siginfo_t *info , void *y ) {
+void sigpwrHandler(int x, siginfo_t* info, void* y) {
 	// let main process know to shutdown
 	g_loop.m_shutdown = 3;
 }
 
 #include <execinfo.h>
-void printStackTrace ( int signum , siginfo_t *info , void *ptr ) {
+void printStackTrace(int signum, siginfo_t* info, void* ptr) {
 
 	// int arch = 32;
 	// if ( __WORDSIZE == 64 ) arch = 64;
@@ -1014,48 +1018,48 @@ void printStackTrace ( int signum , siginfo_t *info , void *ptr ) {
 	// right now only works for 32 bit
 	//if ( arch != 32 ) return;
 
-	logf(LOG_DEBUG,"gb: Printing stack trace. use "
-	     "'addr2line -e gb' to decode the hex below.");
+	logf(LOG_DEBUG, "gb: Printing stack trace. use "
+		"'addr2line -e gb' to decode the hex below.");
 
-	if ( g_inMemFunction ) {
-		logf(LOG_DEBUG,"gb: in mem function not doing backtrace");
+	if (g_inMemFunction) {
+		logf(LOG_DEBUG, "gb: in mem function not doing backtrace");
 		return;
 	}
 
-	static void *s_bt[200];
+	static void* s_bt[200];
 	int sz = backtrace(s_bt, 200);
 	//char **strings = backtrace_symbols(s_bt, sz);
-	for( int i = 0; i < sz; ++i) {
+	for (int i = 0; i < sz; ++i) {
 		//unsigned long long ba;
 		//ba = g_profiler.getFuncBaseAddr((PTRTYPE)s_bt[i]);
 		//sigsegv_outp("%s", strings[i]);
 		//logf(LOG_DEBUG,"[0x%llx->0x%llx] %s"
-		logf(LOG_DEBUG,"addr2line -e gb 0x%"XINT64""
-		     ,(uint64_t)s_bt[i]
-		     //,ba
-		     //,g_profiler.getFnName(ba,0));
-		     );
+		logf(LOG_DEBUG, "addr2line -e gb 0x%"XINT64""
+			, (uint64_t)s_bt[i]
+			//,ba
+			//,g_profiler.getFnName(ba,0));
+		);
 #ifdef INLINEDECODE
 		char cmd[256];
-		sprintf(cmd,"addr2line -e gb 0x%"XINT64" > ./tmpout"
-			,(uint64_t)s_bt[i]);
-		gbsystem ( cmd );
+		sprintf(cmd, "addr2line -e gb 0x%"XINT64" > ./tmpout"
+			, (uint64_t)s_bt[i]);
+		gbsystem(cmd);
 		char obuf[1024];
-		SafeBuf fb (obuf,1024);
+		SafeBuf fb(obuf, 1024);
 		fb.load("./tmpout");
-		log("stack: %s",fb.getBufStart());
+		log("stack: %s", fb.getBufStart());
 #endif
 	}
 }
 
 
 // TODO: if we get a segfault while saving, what then?
-void sigbadHandler ( int x , siginfo_t *info , void *y ) {
+void sigbadHandler(int x, siginfo_t* info, void* y) {
 
 	// thread should set it errno to 0x7fffffff which means that
 	// Threads.cpp should not look for its ThreadEntry::m_isDone flag
 	// to be set before calling waitpid() on it
-	if ( g_threads.amThread() ) errno = 0x7fffffff;
+	if (g_threads.amThread()) errno = 0x7fffffff;
 
 	// turn off sigalarms
 	g_loop.disableTimer();
@@ -1064,63 +1068,63 @@ void sigbadHandler ( int x , siginfo_t *info , void *y ) {
 	// . don't allow this handler to be called again
 	// . does this work if we're in a thread?
 	struct sigaction sa;
-	sigemptyset (&sa.sa_mask);
-	sa.sa_flags = SA_SIGINFO ; //| SA_ONESHOT;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO; //| SA_ONESHOT;
 	sa.sa_sigaction = NULL;
-	sigaction ( SIGSEGV, &sa, 0 ) ;
-	sigaction ( SIGILL , &sa, 0 ) ;
-	sigaction ( SIGFPE , &sa, 0 ) ;
-	sigaction ( SIGBUS , &sa, 0 ) ;
-	sigaction ( SIGQUIT, &sa, 0 ) ;
-	sigaction ( SIGSYS , &sa, 0 ) ;
+	sigaction(SIGSEGV, &sa, 0);
+	sigaction(SIGILL, &sa, 0);
+	sigaction(SIGFPE, &sa, 0);
+	sigaction(SIGBUS, &sa, 0);
+	sigaction(SIGQUIT, &sa, 0);
+	sigaction(SIGSYS, &sa, 0);
 	//sigaction ( SIGALRM, &sa, 0 ) ;
 	// if we've already been here, or don't need to be, then bail
-	if ( g_loop.m_shutdown ) {
+	if (g_loop.m_shutdown) {
 		log("loop: sigbadhandler. shutdown already called.");
 		return;
 	}
 
 	// unwind
-	printStackTrace( x , info , y );
+	printStackTrace(x, info, y);
 
 
 	// if we're a thread, let main process know to shutdown
 	g_loop.m_shutdown = 2;
 	log("loop: sigbadhandler. trying to save now. mode=%"INT32"",
-	    (int32_t)g_process.m_mode);
+		(int32_t)g_process.m_mode);
 	// . this will save all Rdb's 
 	// . if "urgent" is true it will dump core
 	// . if "urgent" is true it won't broadcast its shutdown to all hosts
 	//#ifndef NO_MAIN
 	//	mainShutdown ( true ); // urgent?
 	//#endif
-	g_process.shutdown ( true );
+	g_process.shutdown(true);
 }
 
-void sigvtalrmHandler ( int x , siginfo_t *info , void *y ) {
+void sigvtalrmHandler(int x, siginfo_t* info, void* y) {
 
 #ifdef PTHREADS
 	// do not allow threads
 	// this call is very fast, can be called like 400M times per second
-	if ( g_threads.amThread() ) return;
+	if (g_threads.amThread()) return;
 #endif
 
 	// stats
 	g_numVTAlarms++;
 
 	// see if a niceness 0 algo is hogging the cpu
-	if ( g_callSlot && g_niceness == 0 ) {
+	if (g_callSlot && g_niceness == 0) {
 		// are we handling the same request or callback?
-		if ( g_callSlot->m_transId == g_lastTransId ) g_transIdCount++;
-		else                                          g_transIdCount=1;
+		if (g_callSlot->m_transId == g_lastTransId) g_transIdCount++;
+		else                                          g_transIdCount = 1;
 		// set it
 		g_lastTransId = g_callSlot->m_transId;
 		// sanity check
 		//if ( g_transIdCount >= 10 ) { char *xx=NULL;*xx=0; }
 		bool logIt = false;
-		if ( g_transIdCount >= 4 ) logIt = true;
+		if (g_transIdCount >= 4) logIt = true;
 		// do not spam for msg99 handler so much
-		if ( g_callSlot->m_msgType == 0x99 && g_transIdCount != 50 )
+		if (g_callSlot->m_msgType == 0x99 && g_transIdCount != 50)
 			logIt = false;
 		// it's not safe to call fprintf() even with 
 		// mutex locks for sig handlers with pthreads
@@ -1129,33 +1133,33 @@ void sigvtalrmHandler ( int x , siginfo_t *info , void *y ) {
 		logIt = false;
 #endif
 		// panic if hogging
-		if ( logIt ) {
-			if ( g_callSlot->m_callback )
+		if (logIt) {
+			if (g_callSlot->m_callback)
 				log("loop: msg type 0x%hhx reply callback "
-				    "hogging cpu for %"INT32" ticks", 
-				    g_callSlot->m_msgType,
-				    g_transIdCount);
+					"hogging cpu for %"INT32" ticks",
+					g_callSlot->m_msgType,
+					g_transIdCount);
 			else
 				log("loop: msg type 0x%hhx handler "
-				    "hogging cpu for %"INT32" ticks", 
-				    g_callSlot->m_msgType,
-				    g_transIdCount);
+					"hogging cpu for %"INT32" ticks",
+					g_callSlot->m_msgType,
+					g_transIdCount);
 		}
 	}
 
 	g_nowApprox += QUICKPOLL_INTERVAL; // 10 ms
 
 	// sanity check
-	if ( g_loop.m_inQuickPoll && 
-	     g_niceness != 0 &&
-	     // seems to happen a lot when doing a qa test because we slow
-	     // things down a lot when that happens
-	     ! g_conf.m_testParserEnabled &&
-	     ! g_conf.m_testSpiderEnabled &&
-	     ! g_conf.m_testSearchEnabled &&
-	     // likewise if doing a page parser test...
-	     ! g_inPageParser &&
-	     ! g_inPageInject     ) {
+	if (g_loop.m_inQuickPoll &&
+		g_niceness != 0 &&
+		// seems to happen a lot when doing a qa test because we slow
+		// things down a lot when that happens
+		!g_conf.m_testParserEnabled &&
+		!g_conf.m_testSpiderEnabled &&
+		!g_conf.m_testSearchEnabled &&
+		// likewise if doing a page parser test...
+		!g_inPageParser &&
+		!g_inPageInject) {
 #ifndef PTHREADS
 		// i guess sometimes niceness 1 things call niceness 0 things?
 		log("loop: crap crap crap!!!");
@@ -1163,26 +1167,26 @@ void sigvtalrmHandler ( int x , siginfo_t *info , void *y ) {
 		//char *xx=NULL;*xx=0; }
 	}
 	// basically ignore this alarm if already in a quickpoll
-	if ( g_loop.m_inQuickPoll ) return;
+	if (g_loop.m_inQuickPoll) return;
 
-	if ( ! g_conf.m_useQuickpoll ) return;
+	if (!g_conf.m_useQuickpoll) return;
 
 	g_loop.m_needsToQuickPoll = true;
 
 	//fprintf(stderr,"missed=%"INT32"\n",g_missedQuickPolls);
 
 	// another missed quickpoll
-	if ( g_niceness == 1 ) g_missedQuickPolls++;
+	if (g_niceness == 1) g_missedQuickPolls++;
 	// reset if niceness is 0
-	else if ( g_niceness == 0 ) g_missedQuickPolls = 0;
+	else if (g_niceness == 0) g_missedQuickPolls = 0;
 
 	// if we missed to many, then dump core
-	if ( g_niceness == 1 && g_missedQuickPolls >= 4 ) {
+	if (g_niceness == 1 && g_missedQuickPolls >= 4) {
 		//g_inSigHandler = true;
 		// NOT SAFE for pthreads cuz we're in sig handler
 #ifndef PTHREADS
 		log("loop: missed quickpoll. Dumping stack.");
-		printStackTrace( x , info , y );
+		printStackTrace(x, info, y);
 #endif
 		//g_inSigHandler = false;
 		// seems to core a lot in gbcompress() we need to
@@ -1197,13 +1201,13 @@ void sigvtalrmHandler ( int x , siginfo_t *info , void *y ) {
 	// we can see where the process was... we are in a long niceness 0
 	// function or a niceness 1 function without a quickpoll, so that
 	// heartbeatWrapper() function never gets called.
-	if ( g_process.m_lastHeartbeatApprox == 0 ) return;
-	if ( g_conf.m_maxHeartbeatDelay <= 0 ) return;
-	if ( g_nowApprox - g_process.m_lastHeartbeatApprox > 
-	     g_conf.m_maxHeartbeatDelay ) {
+	if (g_process.m_lastHeartbeatApprox == 0) return;
+	if (g_conf.m_maxHeartbeatDelay <= 0) return;
+	if (g_nowApprox - g_process.m_lastHeartbeatApprox >
+		g_conf.m_maxHeartbeatDelay) {
 #ifndef PTHREADS
-		logf(LOG_DEBUG,"gb: CPU seems blocked. Dumping stack.");
-		printStackTrace( x , info , y );
+		logf(LOG_DEBUG, "gb: CPU seems blocked. Dumping stack.");
+		printStackTrace(x, info, y);
 #endif
 		//char *xx=NULL; *xx=0; 
 
@@ -1215,12 +1219,12 @@ void sigvtalrmHandler ( int x , siginfo_t *info , void *y ) {
 
 float g_cpuUsage = 0.0;
 
-void sigalrmHandler ( int x , siginfo_t *info , void *y ) {
+void sigalrmHandler(int x, siginfo_t* info, void* y) {
 
 #ifdef PTHREADS
 	// do not allow threads
 	// this call is very fast, can be called like 400M times per second
-	if ( g_threads.amThread() ) return;
+	if (g_threads.amThread()) return;
 #endif
 
 	// so we don't call gettimeofday() thousands of times a second...
@@ -1229,12 +1233,12 @@ void sigalrmHandler ( int x , siginfo_t *info , void *y ) {
 	// stats
 	g_numAlarms++;
 
-	if ( ! g_inWaitState )
+	if (!g_inWaitState)
 		g_cpuUsage = .99 * g_cpuUsage + .01 * 100;
 	else
 		g_cpuUsage = .99 * g_cpuUsage + .01 * 000;
 
-	if ( g_profiler.m_realTimeProfilerRunning )
+	if (g_profiler.m_realTimeProfilerRunning)
 		g_profiler.getStackFrame(0);
 
 	return;
@@ -1249,10 +1253,10 @@ void sigalrmHandler ( int x , siginfo_t *info , void *y ) {
 	// . this is KINDA like a 100 point sample, but it has crazy decay
 	//   logic built into it
 	if ( ! g_inWaitState )
-		h->m_pingInfo.m_cpuUsage = 
+		h->m_pingInfo.m_cpuUsage =
 			.99 * h->m_pingInfo.m_cpuUsage + .01 * 100;
 	else
-		h->m_pingInfo.m_cpuUsage = 
+		h->m_pingInfo.m_cpuUsage =
 			.99 * h->m_pingInfo.m_cpuUsage + .01 * 000;
 
 	if ( g_profiler.m_realTimeProfilerRunning )
@@ -1275,7 +1279,7 @@ void maskSignals() {
 		// sigaddset ( &s_rtmin, GB_SIGRTMIN + 3 );
 		sigaddset ( &s_rtmin, SIGCHLD );
 		sigaddset ( &s_rtmin, SIGIO   );
-		sigaddset ( &s_rtmin, SIGPIPE ); 
+		sigaddset ( &s_rtmin, SIGPIPE );
 	}
 
 	// block it
@@ -1296,7 +1300,7 @@ void unmaskSignals() {
 
 // shit, we can't make this realtime!! RdbClose() cannot be called by a
 // real time sig handler
-void sighupHandler ( int x , siginfo_t *info , void *y ) {
+void sighupHandler(int x, siginfo_t* info, void* y) {
 	// let main process know to shutdown
 	g_loop.m_shutdown = 1;
 }
@@ -1305,25 +1309,25 @@ void sighupHandler ( int x , siginfo_t *info , void *y ) {
 // . we have to call those every 1 second
 int64_t s_lastTime = 0;
 
-bool Loop::runLoop ( ) {
+bool Loop::runLoop() {
 
 #ifndef _POLLONLY_
 	// set of signals to watch for
 	sigset_t sigs0;
 	//sigset_t sigs1;
 	// clear all signals from the set
-	sigemptyset ( &sigs0 );
+	sigemptyset(&sigs0);
 	//sigemptyset ( &sigs1 );
 	// . set sigs on which sigtimedwait() listens for
 	// . add this signal to our set of signals to watch (currently NONE)
-	sigaddset ( &sigs0, SIGPIPE      ); 
-// #ifndef _VALGRIND_
-// 	sigaddset ( &sigs0, GB_SIGRTMIN     );
-// #endif
-// 	sigaddset ( &sigs0, GB_SIGRTMIN + 1 );
-// 	sigaddset ( &sigs0, GB_SIGRTMIN + 2 );
-// 	sigaddset ( &sigs0, GB_SIGRTMIN + 3 );
-	sigaddset ( &sigs0, SIGCHLD      );
+	sigaddset(&sigs0, SIGPIPE);
+	// #ifndef _VALGRIND_
+	// 	sigaddset ( &sigs0, GB_SIGRTMIN     );
+	// #endif
+	// 	sigaddset ( &sigs0, GB_SIGRTMIN + 1 );
+	// 	sigaddset ( &sigs0, GB_SIGRTMIN + 2 );
+	// 	sigaddset ( &sigs0, GB_SIGRTMIN + 3 );
+	sigaddset(&sigs0, SIGCHLD);
 	//sigaddset ( &sigs0, SIGVTALRM    );
 	// . TODO: do we need to mask SIGIO too? (sig queue overflow?)
 	// . i would think so, because what if we tried to queue an important
@@ -1331,7 +1335,7 @@ bool Loop::runLoop ( ) {
 	//   was full? Then we would finish processing the signals on the queue
 	//   before we would address the excluded high priority signals by 
 	//   calling doPoll()
-	sigaddset ( &sigs0, SIGIO );
+	sigaddset(&sigs0, SIGIO);
 	// . set up a time to block waiting for signals to be 1/2 a second
 	// . 1 billion nanoseconds = 1 second
 	//struct timespec t = { 0 /*seconds*/, 500000000 /*nanoseconds*/};
@@ -1356,10 +1360,10 @@ bool Loop::runLoop ( ) {
 	// . now loop forever waiting for signals
 	// . but every second check for timer-based events
 
- BIGLOOP:
+BIGLOOP:
 
 	g_now = gettimeofdayInMilliseconds();
-		
+
 	//set the time back to its exact value and reset
 	//the timer.
 	g_nowApprox = g_now;
@@ -1384,21 +1388,21 @@ bool Loop::runLoop ( ) {
 
 	g_errno = 0;
 
- 	if ( m_shutdown ) {
+	if (m_shutdown) {
 		// a msg
-		if      (m_shutdown==1) 
-			log(LOG_INIT,"loop: got SIGHUP or SIGTERM.");
-		else if (m_shutdown==2) 
-			log(LOG_INIT,"loop: got SIGBAD in thread.");
-		else                    
-			log(LOG_INIT,"loop: got SIGPWR.");
+		if (m_shutdown == 1)
+			log(LOG_INIT, "loop: got SIGHUP or SIGTERM.");
+		else if (m_shutdown == 2)
+			log(LOG_INIT, "loop: got SIGBAD in thread.");
+		else
+			log(LOG_INIT, "loop: got SIGPWR.");
 		// . turn off interrupts here because it doesn't help to do
 		//   it in the thread
 		// . TODO: turn off signals for sigbadhandler()
 		interruptsOff();
 		// if thread got the signal, just wait for him to save all
 		// Rdbs and then dump core
-		if ( m_shutdown == 2 ) {
+		if (m_shutdown == 2) {
 			//log(0,"Thread is saving & shutting down urgently.");
 			//while ( 1 == 1 ) sleep (50000);
 			//log("loop: Resuming despite thread crash.");
@@ -1406,14 +1410,14 @@ bool Loop::runLoop ( ) {
 			//goto BIGLOOP;
 		}
 		// otherwise, thread did not save, so we must do it
-		log ( LOG_INIT ,"loop: Saving and shutting down urgently.");
+		log(LOG_INIT, "loop: Saving and shutting down urgently.");
 		// . this will save all Rdb's and dump core
 		// . since "urgent" is true it won't broadcast its shutdown
 		//   to all hosts
 		//#ifndef NO_MAIN
 		//mainShutdown( true ); // urgent?
 		//#endif
-		g_process.shutdown ( true );
+		g_process.shutdown(true);
 	}
 
 
@@ -1424,10 +1428,10 @@ bool Loop::runLoop ( ) {
 	//
 	doPoll();
 
- 	goto BIGLOOP;
+	goto BIGLOOP;
 
- 	// make compiler happy
- 	return 0;
+	// make compiler happy
+	return 0;
 
 
 
@@ -1465,7 +1469,7 @@ bool Loop::runLoop ( ) {
 	//			log(LOG_REMIND,"loop: Lost thread signal.");
 	//			s_bitched = true;
 	//		}
-	
+
 
 	// 	}
 	//cleanup and launch threads:
@@ -1594,7 +1598,7 @@ bool Loop::runLoop ( ) {
 	// if(gettimeofdayInMillisecondsLocal() - 
 	//    startTime > 10)
 	// 	goto notime;
-					
+
 	// if ( g_conf.m_sequentialProfiling )
 	// 	g_threads.printState();
 
@@ -1604,60 +1608,60 @@ bool Loop::runLoop ( ) {
 
 // #endif
 
-	
+
 
 	/*
 
 	if ( sigNum <  0 ) {
 		if ( errno == EAGAIN || errno == EINTR ||
-		     errno == EILSEQ || errno == 0 ) { 
-			sigNum = 0; 
+			 errno == EILSEQ || errno == 0 ) {
+			sigNum = 0;
 			errno = 0;
 		}
 		else if ( errno != ENOMEM ) {
 			log("loop: sigtimedwait(): %s.",
-			    strerror(errno));
+				strerror(errno));
 			continue;
 		}
 	}
 	if ( sigNum == 0 ) {
-		//no signals pending, try to take care of anything 
+		//no signals pending, try to take care of anything
 		// left undone:
 
 		int64_t startTime =gettimeofdayInMillisecondsLocal();
 		if(g_now & 1) {
-			if(g_udpServer.needBottom())  
+			if(g_udpServer.needBottom())
 				g_udpServer.makeCallbacks_ass ( 2 );
-			//if(g_udpServer2.needBottom()) 
+			//if(g_udpServer2.needBottom())
 			//	g_udpServer2.makeCallbacks_ass ( 2 );
 
-			if(gettimeofdayInMillisecondsLocal() - 
+			if(gettimeofdayInMillisecondsLocal() -
 			   startTime > 10)
 				goto notime;
-					
-			if(g_conf.m_sequentialProfiling) 
+
+			if(g_conf.m_sequentialProfiling)
 				g_threads.printState();
 			if(g_threads.m_needsCleanup)
 				g_threads.timedCleanUp(4 , // ms
-						       MAX_NICENESS);
+							   MAX_NICENESS);
 		}
 		else {
-			if(g_conf.m_sequentialProfiling) 
+			if(g_conf.m_sequentialProfiling)
 				g_threads.printState();
 			if(g_threads.m_needsCleanup)
 				g_threads.timedCleanUp(4 , // ms
-						       MAX_NICENESS);
+							   MAX_NICENESS);
 
-			if(gettimeofdayInMillisecondsLocal() - 
+			if(gettimeofdayInMillisecondsLocal() -
 			   startTime > 10)
 				goto notime;
 
-			if(g_udpServer.needBottom())  
+			if(g_udpServer.needBottom())
 				g_udpServer.makeCallbacks_ass ( 2 );
-			//if(g_udpServer2.needBottom()) 
+			//if(g_udpServer2.needBottom())
 			//	g_udpServer2.makeCallbacks_ass ( 2 );
 		}
-			
+
 	notime:
 		//if we still didn't get all of them cleaned up set
 		//sleep time to none.
@@ -1695,11 +1699,11 @@ bool Loop::runLoop ( ) {
 	// shutdown if we got a critical signal
 	if ( m_shutdown ) {
 		// a msg
-		if      ( m_shutdown == 1 ) 
+		if      ( m_shutdown == 1 )
 			log("loop: got SIGHUP or SIGTERM.");
-		else if ( m_shutdown == 2 ) 
+		else if ( m_shutdown == 2 )
 			log("loop: got SIGBAD in thread.");
-		else                    
+		else
 			log("loop: got SIGPWR.");
 		// . turn off interrupts here because it doesn't help to do
 		//   it in the thread
@@ -1711,7 +1715,7 @@ bool Loop::runLoop ( ) {
 			log("loop: Cored in thread.");
 			//log ("Thread is saving and shutting down urgently.");
 			//while ( 1 == 1 ) sleep (50000);
-		        //log("loop: Resuming despite thread crash.");
+				//log("loop: Resuming despite thread crash.");
 			//m_shutdown = 0;
 			//goto resume;
 		}
@@ -1738,9 +1742,9 @@ bool Loop::runLoop ( ) {
 	// clear any g_errno before possibly calling sendPoll_ass()
 	g_errno = 0;
 	// occasionally call to sendto() will not send a dgram and since we
-	// don't count on receiving ready-to-write signals on our 
-	// UdpServer's fds we check them here... it sucks, but hopefully it 
-	// fixes the problem of requests not getting fully transmitted 
+	// don't count on receiving ready-to-write signals on our
+	// UdpServer's fds we check them here... it sucks, but hopefully it
+	// fixes the problem of requests not getting fully transmitted
 	// and stagnating in the UdpServer.
 	//if (g_udpServer2.m_needToSend) g_udpServer2.sendPoll_ass(true,g_now);
 	//if (g_udpServer.m_needToSend ) g_udpServer.sendPoll_ass (true,g_now);
@@ -1761,7 +1765,7 @@ bool Loop::runLoop ( ) {
 	//if ( g_httpServer.m_tcp.m_numQueued > 0 )
 	//	g_httpServer.m_tcp.writeSocketsInQueue();
 
-	// . likewise, we may have not got the SIGQUEUE signal from when 
+	// . likewise, we may have not got the SIGQUEUE signal from when
 	//   UdpServer wanted to call a callback but couldn't because it was
 	//   in an async signal handler, and then at SIGQUEUE sig got lost...
 	// . this should clear those completed transactions we sometimes
@@ -1786,7 +1790,7 @@ bool Loop::runLoop ( ) {
 		// check thread queue for any threads that completed
 		// so we can call their callbacks and remove them
 		g_threads.cleanUp ( 0 , 1000) ; // max niceness
-		// launch any threads in waiting since this sig was 
+		// launch any threads in waiting since this sig was
 		// from a terminating one
 		g_threads.launchThreads();
 	}
@@ -1826,15 +1830,15 @@ bool Loop::runLoop ( ) {
 
 
 	//if ( g_conf.m_logDebugUdp ) log("Loop: entering sigwait");
-	// . this has a timer resolution of 20ms, I imagine due to how the 
+	// . this has a timer resolution of 20ms, I imagine due to how the
 	//   kernel time slices between processes
 	// . this means UdpServer can not effectively have a wait between
 	//   resends of less than 20ms which makes it a little less zippy
 	sigNum = sigtimedwait (&sigs0, &info, &s_sigWaitTime ) ;
 	// cancel silly errors
-	if ( sigNum < 0 && errno == EAGAIN ) { 
+	if ( sigNum < 0 && errno == EAGAIN ) {
 		sigNum = 0; errno = 0; }
-	if ( sigNum < 0 && errno == EINTR  ) { 
+	if ( sigNum < 0 && errno == EINTR  ) {
 		sigNum = 0; errno = 0; }
 	// a zero signal is no signal, just a wake up call
 	if ( sigNum == 0 ) goto loop;
@@ -1884,7 +1888,7 @@ bool Loop::runLoop ( ) {
 //--- read event on a socket that isn't in read mode???
 // TODO: set signal handler to SIG_DFL to prevent signals from queuing up now
 // . this handles high priority fds first (lowest niceness)
-void Loop::doPoll ( ) {
+void Loop::doPoll() {
 	// set time
 	//g_now = gettimeofdayInMilliseconds();
 	// debug msg
@@ -1893,23 +1897,23 @@ void Loop::doPoll ( ) {
 	//   called select() so we don't lose any fd events through the cracks
 	// . some callbacks we call make trigger another SIGIO, but if they
 	//   fail they should set Loop::g_needToPoll to true
-	m_needToPoll = false; 
+	m_needToPoll = false;
 	// debug msg
 	//if ( g_conf.m_logDebugLoop ) log(LOG_DEBUG,"loop: Entered doPoll.");
-	if ( g_conf.m_logDebugLoop) log(LOG_DEBUG,"loop: Entered doPoll.");
+	if (g_conf.m_logDebugLoop) log(LOG_DEBUG, "loop: Entered doPoll.");
 	// print log
-	if ( g_log.needsPrinting() ) g_log.printBuf();
-	 
+	if (g_log.needsPrinting()) g_log.printBuf();
+
 	// sigqueue() might have been called from a hot udp server and 
 	// we queued some handlers to be called
-	if ( g_someAreQueued ) {
+	if (g_someAreQueued) {
 		// assume none are queued now, we may get interrupted
 		// and it may get set back to true
 		g_someAreQueued = false;
 		//g_udpServer2.makeCallbacks_ass (  0 );
 		//g_udpServer2.makeCallbacks_ass (  1 );
 	}
-	if(g_udpServer.needBottom()) g_udpServer.makeCallbacks_ass ( 1 );
+	if (g_udpServer.needBottom()) g_udpServer.makeCallbacks_ass(1);
 	//if(g_udpServer2.needBottom()) g_udpServer2.makeCallbacks_ass ( 1 );
 
 
@@ -1926,13 +1930,13 @@ void Loop::doPoll ( ) {
 	//FD_ZERO ( &writefds  );
 	//FD_ZERO ( &exceptfds );
 	timeval v;
-	v.tv_sec  = 0;
-	if ( m_inQuickPoll ) v.tv_usec = 0;
+	v.tv_sec = 0;
+	if (m_inQuickPoll) v.tv_usec = 0;
 	// 10ms for sleepcallbacks so they can be called...
 	// and we need this to be the same as sigalrmhandler() since we
 	// keep track of cpu usage here too, since sigalrmhandler is "VT"
 	// based it only goes off when that much "cpu time" has elapsed.
-	else                 v.tv_usec = QUICKPOLL_INTERVAL * 1000;  
+	else                 v.tv_usec = QUICKPOLL_INTERVAL * 1000;
 
 	//int32_t count = v.tv_usec;
 
@@ -1962,11 +1966,11 @@ void Loop::doPoll ( ) {
 
 	//int64_t startTime = gettimeofdatInMillisecondsLocal();
 
- again:
+again:
 
 	//fd_set exceptfds;
-	gbmemcpy ( &readfds, &s_selectMaskRead , sizeof(fd_set) );
-	gbmemcpy ( &writefds, &s_selectMaskWrite , sizeof(fd_set) );
+	gbmemcpy(&readfds, &s_selectMaskRead, sizeof(fd_set));
+	gbmemcpy(&writefds, &s_selectMaskWrite, sizeof(fd_set));
 	//gbmemcpy ( &exceptfds, &s_selectMaskExcept , sizeof(fd_set) );
 
 	// what is the point of fds for writing... its for when we
@@ -1974,7 +1978,7 @@ void Loop::doPoll ( ) {
 	//FD_ZERO ( &writefds );
 	//FD_ZERO ( &exceptfds );
 
-	if ( g_conf.m_logDebugLoop )
+	if (g_conf.m_logDebugLoop)
 		log("loop: in select");
 
 	// used to measure cpu usage. sigalarm needs to know if we are
@@ -1998,25 +2002,25 @@ void Loop::doPoll ( ) {
 	//   then when running disableTimer() above and we don't get
 	//   any EINTRs... can we mask those out here? it only seems to be
 	//   the SIGALRMs not the SIGVTALRMs that interrupt us.
-	n = select (MAX_NUM_FDS, 
-		    &readfds,
-		    &writefds,
-		    NULL,//&exceptfds,
-		    &v );
+	n = select(MAX_NUM_FDS,
+		&readfds,
+		&writefds,
+		NULL,//&exceptfds,
+		&v);
 
 	g_inWaitState = false;
 
-	if ( n >= 0 ) errno = 0;
+	if (n >= 0) errno = 0;
 
-	if ( g_conf.m_logDebugLoop )
+	if (g_conf.m_logDebugLoop)
 		log("loop: out select n=%"INT32" errno=%"INT32" errnomsg=%s "
-		    "ms_wait=%i",
-		    (int32_t)n,(int32_t)errno,mstrerror(errno),
-		    (int)v.tv_sec*1000);
+			"ms_wait=%i",
+			(int32_t)n, (int32_t)errno, mstrerror(errno),
+			(int)v.tv_sec * 1000);
 
-	if ( n < 0 ) { 
+	if (n < 0) {
 		// valgrind
-		if ( errno == EINTR ) {
+		if (errno == EINTR) {
 			// got it. if we get a sig alarm or vt alarm or
 			// SIGCHLD (from Threads.cpp) we end up here.
 			//log("loop: got errno=%"INT32"",(int32_t)errno);
@@ -2030,19 +2034,19 @@ void Loop::doPoll ( ) {
 			// wait less this time around
 			//v.tv_usec = count;
 			// if shutting down was it a sigterm ?
-			if ( m_shutdown ) goto again;
+			if (m_shutdown) goto again;
 			// handle returned threads for niceness 0
 			//if ( g_threads.m_needsCleanup )
-			g_threads.timedCleanUp(-3,0); // 3 ms
-			if ( m_inQuickPoll ) goto again;
+			g_threads.timedCleanUp(-3, 0); // 3 ms
+			if (m_inQuickPoll) goto again;
 			// high niceness threads
 			//if ( g_threads.m_needsCleanup )
-			g_threads.timedCleanUp(-4,MAX_NICENESS); //3 ms
+			g_threads.timedCleanUp(-4, MAX_NICENESS); //3 ms
 
 			goto again;
 		}
 		g_errno = errno;
-		log("loop: select: %s.",strerror(g_errno));
+		log("loop: select: %s.", strerror(g_errno));
 		return;
 	}
 
@@ -2053,24 +2057,24 @@ void Loop::doPoll ( ) {
 	// }
 
 	// debug msg
-	if ( g_conf.m_logDebugLoop) 
-		logf(LOG_DEBUG,"loop: Got %"INT32" fds waiting.",n);
+	if (g_conf.m_logDebugLoop)
+		logf(LOG_DEBUG, "loop: Got %"INT32" fds waiting.", n);
 
-	for ( int32_t i = 0 ; 
-	      (g_conf.m_logDebugLoop || g_conf.m_logDebugTcp) && i<MAX_NUM_FDS;
-	      i++){
-	  	// continue if not set for reading
-		 if ( FD_ISSET ( i , &readfds ) )
-			 log("loop: fd=%"INT32" is on for read qp=%i",i,
-			     (int)m_inQuickPoll);
-	 	if ( FD_ISSET ( i , &writefds ) )
-			log("loop: fd=%"INT32" is on for write qp=%i",i,
-			    (int)m_inQuickPoll);
-	 	// if ( FD_ISSET ( i , &exceptfds ) )
-	 	// 	log("loop: fd %"INT32" is on for except",i);
-	  	// debug
+	for (int32_t i = 0;
+		(g_conf.m_logDebugLoop || g_conf.m_logDebugTcp) && i < MAX_NUM_FDS;
+		i++) {
+		// continue if not set for reading
+		if (FD_ISSET(i, &readfds))
+			log("loop: fd=%"INT32" is on for read qp=%i", i,
+				(int)m_inQuickPoll);
+		if (FD_ISSET(i, &writefds))
+			log("loop: fd=%"INT32" is on for write qp=%i", i,
+				(int)m_inQuickPoll);
+		// if ( FD_ISSET ( i , &exceptfds ) )
+		// 	log("loop: fd %"INT32" is on for except",i);
+		// debug
 
-	 	// if niceness is not -1, handle it below
+		// if niceness is not -1, handle it below
 	}
 
 	// . reset the need to poll flag if everything is caught up now
@@ -2086,11 +2090,11 @@ void Loop::doPoll ( ) {
 	//processedOne = false;
 
 	// a Slot ptr
-	Slot *s;
+	Slot* s;
 	g_now = gettimeofdayInMilliseconds();
 	/*
 	// call g_udpServer sig handlers for niceness -1 here
-	for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {	
+	for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {
 		// continue if not set for reading
 		if ( ! FD_ISSET ( i , &readfds ) ) continue;
 		// if niceness is not -1, handle it below
@@ -2112,78 +2116,78 @@ void Loop::doPoll ( ) {
 	//g_threads.timedCleanUp(2/*ms*/);
 
 	// handle returned threads for niceness 0
-	g_threads.timedCleanUp(-3,0); // 3 ms
+	g_threads.timedCleanUp(-3, 0); // 3 ms
 
 
 	bool calledOne = false;
 
 	// now keep this fast, too. just check fds we need to.
-	for ( int32_t i = 0 ; i < s_numReadFds ; i++ ) {
-		if ( n == 0 ) break;
+	for (int32_t i = 0; i < s_numReadFds; i++) {
+		if (n == 0) break;
 		int fd = s_readFds[i];
-	 	s = m_readSlots  [ fd ];
-	 	// if niceness is not 0, handle it below
-		if ( s && s->m_niceness > 0 ) continue;
+		s = m_readSlots[fd];
+		// if niceness is not 0, handle it below
+		if (s && s->m_niceness > 0) continue;
 		// must be set
-		if ( ! FD_ISSET ( fd , &readfds ) ) continue;
-		if ( g_conf.m_logDebugLoop || g_conf.m_logDebugTcp )
+		if (!FD_ISSET(fd, &readfds)) continue;
+		if (g_conf.m_logDebugLoop || g_conf.m_logDebugTcp)
 			log("loop: calling cback0 niceness=%"INT32" "
-			    "fd=%i", s->m_niceness , fd );
+				"fd=%i", s->m_niceness, fd);
 		calledOne = true;
-		callCallbacks_ass (true,fd, g_now,0);//read?
+		callCallbacks_ass(true, fd, g_now, 0);//read?
 	}
-	for ( int32_t i = 0 ; i < s_numWriteFds ; i++ ) {
-		if ( n == 0 ) break;
+	for (int32_t i = 0; i < s_numWriteFds; i++) {
+		if (n == 0) break;
 		int fd = s_writeFds[i];
-	 	s = m_writeSlots  [ fd ];
-	 	// if niceness is not 0, handle it below
-		if ( s && s->m_niceness > 0 ) continue;
+		s = m_writeSlots[fd];
+		// if niceness is not 0, handle it below
+		if (s && s->m_niceness > 0) continue;
 		// fds are always ready for writing so take this out.
-		if ( ! FD_ISSET ( fd , &writefds ) ) continue;
-		if ( g_conf.m_logDebugLoop || g_conf.m_logDebugTcp )
+		if (!FD_ISSET(fd, &writefds)) continue;
+		if (g_conf.m_logDebugLoop || g_conf.m_logDebugTcp)
 			log("loop: calling wcback0 niceness=%"INT32" fd=%i"
-			    , s->m_niceness , fd );
+				, s->m_niceness, fd);
 		calledOne = true;
-		callCallbacks_ass (false,fd, g_now,0);//false=forRead?
+		callCallbacks_ass(false, fd, g_now, 0);//false=forRead?
 	}
 
 	// handle returned threads for niceness 0
-	g_threads.timedCleanUp(-3,0); // 3 ms
+	g_threads.timedCleanUp(-3, 0); // 3 ms
 
 	//
 	// the stuff below is not super urgent, do not do if in quickpoll
 	//
-	if ( m_inQuickPoll ) return;
+	if (m_inQuickPoll) return;
 
 	// now for lower priority fds
-	for ( int32_t i = 0 ; i < s_numReadFds ; i++ ) {
-		if ( n == 0 ) break;
+	for (int32_t i = 0; i < s_numReadFds; i++) {
+		if (n == 0) break;
 		int fd = s_readFds[i];
-	 	s = m_readSlots  [ fd ];
-	  	// if niceness is <= 0 we did it above
-		if ( s && s->m_niceness <= 0 ) continue;
+		s = m_readSlots[fd];
+		// if niceness is <= 0 we did it above
+		if (s && s->m_niceness <= 0) continue;
 		// must be set
-		if ( ! FD_ISSET ( fd , &readfds ) ) continue;
-		if ( g_conf.m_logDebugLoop || g_conf.m_logDebugTcp )
+		if (!FD_ISSET(fd, &readfds)) continue;
+		if (g_conf.m_logDebugLoop || g_conf.m_logDebugTcp)
 			log("loop: calling cback1 niceness=%"INT32" "
-			    "fd=%i", s->m_niceness , fd );
+				"fd=%i", s->m_niceness, fd);
 		calledOne = true;
-		callCallbacks_ass (true,fd, g_now,1);//read?
+		callCallbacks_ass(true, fd, g_now, 1);//read?
 	}
 
-	for ( int32_t i = 0 ; i < s_numWriteFds ; i++ ) {
-		if ( n == 0 ) break;
-	 	int fd = s_writeFds[i];
-	  	s = m_writeSlots  [ fd ];
-	  	// if niceness is <= 0 we did it above
-	 	if ( s && s->m_niceness <= 0 ) continue;
-	 	// must be set
-	 	if ( ! FD_ISSET ( fd , &writefds ) ) continue;
-		if ( g_conf.m_logDebugLoop || g_conf.m_logDebugTcp )
+	for (int32_t i = 0; i < s_numWriteFds; i++) {
+		if (n == 0) break;
+		int fd = s_writeFds[i];
+		s = m_writeSlots[fd];
+		// if niceness is <= 0 we did it above
+		if (s && s->m_niceness <= 0) continue;
+		// must be set
+		if (!FD_ISSET(fd, &writefds)) continue;
+		if (g_conf.m_logDebugLoop || g_conf.m_logDebugTcp)
 			log("loop: calling wcback1 niceness=%"INT32" "
-			    "fd=%i", s->m_niceness , fd );
+				"fd=%i", s->m_niceness, fd);
 		calledOne = true;
-		callCallbacks_ass (false,fd, g_now,1);//forread?
+		callCallbacks_ass(false, fd, g_now, 1);//forread?
 	}
 
 	//if ( ! calledOne )
@@ -2243,7 +2247,7 @@ void Loop::doPoll ( ) {
 	// }
 
 	// handle returned threads for all other nicenesses
-	g_threads.timedCleanUp(-4,MAX_NICENESS); // 4 ms
+	g_threads.timedCleanUp(-4, MAX_NICENESS); // 4 ms
 
 	// set time
 	g_now = gettimeofdayInMilliseconds();
@@ -2252,40 +2256,40 @@ void Loop::doPoll ( ) {
 	int32_t elapsed = g_now - s_lastTime;
 	// if someone changed the system clock on us, this could be negative
 	// so fix it! otherwise, times may NEVER get called in our lifetime
-	if ( elapsed < 0 ) elapsed = m_minTick;
-	if ( elapsed >= m_minTick ) {
+	if (elapsed < 0) elapsed = m_minTick;
+	if (elapsed >= m_minTick) {
 		// MAX_NUM_FDS is the fd for sleep callbacks
-		callCallbacks_ass ( true , MAX_NUM_FDS , g_now );
+		callCallbacks_ass(true, MAX_NUM_FDS, g_now);
 		// note the last time we called them
 		s_lastTime = g_now;
 		// handle returned threads for all other nicenesses
-		g_threads.timedCleanUp(-4,MAX_NICENESS); // 4 ms
+		g_threads.timedCleanUp(-4, MAX_NICENESS); // 4 ms
 	}
 	// debug msg
-	if ( g_conf.m_logDebugLoop ) log(LOG_DEBUG,"loop: Exited doPoll.");
+	if (g_conf.m_logDebugLoop) log(LOG_DEBUG, "loop: Exited doPoll.");
 }
 
 // for FileState class
 #include "BigFile.h"
 
 // call this when you don't want to be interrupted
-void Loop::interruptsOff ( ) {
+void Loop::interruptsOff() {
 	// . debug
 	// . until we have our own malloc, don't turn them on
-	if ( ! g_isHot ) return; 
+	if (!g_isHot) return;
 	// bail in already in a sig handler
-	if ( g_inSigHandler ) return;
+	if (g_inSigHandler) return;
 	// if interrupts already off bail
-	if ( ! g_interruptsOn ) return;
+	if (!g_interruptsOn) return;
 	// looks like sigprocmask is destructive on our sigset
 	sigset_t rtmin;
-	sigemptyset ( &rtmin );
+	sigemptyset(&rtmin);
 	// tmp debug hack, so we don't have real time signals now...
 // #ifndef _VALGRIND_
 // 	sigaddset   ( &rtmin, GB_SIGRTMIN );
 // #endif
 	// block it
-	if ( sigprocmask ( SIG_BLOCK  , &rtmin, 0 ) < 0 ) {
+	if (sigprocmask(SIG_BLOCK, &rtmin, 0) < 0) {
 		log("loop: interruptsOff: sigprocmask: %s.", strerror(errno));
 		return;
 	}
@@ -2294,17 +2298,17 @@ void Loop::interruptsOff ( ) {
 	//log("interruptsOff");
 }
 // and this to resume being interrupted
-void Loop::interruptsOn ( ) {
+void Loop::interruptsOn() {
 	// . debug
 	// . until we have our own malloc, don't turn them on
-	if ( ! g_isHot ) return; 
+	if (!g_isHot) return;
 	// bail in already in a sig handler
-	if ( g_inSigHandler ) return;
+	if (g_inSigHandler) return;
 	// if interrupts already on bail
-	if ( g_interruptsOn ) return;
+	if (g_interruptsOn) return;
 	// looks like sigprocmask is destructive on our sigset
 	sigset_t rtmin;
-	sigemptyset ( &rtmin );
+	sigemptyset(&rtmin);
 	// uncomment this next line to easily disable real time interrupts
 // #ifndef _VALGRIND_
 // 	sigaddset   ( &rtmin, GB_SIGRTMIN );
@@ -2314,7 +2318,7 @@ void Loop::interruptsOn ( ) {
 	// let everyone know before we are vulnerable to an interrupt
 	g_interruptsOn = true;
 	// unblock it so interrupts flow
-	if ( sigprocmask ( SIG_UNBLOCK, &rtmin, 0 ) < 0 ) {
+	if (sigprocmask(SIG_UNBLOCK, &rtmin, 0) < 0) {
 		log("loop: interruptsOn: sigprocmask: %s.", strerror(errno));
 		return;
 	}
@@ -2341,7 +2345,7 @@ void sigHandlerRT ( int x , siginfo_t *info , void *v ) {
 	// a signal?
 	//g_inSigHandler = true;
 	// debug msg
-	//if ( g_conf.m_timingDebugEnabled ) 
+	//if ( g_conf.m_timingDebugEnabled )
 	//	log("sigHandlerRT entered");
 	// save errno
 	int32_t old_gerrno = g_errno;
@@ -2352,7 +2356,7 @@ void sigHandlerRT ( int x , siginfo_t *info , void *v ) {
 	errno   = old_errno;
 	g_errno = old_gerrno;
 	// debug msg
-	//if ( g_conf.m_timingDebugEnabled ) 
+	//if ( g_conf.m_timingDebugEnabled )
 	//	log("sigHandlerRT exited");
 	// revert
 	g_inSigHandler = false;
@@ -2387,13 +2391,13 @@ void sigHandler_r ( int x , siginfo_t *info , void *v ) {
 	// clear g_errno before callling handlers
 	g_errno = 0;
 	// info->si_band values:
-	//#define POLLIN      0x0001    // There is data to read 
-        //#define POLLPRI     0x0002    // There is urgent data to read 
-	//#define POLLOUT     0x0004    // Writing now will not block 
-	//#define POLLERR     0x0008    // Error condition 
-	//#define POLLHUP     0x0010    // Hung up 
-	//#define POLLNVAL    0x0020    // Invalid request: fd not open 
-	int band = info->si_band;  
+	//#define POLLIN      0x0001    // There is data to read
+		//#define POLLPRI     0x0002    // There is urgent data to read
+	//#define POLLOUT     0x0004    // Writing now will not block
+	//#define POLLERR     0x0008    // Error condition
+	//#define POLLHUP     0x0010    // Hung up
+	//#define POLLNVAL    0x0020    // Invalid request: fd not open
+	int band = info->si_band;
 	// fprintf(stderr,"got fd         = %i\n", fd   );
 	// fprintf(stderr,"got band       = %i\n", band );
 	// fprintf(stderr,"band & POLLIN  = %i\n", band & POLLIN  );
@@ -2421,7 +2425,7 @@ void sigHandler_r ( int x , siginfo_t *info , void *v ) {
 		// get the value
 		//int val = (int)(info->si_value.sival_int);
 		// debug msg
-		//if ( g_conf.m_logDebugThreadEnabled ) 
+		//if ( g_conf.m_logDebugThreadEnabled )
 		//	log("Loop: got thread done signal");
 		// check thread queue for any threads that completed
 		// so we can call their callbacks and remove them
@@ -2430,7 +2434,7 @@ void sigHandler_r ( int x , siginfo_t *info , void *v ) {
 // 		//		g_threads.cleanUp ( (ThreadEntry *)val , x);// max niceness
 // 		g_threads.cleanUp ( (ThreadEntry *)val , 1000);//max niceness
 
-// 		// launch any threads in waiting since this sig was 
+// 		// launch any threads in waiting since this sig was
 // 		// from a terminating one
 // 		g_threads.launchThreads();
 	}
@@ -2445,13 +2449,13 @@ void sigHandler_r ( int x , siginfo_t *info , void *v ) {
 	// . TODO: bitch if no callback to handle the read!!!!!!!
 	// . NOTE: when it's connected it sets both POLLIN and POLLOUT
 	// . NOTE: or when a socket is trying to connect to it if it's listener
-	//if      ( band & (POLLIN | POLLOUT) == (POLLIN | POLLOUT) ) 
+	//if      ( band & (POLLIN | POLLOUT) == (POLLIN | POLLOUT) )
 	// g_loop.callCallbacks_ass ( true , fd ); // for reading
 	if ( band & POLLIN  ) {
 		// keep stats on this now since some linuxes dont work right
 		g_stats.m_readSignals++;
 		//log("Loop: read %"INT64" fd=%i",gettimeofdayInMilliseconds(),fd);
-		g_loop.callCallbacks_ass ( true  , fd ); 
+		g_loop.callCallbacks_ass ( true  , fd );
 	}
 	else if ( band & POLLPRI ) {
 		// keep stats on this now since some linuxes dont work right
@@ -2463,20 +2467,20 @@ void sigHandler_r ( int x , siginfo_t *info , void *v ) {
 		// keep stats on this now since some linuxes dont work right
 		g_stats.m_writeSignals++;
 		//log("Loop: write %"INT64" fd=%i",gettimeofdayInMilliseconds(),fd)
-		g_loop.callCallbacks_ass ( false , fd ); 
+		g_loop.callCallbacks_ass ( false , fd );
 	}
 	// fix qainject1() test with this
 	else if ( band & POLLERR )  {
 		log(LOG_INFO,"loop: got POLLERR on fd=%i.",fd);
 	}
-	//g_loop.callCallbacks_ass ( false , fd ); 
+	//g_loop.callCallbacks_ass ( false , fd );
 	// this happens if the socket closes abruptly
 	// or out of band data, etc... see "man 2 poll" for more info
-	else if ( band & POLLHUP ) { 
+	else if ( band & POLLHUP ) {
 		// i see these all the time for fd == 0, so don't print it
-		if ( fd != 0 ) 
+		if ( fd != 0 )
 			log(LOG_INFO,"loop: Received hangup on fd=%i.",fd);
-		g_errno = ESOCKETCLOSED; 
+		g_errno = ESOCKETCLOSED;
 		g_loop.callCallbacks_ass ( false , fd );
 	}
 // end ifdef CYGWIN
@@ -2485,7 +2489,7 @@ void sigHandler_r ( int x , siginfo_t *info , void *v ) {
 */
 
 /*
-#if 1 || (LINUX_VERSION_CODE < KERNEL_VERSION(2,3,31)) 
+#if 1 || (LINUX_VERSION_CODE < KERNEL_VERSION(2,3,31))
 struct pollfd pfd;
 printf ("Trying fallback poll()\n");
 pfd.fd = info.si_fd;
@@ -2500,26 +2504,26 @@ info.si_band = pfd.revents;
 
 
 void Loop::startBlockedCpuTimer() {
-	
-	if(m_inQuickPoll) return;
+
+	if (m_inQuickPoll) return;
 	m_lastPollTime = gettimeofdayInMilliseconds();
 	g_profiler.resetLastQpoll();
 }
 
 
 void Loop::quickPoll(int32_t niceness, const char* caller, int32_t lineno) {
-	if ( ! g_conf.m_useQuickpoll ) return;
+	if (!g_conf.m_useQuickpoll) return;
 
 	// convert
 	//if ( niceness > 1 ) niceness = 1;
 
 	// sometimes we init HashTableX's with a niceness of 0 even though
 	// g_niceness is 1. so prevent a core below.
-	if ( niceness == 0 ) return;
+	if (niceness == 0) return;
 
 	// sanity check
-	if ( g_niceness > niceness ) { 
-		log(LOG_WARN,"loop: niceness mismatch!");
+	if (g_niceness > niceness) {
+		log(LOG_WARN, "loop: niceness mismatch!");
 		//char *xx=NULL;*xx=0; }
 	}
 
@@ -2529,21 +2533,21 @@ void Loop::quickPoll(int32_t niceness, const char* caller, int32_t lineno) {
 	// if we are niceness 1 and not in a handler, make it niceness 2
 	// so the handlers can be answered and we don't slow other
 	// spiders down and we don't slow turks' injections down as much
-	if ( ! g_inHandler && niceness == 1 ) niceness = 2;
+	if (!g_inHandler && niceness == 1) niceness = 2;
 
 	// reset this
 	g_missedQuickPolls = 0;
 
-	if(m_inQuickPoll) {
-		log(LOG_WARN, 
-		    "admin: tried to quickpoll from inside quickpoll");
+	if (m_inQuickPoll) {
+		log(LOG_WARN,
+			"admin: tried to quickpoll from inside quickpoll");
 		// this happens when handleRequest3f is called from
 		// a quickpoll and it deletes a collection and BigFile::close
 		// calls ThreadQueue::removeThreads and Msg3::doneScanning()
 		// has niceness 2 and calls quickpoll again!
 		return;
 		//if(g_conf.m_quickpollCoreOnError) { 
-		char*xx=NULL;*xx=0;
+		char* xx = NULL;*xx = 0;
 		//		}
 		//		else return;
 	}
@@ -2552,44 +2556,20 @@ void Loop::quickPoll(int32_t niceness, const char* caller, int32_t lineno) {
 	int64_t now2 = g_now;
 	int32_t gerrno = g_errno;
 
-	/*
-	if(g_conf.m_profilingEnabled){
-		now = gettimeofdayInMilliseconds();
-		took = now - m_lastPollTime;
-
-		g_profiler.pause(caller, lineno, took);
-
-		if(took > g_conf.m_minProfThreshold) {
-			if(g_conf.m_dynamicPerfGraph) {
-				g_stats.addStat_r ( 0      , 
-						    m_lastPollTime, 
-						    now,
-						    0 ,
-						    STAT_GENERIC,
-						    caller);
-			}
-			if(g_conf.m_sequentialProfiling) {
-				log(LOG_TIMING, "admin: quickpolling from %s "
-				    "after %"INT64" ms", caller, took);
-			}
-		}
-	}
-	*/
-
 	g_numQuickPolls++;
 
 	m_inQuickPoll = true;
 
 	// doPoll() will since we are in quickpoll and only call niceness 0
 	// callbacks for all the fds. and it will set the timer to 0.
-	doPoll ();
+	doPoll();
 
 	/*
 	//g_udpServer2.process_ass ( g_now , 0 );
- 	g_udpServer.process_ass  ( g_now , 0 );
+	g_udpServer.process_ass  ( g_now , 0 );
 	g_threads.timedCleanUp( 100 , 0 ); // ms ms, niceness 0
 	int32_t n;
-	
+
 	fd_set readfds;
 	fd_set writefds;
 	fd_set exceptfds;
@@ -2599,7 +2579,7 @@ void Loop::quickPoll(int32_t niceness, const char* caller, int32_t lineno) {
 	FD_ZERO ( &exceptfds );
 	timeval v;
 	v.tv_sec  = 0;
-	v.tv_usec = 0; 
+	v.tv_usec = 0;
 	// set descriptors we should watch
 	for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {
 		if ( m_readSlots [i] && m_readSlots[i]->m_niceness == 0 ) {
@@ -2619,7 +2599,7 @@ void Loop::quickPoll(int32_t niceness, const char* caller, int32_t lineno) {
 	Slot *s;
 	if ( n <= 0 ) goto theend;
 
-	for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {	
+	for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {
 		// continue if not set for reading
 		if ( ! FD_ISSET ( i , &readfds ) ) continue;
 		// if niceness is not -1, handle it below
@@ -2663,9 +2643,9 @@ void Loop::quickPoll(int32_t niceness, const char* caller, int32_t lineno) {
 	// . MAX_NUM_FDS is the fd for sleep callbacks
 	// . specify a niceness of 0 so only niceness 0 sleep callbacks
 	//   will be called
-	callCallbacks_ass ( true , MAX_NUM_FDS , now , 0 );
+	callCallbacks_ass(true, MAX_NUM_FDS, now, 0);
 	// sanity check
-	if ( g_niceness > niceness ) { 
+	if (g_niceness > niceness) {
 		log("loop: niceness mismatch");
 		//char*xx=NULL;*xx=0; }
 	}
@@ -2691,7 +2671,7 @@ void Loop::quickPoll(int32_t niceness, const char* caller, int32_t lineno) {
 
 
 void Loop::canQuickPoll(int32_t niceness) {
-	if(niceness && !m_shutdown) m_canQuickPoll = true;
+	if (niceness && !m_shutdown) m_canQuickPoll = true;
 	else         m_canQuickPoll = false;
 }
 
@@ -2702,18 +2682,18 @@ void Loop::disableTimer() {
 	setitimer(ITIMER_REAL, &m_noInterrupt, NULL);
 }
 
-int gbsystem(char *cmd ) {
+int gbsystem(char* cmd) {
 	// if ( ! g_conf.m_runAsDaemon )
 	// 	setitimer(ITIMER_REAL, &g_loop.m_noInterrupt, NULL);
 	g_loop.disableTimer();
-	log("gb: running system(\"%s\")",cmd);
+	log("gb: running system(\"%s\")", cmd);
 	int ret = system(cmd);
 	g_loop.enableTimer();
 	// if ( ! g_conf.m_runAsDaemon )
 	// 	setitimer(ITIMER_REAL, &g_loop.m_realInterrupt, NULL);
 	return ret;
 }
-	
+
 
 void Loop::enableTimer() {
 	m_canQuickPoll = true;
@@ -2724,30 +2704,30 @@ void Loop::enableTimer() {
 
 
 FILE* gbpopen(char* cmd) {
-    // Block everything from interrupting this system call because
-    // if there is an alarm or a child thread crashes (pdftohtml)
-    // then this will hang forever.
-    // We should actually write our own popen so that we do
-    // fork, close all fds in the child, then exec.  
-    // These child processes can hold open the http server and
-    // prevent a new gb from running even after it has died.
+	// Block everything from interrupting this system call because
+	// if there is an alarm or a child thread crashes (pdftohtml)
+	// then this will hang forever.
+	// We should actually write our own popen so that we do
+	// fork, close all fds in the child, then exec.  
+	// These child processes can hold open the http server and
+	// prevent a new gb from running even after it has died.
 	g_loop.disableTimer();
 
 	sigset_t oldSigs;
 	sigset_t sigs;
-	sigfillset ( &sigs );	
+	sigfillset(&sigs);
 
-	if ( sigprocmask ( SIG_BLOCK  , &sigs, &oldSigs ) < 0 ) {
-        log("build: had error blocking signals for popen");
-    }
-	FILE* fh = popen(cmd, "r");            
-    
-	if ( sigprocmask ( SIG_SETMASK  , &oldSigs, NULL ) < 0 ) {
-        log("build: had error unblocking signals for popen");
-    }
+	if (sigprocmask(SIG_BLOCK, &sigs, &oldSigs) < 0) {
+		log("build: had error blocking signals for popen");
+	}
+	FILE* fh = popen(cmd, "r");
+
+	if (sigprocmask(SIG_SETMASK, &oldSigs, NULL) < 0) {
+		log("build: had error unblocking signals for popen");
+	}
 
 	g_loop.enableTimer();
-    return fh;
+	return fh;
 }
 
 
