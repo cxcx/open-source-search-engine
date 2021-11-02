@@ -222,37 +222,6 @@ bool Msg3::readList  ( char           rdbId         ,
 	// get base, returns NULL and sets g_errno to ENOCOLLREC on error
 	RdbBase *base; if (!(base=getRdbBase(m_rdbId,m_collnum))) return true;
 
-	// if caller specified exactly
-	/*
-	m_syncPoint = syncPoint;
-	if ( syncPoint != -1 && syncPoint != 0 ) {
-		// . store them all
-		// . what if we merged one of these files (or are merging)???
-		// . then sync class should not discard syncpoints until no
-		//   longer syncing and we'll know about it
-		// . this should compensate for merges by including any files
-		//   that are merging a file in m_fileNums
-		m_numFileNums = g_sync.getFileNums ( m_rdbId       ,
-						     m_coll        ,
-						     m_syncPoint   ,
-						     m_fileNums    , 
-						     MAX_RDB_FILES );
-		log("NOOOOOO. we do not alloc if we go to skip!!");
-		char *xx = NULL; *xx = 0;
-		// bring back the comment below... i removed it because i added
-		// "int32_t chunk" et al below and didn't want to move them.
-		//if ( m_numFileNums > 0 ) goto skip;
-		log("net: Trying to read data in %s from files generated after"
-		    " a sync point %"UINT64" in \"sync\" file, but none found.",
-		    base->m_dbname,m_syncPoint);
-		return true;
-	}
-	// should we read all?
-	if ( m_syncPoint == 0 ) {
-		numFiles     = -1;
-		startFileNum =  0;
-	}
-	*/
 
 	// store the file numbers in the array, these are the files we read
 	m_numFileNums = 0;
@@ -536,28 +505,10 @@ bool Msg3::readList  ( char           rdbId         ,
 					&p1            , 
 					&p2            ,
 					NULL           );
-		//if ( p1 != p1c || p2 != p2c ) {
-		//	fprintf(stderr,"Msg3::bad page range\n");
-		//	sleep(50000);
-		//}
-		// sanity check, each endpg's key should be > endKey
-		//if ( p2 < maps[fn]->getNumPages() && 
-		//     maps[fn]->getKey ( p2 ) <= m_endKey ) {
-		//	fprintf(stderr,"Msg3::bad page range 2\n");
-		//	sleep(50000);
-		//}
-		//#endif
-		//int32_t p1 , p2; 
-		//maps[fn]->getPageRange (startKey,endKey,minRecSizes,&p1,&p2);
+
 		// now get some read info
 		int64_t offset      = maps[fn]->getAbsoluteOffset ( p1 );
 		int32_t      bytesToRead = maps[fn]->getRecSizes ( p1, p2, false);
-		// max out the endkey for this list
-		// debug msg
-		//#ifdef _DEBUG_		
-		//if ( minRecSizes == 2000000 ) 
-		//log("Msg3:: reading %"INT32" bytes from file #%"INT32"",bytesToRead,i);
-		//#endif
 		// inc our m_numScans
 		m_numScansStarted++;
 		// . keep stats on our disk accesses
@@ -567,19 +518,11 @@ bool Msg3::readList  ( char           rdbId         ,
 			base->m_rdb->didSeek (             );
 			base->m_rdb->didRead ( bytesToRead );
 		}
-		// . the startKey may be different for each RdbScan class
-		// . RdbLists must have all keys within their [startKey,endKey]
-		// . therefore set startKey individually from first page in map
-		// . this endKey must be >= m_endKey 
-		// . this startKey must be < m_startKey
-		//key_t startKey = maps[fn]->getKey ( p1 );
-		//key_t endKey   = maps[fn]->getKey ( p2 );
+
 		char startKey2 [ MAX_KEY_BYTES ];
 		char endKey2   [ MAX_KEY_BYTES ];
 		maps[fn]->getKey ( p1 , startKey2 );
 		maps[fn]->getKey ( p2 , endKey2 );
-		//char *startKey = maps[fn]->getKeyPtr ( p1 );
-		//char *endKey   = maps[fn]->getKeyPtr ( p2 );
 		// store in here
 		m_startpg [ i ] = p1;
 		m_endpg   [ i ] = p2;
@@ -754,15 +697,7 @@ bool Msg3::readList  ( char           rdbId         ,
 			    "Ignoring.");
 			g_errno = 0;
 		}
-		// debug msg
-		//fprintf(stderr,"Msg3:: reading %"INT32" bytes from file #%"INT32","
-		//	"done=%"INT32",offset=%"INT64",g_errno=%s,"
-		//	"startKey=n1=%"UINT32",n0=%"UINT64",  "
-		//	"endKey=n1=%"UINT32",n0=%"UINT64"\n",
-		//	bytesToRead,i,(int32_t)done,offset,mstrerror(g_errno),
-		//	m_startKey,m_endKey);
-		//if ( bytesToRead == 0 )
-		//	fprintf(stderr,"shit\n");
+
 		// if it did not block then it completed, so count it
 		if ( done ) m_numScansCompleted++;
 		// break on an error, and remember g_errno in case we block
@@ -775,8 +710,6 @@ bool Msg3::readList  ( char           rdbId         ,
 			break; 
 		}
 	}
-	// debug test
-	//if ( rand() % 100 <= 10 ) m_errno = EIO;
 
 	// if we blocked, return false
 	if ( m_numScansCompleted < m_numScansStarted ) return false;

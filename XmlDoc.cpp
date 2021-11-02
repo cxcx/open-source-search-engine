@@ -33289,24 +33289,14 @@ Msg20Reply *XmlDoc::getMsg20Reply ( ) {
 	// breathe
 	QUICKPOLL ( m_niceness );
 
-	// truncate content length if we should
-	// this was hurting our linkdb lookups! do not do it for those!
-	/*
-	if ( size_utf8Content > cr->m_contentLenMaxForSummary &&
-	// fix for link text fetching!
-	     ! req->m_getLinkText ) {
-		logf(LOG_DEBUG,"summary: truncating doc of len %"INT32" to %"INT32" for "
-		     "generating summary",
-		     size_utf8Content,cr->m_contentLenMaxForSummary);
-		size_utf8Content = cr->m_contentLenMaxForSummary ;
-		// null term just in case
-		ptr_utf8Content[size_utf8Content-1] = '\0';
-	}
-	*/
 	// do they want a summary?
 	if ( m_req->m_numSummaryLines>0 && ! reply->ptr_displaySum ) {
-		char *hsum = getHighlightedSummary();
 
+		/* 取消 summary 高亮, 改为默认summary
+		 * char *hsum = getHighlightedSummary();
+		 */
+
+		char *hsum = getSummary()->getSummary();
 		if ( ! hsum || hsum == (void *)-1 ) return (Msg20Reply *)hsum;
 		//Summary *s = getSummary();
 		//if ( ! s || s == (void *)-1 ) return (Msg20Reply *)s;

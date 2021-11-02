@@ -1175,15 +1175,6 @@ class XmlDoc {
 	SafeBuf m_tmpBuf2;
 
 	SafeBuf m_inlineSectionVotingBuf;
-
-	//HashTableX m_rvt;
-	//Msg17 m_msg17;
-	//char *m_cachedRootVoteRec;
-	//int32_t  m_cachedRootVoteRecSize;
-	//bool  m_triedVoteCache;
-	//bool  m_storedVoteCache;
-	//SafeBuf m_cacheRecBuf;
-
 	SafeBuf m_timeAxisUrl;
 
 	HashTableX m_turkVotingTable;

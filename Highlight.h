@@ -53,11 +53,6 @@ class Highlight {
 
 	bool highlightWords ( Words *words , Matches *m , Query *q=NULL );
 
-	// null terminate and store the highlighted content in m_buf
-	//char    *m_buf ;
-	//int32_t     m_bufLen;
-	//char    *m_bufPtr;
-	//char    *m_bufEnd;
 	class SafeBuf *m_sb;
 
 	//Words    m_words;

@@ -1546,22 +1546,7 @@ void Multicast::closeUpShop ( UdpSlot *slot ) {
 	m_inUse = false;
 	// now call the user callback if it exists
 	if ( m_callback ) {
-		//		uint64_t profilerStart;
-		//uint64_t profilerEnd;
-		//uint64_t statStart,statEnd;
-
-		//if (g_conf.m_profilingEnabled){
-		//	//profilerStart=gettimeofdayInMillisecondsLocal();
-		//	address=(int32_t)m_callback;
-		//	g_profiler.startTimer(address, __PRETTY_FUNCTION__);
-		//}
-		//g_loop.startBlockedCpuTimer();
 		m_callback ( m_state , m_state2 );
-		//if (g_conf.m_profilingEnabled) {
-		//	if(!g_profiler.endTimer(address,__PRETTY_FUNCTION__))
-		//		log(LOG_WARN,"admin: Couldn't add the fn %"INT32"",
-		//		    (int32_t)address);
-		//}
 	}
 }
 
