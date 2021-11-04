@@ -19,58 +19,16 @@ Pages g_pages;
 // error message thingy used by HttpServer.cpp for logging purposes
 char *g_msg;
 
-/*
-class WebPage {
- public:
-	char  m_pageNum;  // see enum array below for this
-	char *m_filename;
-	int32_t  m_flen;
-	char *m_name;     // for printing the links to the pages in admin sect.
-	bool  m_cast;     // broadcast input to all hosts?
-	bool  m_usePost;  // use a POST request/reply instead of GET?
-	                  // used because GET's input is limited to a few k.
-	//char  m_perm;     // permissions, see USER_* #define's below
-	char *m_desc; // page description
-	bool (* m_function)(TcpSocket *s , HttpRequest *r);
-	int32_t  m_niceness;
-};
-*/
-
 // . list of all dynamic pages, their path names, permissions and callback
 //   functions that generate that page
 // . IMPORTANT: these must be in the same order as the PAGE_* enum in Pages.h
 //   otherwise you'll get a malformed error when running
 static int32_t s_numPages = 0;
 static WebPage s_pages[] = {
-
-	/*
-	// dummy pages 
-	{ PAGE_NOHOSTLINKS	, "nohostlinks",   0, "host links", 0, 0, 
-	  "dummy page - if set in the users row then host links will not be "
-	  " shown",
-	  NULL, 0 ,NULL,NULL,
-	  PG_NOAPI},
-
-	{ PAGE_ADMIN           , "colladmin",   0, "master=0", 0, 0,
-	  "dummy page - if set in the users row then user will have master=0 and "
-	  " collection links will be highlighted in red",
-	  NULL, 0 ,NULL,NULL,
-	  PG_NOAPI},  
-
-	//{ PAGE_QUALITY         , "quality",     0, "quality",  0, 0,
-	//  "dummy page - if set in the users row then  \"Quality Control\""
-	//  " will be printed besides the logo for certain pages",
-	//  NULL, 0 ,NULL,NULL,PG_NOAPI},
-	{ PAGE_PUBLIC   	, "public",   0, "public", 0, 0,
-	  "dummy page - if set in the users row then page function is"
-	  " called directly and not through g_parms.setFromRequest", 
-	  NULL, 0 ,NULL,NULL,PG_NOAPI},
-	*/
-
 	// publicly accessible pages
 	{ PAGE_ROOT      , "index.html"    , 0 , "root" , 0 , 0 ,
 	  "search page to query",
-	  sendPageRoot   , 0 ,NULL,NULL,
+	    NULL , 0 ,NULL,NULL,
 	  PG_NOAPI|PG_ACTIVE},
 
 	{ PAGE_RESULTS   , "search"        , 0 , "search" , 0 , 0 ,
@@ -501,22 +459,6 @@ int32_t Pages::getDynamicPageNumber ( HttpRequest *r ) {
 		path = "search"; pathLen = gbstrlen(path); }
 	if ( pathLen == 10 && strncmp ( path , "search.csv" , 10 ) == 0 ) {
 		path = "search"; pathLen = gbstrlen(path); }
-
-	// if it is like /GA/Atlanta then call sendPageResults
-	// and that should be smart enough to set the m_where in
-	// SearchInput.cpp from the path!!
-	// this messes up /qa/* files
-	// if ( path && 
-	//      // "filename" does not start with '/' for some reason
-	//      //path[0] &&
-	//      //path[0] == '/' &&
-	//      path[0] &&
-	//      is_alpha_a(path[0]) &&
-	//      is_alpha_a(path[1]) &&
-	//      pathLen<64 &&
-	//      // "GET /NM"
-	//      (path[2] == '/' || path[2]=='\0' || path[2]==' ') )
-	// 	return PAGE_RESULTS;
 
 	// go down the list comparing the pathname to dynamic page names
 	for ( int32_t i = 0 ; i < s_numPages ; i++ ) {

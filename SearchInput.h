@@ -22,55 +22,55 @@
 
 #define MAX_TOPIC_GROUPS 10
 
-char getFormatFromRequest ( class HttpRequest *hr ) ;
+char getFormatFromRequest(class HttpRequest* hr);
 
 // . parameters used to generate a set of related topics (gigabits)
 // . you can have Msg24 generate multiple sets of related topics in one call
 class TopicGroup {
- public:
-        int32_t m_numTopics;
-        int32_t m_maxTopics;
-        int32_t m_docsToScanForTopics;
-        int32_t m_minTopicScore;
-        int32_t m_maxWordsPerTopic;
-        char m_meta[32];
-        char m_delimeter;
-        bool m_useIdfForTopics;
-        bool m_dedup;
-        int32_t m_minDocCount ;
-        bool m_ipRestrict ;
-        char m_dedupSamplePercent; // -1 means no deduping
-        bool m_topicRemoveOverlaps;
-        int32_t m_topicSampleSize;
-        int32_t m_topicMaxPunctLen;
+public:
+	int32_t m_numTopics;
+	int32_t m_maxTopics;
+	int32_t m_docsToScanForTopics;
+	int32_t m_minTopicScore;
+	int32_t m_maxWordsPerTopic;
+	char m_meta[32];
+	char m_delimeter;
+	bool m_useIdfForTopics;
+	bool m_dedup;
+	int32_t m_minDocCount;
+	bool m_ipRestrict;
+	char m_dedupSamplePercent; // -1 means no deduping
+	bool m_topicRemoveOverlaps;
+	int32_t m_topicSampleSize;
+	int32_t m_topicMaxPunctLen;
 };
 
 class SearchInput {
 
- public:
+public:
 
 	// why provide query here, it is in "hr"
-	bool set ( class TcpSocket *s , class HttpRequest *hr );
+	bool set(class TcpSocket* s, class HttpRequest* hr);
 
-	void  test    ( );
-	key_t makeKey ( ) ;
+	void  test();
+	key_t makeKey();
 
 	// private
-	void setTopicGroups  ( class HttpRequest *r , 
-			       class CollectionRec *cr ) ;
-	bool setQueryBuffers ( class HttpRequest *hr ) ;
+	void setTopicGroups(class HttpRequest* r,
+		class CollectionRec* cr);
+	bool setQueryBuffers(class HttpRequest* hr);
 
 	//void setToDefaults ( class CollectionRec *cr , int32_t niceness ) ;
-	void clear ( int32_t niceness ) ;
+	void clear(int32_t niceness);
 
 	// Msg40 likes to use this to pass the parms to a remote host
-	SearchInput      ( );
-	~SearchInput     ( );
-	void  reset                 ( );
-	int32_t  getStoredSizeForMsg40 ( ) ;
+	SearchInput();
+	~SearchInput();
+	void  reset();
+	int32_t  getStoredSizeForMsg40();
 	//char *serializeForMsg40   ( int32_t *size ) ;
 	//void  deserializeForMsg40 ( char *buf, int32_t bufSize, bool ownBuf ) ;
-	void  copy                  ( class SearchInput *si ) ;
+	void  copy(class SearchInput* si);
 
 	// Language support for Msg40
 	uint8_t detectQueryLanguage(void);
@@ -89,7 +89,7 @@ class SearchInput {
 	// here since the original one is on the stack
 	HttpRequest  m_hr;
 
-	TcpSocket   *m_sock;
+	TcpSocket* m_sock;
 
 	int32_t   m_niceness;                   // msg40
 
@@ -101,7 +101,7 @@ class SearchInput {
 	// reset this
 	int32_t      m_numTopicGroups;   // msg40
 
-	char          *m_displayQuery;     // pts into m_qbuf1
+	char* m_displayQuery;     // pts into m_qbuf1
 	//class Hostdb  *m_hostdb;
 
 	// urlencoded display query
@@ -110,18 +110,18 @@ class SearchInput {
 	// urlencoded display query. everything is compiled into this.
 	SafeBuf m_qe;
 
-	CollectionRec *m_cr;
+	CollectionRec* m_cr;
 
 	// the final compiled query goes here
 	Query          m_q;
 
-	Query         *m_q2;
+	Query* m_q2;
 
 	char           m_isMasterAdmin;
 	char           m_isCollAdmin;
 
 	// these are set from things above
-	TopicGroup     m_topicGroups [ MAX_TOPIC_GROUPS ];// msg40
+	TopicGroup     m_topicGroups[MAX_TOPIC_GROUPS];// msg40
 	SafeBuf m_sbuf1;
 	SafeBuf m_sbuf2;
 
@@ -149,13 +149,13 @@ class SearchInput {
 	//
 	//////
 
-	char *m_coll;
-	char *m_query;
-	
-	char *m_prepend;
+	char* m_coll;
+	char* m_query;
+
+	char* m_prepend;
 
 	// ip address of searcher used for banning abusive IPs "uip"
-	char *m_userIpStr;
+	char* m_userIpStr;
 
 	char  m_showImages;
 
@@ -172,37 +172,37 @@ class SearchInput {
 
 	char   m_spellCheck;
 
-	char  *m_displayMetas;               // msg40
+	char* m_displayMetas;               // msg40
 
 
 	// do not include these in makeKey()
 	int32_t   m_numTopicsToDisplay;
 	int32_t   m_refs_numToDisplay;
-	int32_t   m_rp_numToDisplay;  
+	int32_t   m_rp_numToDisplay;
 
 	// these should all be hashed in makeKey()
 	//char  *m_rp_externalColl;            // msg40
 	//char  *m_importColl;                 // msg40
 
-	char  *m_queryCharset;
+	char* m_queryCharset;
 
-	char  *m_gbcountry;
+	char* m_gbcountry;
 	uint8_t m_country;
 
 	//char  *m_query2;                      
 
 	// advanced query parms
-	char  *m_url; // for url: search
-	char  *m_sites;
-	char  *m_plus;
-	char  *m_minus;
-	char  *m_link;
-	char  *m_quote1;
-	char  *m_quote2;
+	char* m_url; // for url: search
+	char* m_sites;
+	char* m_plus;
+	char* m_minus;
+	char* m_link;
+	char* m_quote1;
+	char* m_quote2;
 
 	// co-branding parms
-	char  *m_imgUrl;
-	char  *m_imgLink;
+	char* m_imgUrl;
+	char* m_imgLink;
 	int32_t   m_imgWidth;
 	int32_t   m_imgHeight;
 
@@ -215,12 +215,12 @@ class SearchInput {
 	float m_sameLangWeight;
 
 	// prefer what lang in the results. it gets a 20x boost. "en" "xx" "fr"
-	char 	      *m_defaultSortLang;
+	char* m_defaultSortLang;
 	// prefer what country in the results. currently unused. support later.
-	char 	      *m_defaultSortCountry;
+	char* m_defaultSortCountry;
 
 	// general parameters
-        char   m_dedupURL;
+	char   m_dedupURL;
 	int32_t   m_percentSimilarSummary;   // msg40
 	char   m_showBanned;
 	char   m_allowPunctInPhrase;
@@ -258,7 +258,7 @@ class SearchInput {
 	// 0 relevance, 1 date, 2 reverse date
 	char   m_sortBy;
 
-	char *m_filetype;
+	char* m_filetype;
 
 	// . related topic (gigabits) parameters
 	// . TODO: prepend m_top_ to these var names
@@ -330,7 +330,7 @@ class SearchInput {
 	int32_t   m_numLinkerWeight;
 	int32_t   m_minLinkersPerImportedResult; // msg40
 	char   m_doQueryHighlighting;         // msg40
-	char  *m_highlightQuery;
+	char* m_highlightQuery;
 	Query  m_hqq;
 	int32_t   m_queryMatchOffsets;
 	int32_t   m_summaryMode;
@@ -375,7 +375,7 @@ class SearchInput {
 	char   m_docIdsOnly;                 // msg40
 
 
-	char  *m_formatStr;
+	char* m_formatStr;
 
 	// this should be part of the key because it will affect the results!
 	char   m_queryExpansion;
@@ -421,7 +421,7 @@ class SearchInput {
 	//char      m_includeHeader;
 	//char      m_queryHighlighting; 
 	//char      m_doDateHighlighting;
-        //int32_t      m_useAdFeedNum;
+		//int32_t      m_useAdFeedNum;
 
 	//char          *m_username;
 

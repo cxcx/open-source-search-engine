@@ -127,7 +127,7 @@ void SearchInput::copy(class SearchInput* si) {
 
 class SearchInput* g_si = NULL;
 
-bool SearchInput::set(TcpSocket* sock, HttpRequest* r) { //, Query *q ) {
+bool SearchInput::set(TcpSocket* sock, HttpRequest* r) { 
 
 	// store list of collection #'s to search here. usually just one.
 	m_collnumBuf.reset();
@@ -634,9 +634,9 @@ bool SearchInput::setQueryBuffers(HttpRequest* hr) {
 
 		m_sbuf1.safeStrcpy(m_quote2);
 		m_sbuf1.safeStrcpy("\"");
-		
+
 		if (m_sbuf2.length()) m_sbuf2.pushChar(' ');
-		
+
 		m_sbuf2.safeStrcpy(m_quote2);
 		m_sbuf2.safeStrcpy("\"");
 	}
@@ -645,7 +645,7 @@ bool SearchInput::setQueryBuffers(HttpRequest* hr) {
 	if (m_plus && m_plus[0]) {
 		char* s = m_plus;
 		char* send = m_plus + gbstrlen(m_plus);
-		
+
 		if (m_sbuf1.length()) m_sbuf1.pushChar(' ');
 		if (m_sbuf2.length()) m_sbuf2.pushChar(' ');
 		while (s < send) {
@@ -710,7 +710,7 @@ bool SearchInput::setQueryBuffers(HttpRequest* hr) {
 
 			m_sbuf1.safeMemcpy(s, s2 - s);
 			m_sbuf2.safeMemcpy(s, s2 - s);
-			
+
 			s = s2 + 1;
 			if (s < send) {
 				if (m_sbuf1.length()) m_sbuf1.pushChar(' ');

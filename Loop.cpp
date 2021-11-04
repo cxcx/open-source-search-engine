@@ -324,8 +324,10 @@ bool Loop::addSlot(bool forReading, int fd, void* state,
 	// . ensure fd not already registered with this callback/state
 	// . prevent dups so you can keep calling register w/o fear
 	Slot* s;
-	if (forReading) s = m_readSlots[fd];
-	else              s = m_writeSlots[fd];
+	if (forReading)
+		s = m_readSlots[fd];
+	else
+		s = m_writeSlots[fd];
 	while (s) {
 		if (s->m_callback == callback &&
 			s->m_state == state) {
@@ -415,40 +417,6 @@ retry9:
 
 	// we use select()/poll now so skip stuff below
 	return true;
-
-	/*
-
- retry8:
-	// tell kernel to send the signal to us when fd is ready for read/write
-	if ( fcntl (fd, F_SETOWN , getpid() ) < 0 ) {
-		g_errno = errno;
-		// valgrind
-		if ( errno == EINTR ) goto retry8;
-		return log("loop: fcntl(F_SETOWN): %s.",strerror(errno));
-	}
-
-	// . tell kernel what signal we'd like to receive when this happens
-	// . additional signal info (including fd) should be available
-#ifdef _POLLONLY_
-	return true;
-#endif
-	// trunc nicess cuz we only get GB_SIGRTMIN+1 to GB_SIGRTMIN+2 signals
-	if ( niceness < -1             ) niceness = -1;
-	if ( niceness >  MAX_NICENESS  ) niceness = MAX_NICENESS;
-	// debug msg
-	//log("fd on niceness = %"INT32" sig = %"INT32"",niceness,GB_SIGRTMIN +1+niceness);
- retry6:
-	// . tell kernel to send this signal when fd is ready for read/write
-	// . reserve GB_SIGRTMIN for unmaskable interrupts (niceness = -1)
-	//   as used by high priority udp server, g_udpServer2
-	if ( fcntl (fd, F_SETSIG , GB_SIGRTMIN + 1 + niceness ) < 0 ) {
-		// valgrind
-		if ( errno == EINTR ) goto retry6;
-		g_errno = errno;
-		return log("loop: fcntl(F_SETSIG): %s.",strerror(errno));
-	}
-	return true;
-	*/
 }
 
 // . if "forReading" is true  call callbacks registered for reading on "fd" 
@@ -457,12 +425,6 @@ retry9:
 void Loop::callCallbacks_ass(bool forReading, int fd, int64_t now,
 	int32_t niceness) {
 
-	// debug msg
-	//if ( g_conf.m_logDebugUdp ) log("callCallbacks_ass start");
-	//if ( fd != 1024 ) {
-	//if (forReading) fprintf(stderr,"got read  sig on fd=%"INT32"\n",(int32_t)fd);
-	//else            fprintf(stderr,"got write sig on fd=%"INT32"\n",(int32_t)fd);
-	//}
 	// save the g_errno to send to all callbacks
 	int saved_errno = g_errno;
 	// get the first Slot in the chain that is waiting on this fd
@@ -497,26 +459,6 @@ void Loop::callCallbacks_ass(bool forReading, int fd, int64_t now,
 		}
 		// update the lastCall timestamp for this slot
 		if (fd == MAX_NUM_FDS) s->m_lastCall = now;
-		// . debug msg
-		// . this is called a lot cuz we process all dgrams/whatever
-		//   in one clump so there's a lot of redundant signals
-		//if ( g_conf.m_logDebugUdp && fd != 1024 ) 
-		//	log("Loop::callCallbacks_ass: for fd=%"INT32" state=%"UINT32"",
-		//	    fd,(int32_t)s->m_state);
-		// do the callback
-		//int32_t address = 0;
-		// 		uint64_t profilerStart,profilerEnd;
-		// 		uint64_t statStart, statEnd;
-		/*
-		if(g_conf.m_profilingEnabled){
-			address=(int32_t)s->m_callback;
-			g_profiler.startTimer(address,
-						  __PRETTY_FUNCTION__);
-			  //profilerStart=gettimeofdayInMillisecondsLocal();
-			  //statStart = gettimeofdayInMilliseconds();
-		}
-		*/
-		//startBlockedCpuTimer();
 
 		// log it now
 		if (g_conf.m_logDebugLoop)
@@ -533,10 +475,6 @@ void Loop::callCallbacks_ass(bool forReading, int fd, int64_t now,
 		// make sure not 2
 		if (g_niceness >= 2) g_niceness = 1;
 
-		// sanity check -- need to be able to quickpoll!
-		//if ( s->m_niceness > 0 && ! g_loop.m_canQuickPoll ) {
-		//	char *xx=NULL;*xx=0; }
-
 		s->m_callback(fd, s->m_state);
 
 		// restore it
@@ -547,19 +485,6 @@ void Loop::callCallbacks_ass(bool forReading, int fd, int64_t now,
 			log(LOG_DEBUG, "loop: exit fd callback fd=%"INT32" "
 				"nice=%"INT32"", (int32_t)fd, (int32_t)s->m_niceness);
 
-		/*
-		if(g_conf.m_profilingEnabled){
-			//profilerEnd =gettimeofdayInMillisecondsLocal();
-			if(!g_profiler.endTimer(address, __PRETTY_FUNCTION__))
-				log(LOG_WARN,"admin: Couldn't add the fn %"INT32"",
-					(int32_t)address);
-		}
-		*/
-		// . debug msg
-		// . this is called a lot cuz we process all dgrams/whatever
-		//   in one clump so there's a lot of redundant signals
-		//if ( g_conf.m_logDebugUdp && fd != 1024 ) 
-		//	log("Loop::callCallbacks_ass: back");
 		// inc the flag
 		numCalled++;
 		// reset g_errno so all callbacks for this fd get same g_errno
@@ -568,29 +493,6 @@ void Loop::callCallbacks_ass(bool forReading, int fd, int64_t now,
 		s = s_callbacksNext;
 	}
 	s_callbacksNext = NULL;
-	// 	int64_t now2 = gettimeofdayInMilliseconds();
-	// 	int64_t took = now2 - startTime;
-
-	// 	if(g_conf.m_profilingEnabled && took > 10) {	
-	// 		g_stats.addStat_r ( 0      , 
-	// 				    startTime, 
-	// 				    now2,
-	// 				    0 ,
-	// 				    STAT_GENERIC,
-	// 				    __PRETTY_FUNCTION__,__LINE__);
-
-
-	// 		if(g_conf.m_sequentialProfiling) {
-	// 			log(LOG_TIMING, 
-	// 			    "admin: loop time to do %"INT32" callbacks: %"INT64" ms", 
-	// 			    numCalled,took);
-	// 		}
-	// 	}
-
-		// log an error if nothing called
-		//if ( ! called ) log("Loop::callCallbacks: no callback for signal");
-		// debug msg
-		//if ( g_conf.m_logDebugUdp ) log("callCallbacks_ass end");
 }
 
 Loop::Loop() {
@@ -1242,61 +1144,7 @@ void sigalrmHandler(int x, siginfo_t* info, void* y) {
 		g_profiler.getStackFrame(0);
 
 	return;
-	/*
-	// . see where we are in the code
-	// . for computing cpu usage
-	// . if idling we will be in sigtimedwait() at the lowest level
-	Host *h = g_hostdb.m_myHost;
-	// if doing injects...
-	if ( ! h ) return;
-	// . i guess this means we were doing something... (otherwise idle)
-	// . this is KINDA like a 100 point sample, but it has crazy decay
-	//   logic built into it
-	if ( ! g_inWaitState )
-		h->m_pingInfo.m_cpuUsage =
-			.99 * h->m_pingInfo.m_cpuUsage + .01 * 100;
-	else
-		h->m_pingInfo.m_cpuUsage =
-			.99 * h->m_pingInfo.m_cpuUsage + .01 * 000;
-
-	if ( g_profiler.m_realTimeProfilerRunning )
-		g_profiler.getStackFrame(0);
-	*/
 }
-
-/*
-static sigset_t s_rtmin;
-
-void maskSignals() {
-
-	static bool s_init = false;
-	if ( ! s_init ) {
-		s_init = true;
-		sigemptyset ( &s_rtmin );
-		// sigaddset ( &s_rtmin, GB_SIGRTMIN     );
-		// sigaddset ( &s_rtmin, GB_SIGRTMIN + 1 );
-		// sigaddset ( &s_rtmin, GB_SIGRTMIN + 2 );
-		// sigaddset ( &s_rtmin, GB_SIGRTMIN + 3 );
-		sigaddset ( &s_rtmin, SIGCHLD );
-		sigaddset ( &s_rtmin, SIGIO   );
-		sigaddset ( &s_rtmin, SIGPIPE );
-	}
-
-	// block it
-	if ( sigprocmask ( SIG_BLOCK  , &s_rtmin, 0 ) < 0 ) {
-		log("loop: maskSignals: sigprocmask: %s.", strerror(errno));
-		return;
-	}
-}
-
-void unmaskSignals() {
-	// unblock it
-	if ( sigprocmask ( SIG_UNBLOCK  , &s_rtmin, 0 ) < 0 ) {
-		log("loop: unmaskSignals: sigprocmask: %s.", strerror(errno));
-		return;
-	}
-}
-*/
 
 // shit, we can't make this realtime!! RdbClose() cannot be called by a
 // real time sig handler
@@ -1321,12 +1169,7 @@ bool Loop::runLoop() {
 	// . set sigs on which sigtimedwait() listens for
 	// . add this signal to our set of signals to watch (currently NONE)
 	sigaddset(&sigs0, SIGPIPE);
-	// #ifndef _VALGRIND_
-	// 	sigaddset ( &sigs0, GB_SIGRTMIN     );
-	// #endif
-	// 	sigaddset ( &sigs0, GB_SIGRTMIN + 1 );
-	// 	sigaddset ( &sigs0, GB_SIGRTMIN + 2 );
-	// 	sigaddset ( &sigs0, GB_SIGRTMIN + 3 );
+
 	sigaddset(&sigs0, SIGCHLD);
 	//sigaddset ( &sigs0, SIGVTALRM    );
 	// . TODO: do we need to mask SIGIO too? (sig queue overflow?)
@@ -1336,14 +1179,6 @@ bool Loop::runLoop() {
 	//   before we would address the excluded high priority signals by 
 	//   calling doPoll()
 	sigaddset(&sigs0, SIGIO);
-	// . set up a time to block waiting for signals to be 1/2 a second
-	// . 1 billion nanoseconds = 1 second
-	//struct timespec t = { 0 /*seconds*/, 500000000 /*nanoseconds*/};
-	//struct timespec t = { 0 /*seconds*/, 10000000 /*nanoseconds*/};
-
-	// grab any high priority sig first
-	//siginfo_t info ;
-	//int32_t sigNum ; //= sigwaitinfo ( &sigs1, &info );
 
 #endif
 	s_lastTime = 0;
@@ -1354,11 +1189,6 @@ bool Loop::runLoop() {
 	g_loop.interruptsOn();
 
 	m_isDoingLoop = true;
-
-	//mdw:enableTimer();
-
-	// . now loop forever waiting for signals
-	// . but every second check for timer-based events
 
 BIGLOOP:
 
@@ -1373,18 +1203,6 @@ BIGLOOP:
 	m_lastPollTime = g_now;
 	m_needsToQuickPoll = false;
 
-
-	/*
-	// test the heartbeat core...
-	if ( g_numAlarms > 100 ) {
-	goo:
-	int32_t j;
-	for ( int32_t k = 0 ; k < 2000000000 ; k++ ) {
-	j=k *5;
-	}
-	goto goo;
-	}
-	*/
 
 	g_errno = 0;
 
@@ -1432,456 +1250,7 @@ BIGLOOP:
 
 	// make compiler happy
 	return 0;
-
-
-
-	//g_udpServer2.sendPoll_ass(true,g_now);
-	//g_udpServer2.process_ass ( g_now );
-	// MDW: see if this works without this junk, if not then
-	// put it back in
-	// seems like never getting signals on redhat 16-core box.
-	// we always process dgrams through this... wtf? try taking
-	// it out and seeing what's happening
-	//g_udpServer.sendPoll_ass (true,g_now);
-	//g_udpServer.process_ass ( g_now );
-	// and dns now too
-	//g_dns.m_udpServer.sendPoll_ass(true,g_now);
-	//g_dns.m_udpServer.process_ass ( g_now );
-
-	// if there was a high niceness  http request within a 
-	// quickpoll, we stored it and now we'll call it here.
-	//g_httpServer.callQueuedPages();
-
-	//g_udpServer.printState ( );
-
-	// if ( g_someAreQueued ) {
-	// 	// assume none are queued now, we may get interrupted
-	// 	// and it may get set back to true
-	// 	g_someAreQueued = false;
-	// 	//g_udpServer2.makeCallbacks_ass (  0 );
-	// 	//g_udpServer2.makeCallbacks_ass (  1 );
-	// }
-
-	//	if ( g_threads.m_needsCleanup ) {
-	//		// bitch about
-	//		static bool s_bitched = false;
-	//		if ( ! s_bitched ) {
-	//			log(LOG_REMIND,"loop: Lost thread signal.");
-	//			s_bitched = true;
-	//		}
-
-
-	// 	}
-	//cleanup and launch threads:
-	//g_threads.printState();
-	//g_threads.timedCleanUp(4, MAX_NICENESS ) ; // 4 ms
-
-	// do it anyway
-	// take this out as well to see if signals are coming in
-	//doPoll();
-
-	//while ( m_needToPoll ) doPoll();
-
-	//#ifndef _POLLONLY_
-
-	// hack
-	//char buffer[100];
-	//if ( recv(27,buffer,99,MSG_PEEK|MSG_DONTWAIT) == 0 ) {
-	//	logf(LOG_DEBUG,"CLOSED CLOSED!!");
-	//}
-	//g_errno = 0;
-
-	//check for pending signals, return right away if none.
-	//then we'll do the low priority stuff while we were 
-	//supposed to be sleeping.
-	//g_inWaitState = true;
-
-	//sigNum = sigtimedwait (&sigs0, &info, s_sigWaitTimePtr ) ;
-
-	//#undef usleep
-
-	// now we just usleep(). an arriving signal will call
-	// sigHandlerQueue_r() then break us out of this sleep.
-	// 10000 microseconds is 10 milliseconds. it should break out 
-	// when a signal comes in just like the sleep() function.
-	//usleep(1000 * 10);
-
-	// reinstate the thing that prevents us from non-chalantly adding
-	// usleeps() which could degrade performance
-	//#define usleep(a) { char *xx=NULL;*xx=0; }
-
-	// if no signal, we just waited 20 ms and nothing happened
-	// why do we need this now? MDW
-	//if ( sigNum == -1 )
-	//	sigalrmHandler( 0,&info,NULL);
-
-	//logf(LOG_DEBUG,"loop: sigNum=%"INT32" signo=%"INT32" alrm=%"INT32"",
-	//     (int32_t)sigNum,info.si_signo,(int32_t)SIGVTALRM);
-	// no longer in a wait state...
-	//g_inWaitState = false;
-
-
-	// int32_t n = MAX_NUM_FDS / 32;
-
-	// // process file descriptor callbacks for file descriptors
-	// // we queued in sigHandlerQueue_r() function above.
-	// // we use an array of 1024 bits like the poll function i guess.
-	// for ( int32_t i = 0 ; i < n ; i++ ) {
-	// 	// this is a 32-bit number
-	// 	if ( ! g_fdReadBits[i] ) continue;
-	// 	// scan the individual bits now
-	// 	for ( int32_t j = 0 ; j < 32 ; j++ ) {
-	// 		// mask mask
-	// 		uint32_t mask = 1 << j;
-	// 		// skip jth bit if not on
-	// 		if ( ! g_fdReadBits[i] & mask ) continue;
-	// 		// block signals for just a sec so we can
-	// 		// clear it now that we've handled it
-	// 		//maskSignals();
-	// 		// clear it
-	// 		g_fdReadBits[i] &= ~mask;
-	// 		// reinstate signals
-	// 		//unmaskSignals();
-	// 		// construct the file descriptor
-	// 		int32_t fd = i*32 + j;
-	// 		// . call all callbacks registered on this fd
-	// 		// . forReading = true
-	// 		callCallbacks_ass ( true , fd , g_now );
-	// 	}
-	// }
-
-	// // do the same thing but for writing now
-	// for ( int32_t i = 0 ; i < n ; i++ ) {
-	// 	// this is a 32-bit number
-	// 	if ( ! g_fdWriteBits[i] ) continue;
-	// 	// scan the individual bits now
-	// 	for ( int32_t j = 0 ; j < 32 ; j++ ) {
-	// 		// mask mask
-	// 		uint32_t mask = 1 << j;
-	// 		// skip jth bit if not on
-	// 		if ( ! g_fdWriteBits[i] & mask ) continue;
-	// 		// block signals for just a sec so we can
-	// 		// clear it now that we've handled it
-	// 		//maskSignals();
-	// 		// clear it
-	// 		g_fdWriteBits[i] &= ~mask;
-	// 		// reinstate signals
-	// 		//unmaskSignals();
-	// 		// construct the file descriptor
-	// 		int32_t fd = i*32 + j;
-	// 		// . call all callbacks registered on this fd. 
-	// 		// . forReading = false.
-	// 		callCallbacks_ass ( false , fd , g_now );
-	// 	}
-	// }
-
-	// int64_t elapsed = g_now - s_lastTime;
-	// // if someone changed the system clock on us, this could be negative
-	// // so fix it! otherwise, times may NEVER get called in our lifetime
-	// if ( elapsed < 0 ) elapsed = m_minTick;
-	// // call this every (about) m_minTicks milliseconds
-	// if ( elapsed >= m_minTick ) {
-	// 	// MAX_NUM_FDS is the fd for sleep callbacks
-	// 	callCallbacks_ass ( true , MAX_NUM_FDS , g_now );
-	// 	// note the last time we called them
-	// 	//g_now = gettimeofdayInMilliseconds();
-	// 	s_lastTime = g_now;
-	// }
-
-	// // call remaining callbacks for udp msgs
-	// if ( g_udpServer.needBottom() )
-	// 	g_udpServer.makeCallbacks_ass ( 2 );
-
-	//if(g_udpServer2.needBottom()) 
-	//	g_udpServer2.makeCallbacks_ass ( 2 );
-
-	// if(gettimeofdayInMillisecondsLocal() - 
-	//    startTime > 10)
-	// 	goto notime;
-
-	// if ( g_conf.m_sequentialProfiling )
-	// 	g_threads.printState();
-
-	// if ( g_threads.m_needsCleanup )
-	// 	// limit to 4ms. cleanup any niceness thread.
-	// 	g_threads.timedCleanUp(4 ,MAX_NICENESS);
-
-// #endif
-
-
-
-	/*
-
-	if ( sigNum <  0 ) {
-		if ( errno == EAGAIN || errno == EINTR ||
-			 errno == EILSEQ || errno == 0 ) {
-			sigNum = 0;
-			errno = 0;
-		}
-		else if ( errno != ENOMEM ) {
-			log("loop: sigtimedwait(): %s.",
-				strerror(errno));
-			continue;
-		}
-	}
-	if ( sigNum == 0 ) {
-		//no signals pending, try to take care of anything
-		// left undone:
-
-		int64_t startTime =gettimeofdayInMillisecondsLocal();
-		if(g_now & 1) {
-			if(g_udpServer.needBottom())
-				g_udpServer.makeCallbacks_ass ( 2 );
-			//if(g_udpServer2.needBottom())
-			//	g_udpServer2.makeCallbacks_ass ( 2 );
-
-			if(gettimeofdayInMillisecondsLocal() -
-			   startTime > 10)
-				goto notime;
-
-			if(g_conf.m_sequentialProfiling)
-				g_threads.printState();
-			if(g_threads.m_needsCleanup)
-				g_threads.timedCleanUp(4 , // ms
-							   MAX_NICENESS);
-		}
-		else {
-			if(g_conf.m_sequentialProfiling)
-				g_threads.printState();
-			if(g_threads.m_needsCleanup)
-				g_threads.timedCleanUp(4 , // ms
-							   MAX_NICENESS);
-
-			if(gettimeofdayInMillisecondsLocal() -
-			   startTime > 10)
-				goto notime;
-
-			if(g_udpServer.needBottom())
-				g_udpServer.makeCallbacks_ass ( 2 );
-			//if(g_udpServer2.needBottom())
-			//	g_udpServer2.makeCallbacks_ass ( 2 );
-		}
-
-	notime:
-		//if we still didn't get all of them cleaned up set
-		//sleep time to none.
-		if(g_udpServer.needBottom() ) {
-			//g_udpServer2.needBottom()) {
-			s_sigWaitTimePtr = &s_sigWaitTime2;
-		}
-		else {
-			//otherwise set it to minTick
-			s_sigWaitTimePtr = &s_sigWaitTime;
-		}
-	}
-	//
-	// we got a signal, process it
-	//
-	else {
-		if   ( info.si_code == SIGIO ) {
-			log("loop: got sigio");
-			m_needToPoll = true;
-		}
-		// handle the signal
-		else sigHandler_r ( 0 , &info , NULL );
-	}
-	*/
-
-	// } while(1)
-
-	/*
- loop:
-	g_now = gettimeofdayInMilliseconds();
-	g_errno = 0;
-
-	// debug msg
-	//if ( g_conf.m_logDebugUdp ) log("Loop: top of loop");
-	// shutdown if we got a critical signal
-	if ( m_shutdown ) {
-		// a msg
-		if      ( m_shutdown == 1 )
-			log("loop: got SIGHUP or SIGTERM.");
-		else if ( m_shutdown == 2 )
-			log("loop: got SIGBAD in thread.");
-		else
-			log("loop: got SIGPWR.");
-		// . turn off interrupts here because it doesn't help to do
-		//   it in the thread
-		// . TODO: turn off signals for sigbadhandler()
-		interruptsOff();
-		// if thread got the signal, just wait for him to save all
-		// Rdbs and then dump core
-		if ( m_shutdown == 2 ) {
-			log("loop: Cored in thread.");
-			//log ("Thread is saving and shutting down urgently.");
-			//while ( 1 == 1 ) sleep (50000);
-				//log("loop: Resuming despite thread crash.");
-			//m_shutdown = 0;
-			//goto resume;
-		}
-		// otherwise, thread did not save, so we must do it
-		log ( "loop: Saving and shutting down urgently.");
-		// sleep forever now so we can call findPtr() function
-		// after calling g_mem.printBreeches(0)
-		log("loop: sleeping forever.");
-		sleep(1000000);
-		// . this will save all Rdb's and dump core
-		// . since "urgent" is true it won't broadcast its shutdown
-		//   to all hosts
-		//#ifndef NO_MAIN
-		//mainShutdown( true ); // urgent?
-		//#endif
-		// urgent = true
-		g_process.shutdown ( true );
-	}
-	// resume:
-	// . get the time now, sigHandlerRT() can use this, cuz gettimeofday()
-	//   ain't async signal safe
-	// . g_now only used in hot udpServer for doing time outs really
-	g_now = gettimeofdayInMilliseconds();
-	// clear any g_errno before possibly calling sendPoll_ass()
-	g_errno = 0;
-	// occasionally call to sendto() will not send a dgram and since we
-	// don't count on receiving ready-to-write signals on our
-	// UdpServer's fds we check them here... it sucks, but hopefully it
-	// fixes the problem of requests not getting fully transmitted
-	// and stagnating in the UdpServer.
-	//if (g_udpServer2.m_needToSend) g_udpServer2.sendPoll_ass(true,g_now);
-	//if (g_udpServer.m_needToSend ) g_udpServer.sendPoll_ass (true,g_now);
-	// . well, sender may be choking even with m_needsToSend var
-	// . i bet we're just losing signals
-	// . TODO: do we lose them when in the handler? if so, send a signal
-	//   so loop will read/write after coming out of the async handler
-	//g_udpServer2.sendPoll_ass(true,g_now);
-	// and also read just in case, too
-	//g_udpServer2.process_ass ( g_now );
-	// and the low priority guy
-	g_udpServer.sendPoll_ass (true,g_now);
-	g_udpServer.process_ass ( g_now );
-	// and dns now too
-	g_dns.m_udpServer.sendPoll_ass(true,g_now);
-	g_dns.m_udpServer.process_ass ( g_now );
-	// tcp server contained in http server has the same problem
-	//if ( g_httpServer.m_tcp.m_numQueued > 0 )
-	//	g_httpServer.m_tcp.writeSocketsInQueue();
-
-	// . likewise, we may have not got the SIGQUEUE signal from when
-	//   UdpServer wanted to call a callback but couldn't because it was
-	//   in an async signal handler, and then at SIGQUEUE sig got lost...
-	// . this should clear those completed transactions we sometimes
-	//   see in the UdpServer socket table
-	if ( g_someAreQueued ) {
-		// assume none are queued now, we may get interrupted
-		// and it may get set back to true
-		g_someAreQueued = false;
-		//g_udpServer2.makeCallbacks_ass (  0 );
-		//g_udpServer2.makeCallbacks_ass (  1 );
-	}
-	// clean up threads in case signal got lost somehow
-	if ( g_threads.m_needsCleanup ) {
-		// bitch about
-		static bool s_bitched = false;
-		if ( ! s_bitched ) {
-			log(LOG_REMIND,"loop: Lost thread signal.");
-			s_bitched = true;
-		}
-		// assume not any more
-		//g_threads.m_needsCleanup = false;
-		// check thread queue for any threads that completed
-		// so we can call their callbacks and remove them
-		g_threads.cleanUp ( 0 , 1000) ; // max niceness
-		// launch any threads in waiting since this sig was
-		// from a terminating one
-		g_threads.launchThreads();
-	}
-	// clear any g_errno before calling sleep callbacks
-	g_errno = 0;
-	// get time difference
-	elapsed = g_now - s_lastTime;
-	// if someone changed the system clock on us, this could be negative
-	// so fix it! otherwise, times may NEVER get called in our lifetime
-	if ( elapsed < 0 ) elapsed = m_minTick;
-	// print log msgs we accumulated while in a signal handler
-	//if ( g_log.needsPrinting() ) g_log.printBuf();
-	// . poll if we need to
-	// . make it a while loop in case a hot sig handler resets m_needToPoll
-	// . CAUTION: WE CAN LOOP IN HERE FOR ~ A MINUTE! I've seen it happen
-	//   when RdbDump was going...
-	while ( m_needToPoll ) doPoll();
-	// call this every (about) 1 second
-	if ( elapsed >= m_minTick ) {
-		// MAX_NUM_FDS is the fd for sleep callbacks
-		callCallbacks_ass ( true , MAX_NUM_FDS , g_now );
-		// note the last time we called them
-		s_lastTime = g_now;
-	}
-	// just do polls if this linux doesn't support this:
-#ifdef _POLLONLY_
-	doPoll();
-#endif
-#ifndef _POLLONLY_
-	// cancel silly errors
-	//if ( g_errno == EAGAIN ) { sigNum = 0; g_errno = 0; }
-	//if ( g_errno == EINTR  ) { sigNum = 0; g_errno = 0; }
-	// if sigNum is valid then handle it
-	//sigHandler_r ( 0 , &info , NULL );
-	// subloop:
-	// debug msg
-
-
-	//if ( g_conf.m_logDebugUdp ) log("Loop: entering sigwait");
-	// . this has a timer resolution of 20ms, I imagine due to how the
-	//   kernel time slices between processes
-	// . this means UdpServer can not effectively have a wait between
-	//   resends of less than 20ms which makes it a little less zippy
-	sigNum = sigtimedwait (&sigs0, &info, &s_sigWaitTime ) ;
-	// cancel silly errors
-	if ( sigNum < 0 && errno == EAGAIN ) {
-		sigNum = 0; errno = 0; }
-	if ( sigNum < 0 && errno == EINTR  ) {
-		sigNum = 0; errno = 0; }
-	// a zero signal is no signal, just a wake up call
-	if ( sigNum == 0 ) goto loop;
-	// sigNum is < 0 on error
-	if ( sigNum <  0 ) {
-		// this error happens on the newer libc for some reason
-		// so ignore it
-		if ( errno != ENOMEM )
-			log("loop: sigtimedwait(): %s.",strerror(errno));
-		goto loop;
-	}
-	// sleep test
-	//log("SLEEPING");
-	//sleep(10);
-	//for ( int64_t i = 0 ; i < 1000000000000LL ; i++ );
-	// . we use g_now in UdpServer.cpp and should make it
-	//   as accurate as possible
-	// . but it's main use is because gettimeofday() is not async sig safe
-	g_now = gettimeofdayInMilliseconds();
-	// debug msg
-	//if ( g_conf.m_logDebugUdp ) log("Loop: processing signal");
-	// call sighandler on other queued signals and continue looping
-	//log("Loop::runLoop:got queued signum=%"INT32"",sigNum);
-	// was it a SIGIO?
-	if   ( info.si_code == SIGIO ) doPoll();
-	// handle the signal
-	else                           sigHandler_r ( 0 , &info , NULL );
-#endif
-	// don't call any time handlers until no more signals waiting
-	//goto subloop;
-	// we need to make g_now as accurate as possible for hot UdpServer...
-	goto loop;
-*/
-
 }
-
-// . the kernel sends a SIGIO signal when the sig queue overflows
-// . we resort to polling the fd's when that happens
-// void sigioHandler ( int x , siginfo_t *info , void *y ) {
-// 	// set the m_needToPoll flag
-// 	g_loop.m_needToPoll = true;
-// 	return;
-// }
 
 //--- TODO: flush the signal queue after polling until done
 //--- are we getting stale signals resolved by flush so we get
@@ -2077,43 +1446,9 @@ again:
 		// if niceness is not -1, handle it below
 	}
 
-	// . reset the need to poll flag if everything is caught up now
-	// . let's take this out for now ... won't this leave some
-	//   threads hanging, they do not always generate SIGIO's if 
-	//   the sigqueue is full!! LET'S SEE... mdw
-	//if ( n == 0 ) {
-	//	// deal with any threads before returning
-	//	g_threads.cleanUp ( NULL , 1000 /*max niceness*/ );
-	//	g_threads.launchThreads();
-	//	return;
-	//}
-	//processedOne = false;
-
 	// a Slot ptr
 	Slot* s;
 	g_now = gettimeofdayInMilliseconds();
-	/*
-	// call g_udpServer sig handlers for niceness -1 here
-	for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {
-		// continue if not set for reading
-		if ( ! FD_ISSET ( i , &readfds ) ) continue;
-		// if niceness is not -1, handle it below
-		s = m_readSlots  [ i  ];
-		if ( s && s->m_niceness != -1 ) continue;
-		callCallbacks_ass (true,i, g_now); // for reading = true
-		processedOne = true;
-	}
-	for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {
-		if ( ! FD_ISSET ( i , &writefds ) ) continue;
-		// if niceness is not -1, handle it below
-		s = m_writeSlots  [ i ];
-		if ( s && s->m_niceness != -1 ) continue;
-		callCallbacks_ass (false,i, g_now); // for reading = false
-		processedOne = true;
-	}
-	*/
-	// handle returned threads for niceness -1
-	//g_threads.timedCleanUp(2/*ms*/);
 
 	// handle returned threads for niceness 0
 	g_threads.timedCleanUp(-3, 0); // 3 ms
@@ -2189,62 +1524,6 @@ again:
 		calledOne = true;
 		callCallbacks_ass(false, fd, g_now, 1);//forread?
 	}
-
-	//if ( ! calledOne )
-	//	log("loop: select returned n=%"INT32" but nothing called.",n);
-
-
-	// . MDW: replaced this with more efficient logic above
-	// . call the callback for each fd we got
-	// . only call callbacks for fds that have a nice of 0 here
-	// for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {	
-	// 	// continue if not set for reading
-	// 	if ( ! FD_ISSET ( i , &readfds ) ) continue;
-	// 	// if niceness is not 0, handle it below
-	// 	s = m_readSlots  [ i /*fd*/ ];
-	// 	if ( s && s->m_niceness != 0 ) continue;
-	// 	callCallbacks_ass (true/*forReading?*/,i, g_now);
-	// 	processedOne = true;
-	// }
-	// // only call callbacks for fds that have a nice of 0 here
-	// for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {
-	// 	if ( ! FD_ISSET ( i , &writefds ) ) continue;
-	// 	// if niceness is not 0, handle it below
-	// 	s = m_writeSlots  [ i /*fd*/ ];
-	// 	if ( s && s->m_niceness != 0 ) continue;
-	// 	callCallbacks_ass (false/*forReading?*/,i, g_now);
-	// 	processedOne = true;
-	// }
-
-
-// #if 0
-// 	if(processedOne && repeats < QUERYPRIORITYWEIGHT) {
-// 		//m_needToPoll = true; 
-// 		repeats++;
-// 		goto skipLowerPriorities;
-// 	}
-// // 	log(LOG_WARN, 
-// // 	"Loop: repeated %"INT32" times before moving to lower priority threads", 
-// // 		repeats);
-// #endif
-
-	// // handle low priority fds here
-	// for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {	
-	// 	// continue if not set for reading
-	// 	if ( ! FD_ISSET ( i , &readfds ) ) continue;
-	// 	// if niceness is 0, we already handled it above
-	// 	s = m_readSlots  [ i /*fd*/ ];
-	// 	if ( s && s->m_niceness <= 0 ) continue;
-	// 	callCallbacks_ass (true/*forReading?*/,i, g_now);
-	// }
-	// // only call callbacks for fds that have a nice of 0 here
-	// for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {
-	// 	if ( ! FD_ISSET ( i , &writefds ) ) continue;
-	// 	// if niceness is 0, we already handled it above
-	// 	s = m_writeSlots  [ i /*fd*/ ];
-	// 	if ( s && s->m_niceness <= 0 ) continue;
-	// 	callCallbacks_ass (false/*forReading?*/,i, g_now);
-	// }
 
 	// handle returned threads for all other nicenesses
 	g_threads.timedCleanUp(-4, MAX_NICENESS); // 4 ms

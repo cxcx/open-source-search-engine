@@ -76,62 +76,27 @@
 #include "Msg40.h"    // g_resultsCache
 #include "Msg9b.h"
 #include "Msg17.h"
-//#include "Msg34.h"
-//#include "Msg35.h"
-//#include "Msg24.h"
-//#include "Msg28.h"
-//#include "Msg30.h"
-//#include "MsgB.h"
-//#include "Msg3e.h"
 #include "Parms.h"
-//#include "Msg50.h"
-//#include "MsgF.h"
-//#include "Msg33.h"
-//#include "mmseg.h"  // open_lexicon(), etc. for Chinese parsing
-//#include "PageTopDocs.h"
-//#include "PageNetTest.h"
-//#include "Sync.h"
 #include "Pages.h"
-//#include "Msg1c.h"
-//#include "Msg2e.h"
-//#include "Msg6a.h"
 #include "Unicode.h"
 
-//#include <pthread.h>
 #include "AutoBan.h"
-//#include "SiteBonus.h"
 #include "Msg1f.h"
 #include "Profiler.h"
-//#include "HashTableT.h"
-//#include "Classifier.h"
 #include "Blaster.h"
 #include "Proxy.h"
-//#include "HtmlCarver.h"
-
-//#include "Matchers.h"
 #include "linkspam.h"
 #include "Process.h"
 #include "sort.h"
-//#include "SiteBonus.h"
 #include "Ads.h"
 #include "LanguagePages.h"
-//#include "Msg3b.h"
 #include "ValidPointer.h"
 #include "RdbBuckets.h"
-//#include "PageTurk.h"
-//#include "QAClient.h"
-//#include  "Diff.h"
 #include "Placedb.h"
 #include "Test.h"
 #include "seo.h"
 #include "Json.h"
 #include "SpiderProxy.h"
-//#include "Facebook.h"
-//#include "Accessdb.h"
-
-// from qa.cpp
-//bool qainject ( ) ;
-//bool qatest   ( ) ;
 
 // call this to shut everything down
 bool mainShutdown(bool urgent);
@@ -148,8 +113,6 @@ void getPageWrapper(int fd, void* state);
 
 void allExitWrapper(int fd, void* state);
 
-//bool QuerySerializeTest( char *ff ); 	// Query.cpp
-
 void rmTest();
 
 int g_inMemcpy = 0;
@@ -159,8 +122,6 @@ static void dumpTitledb(char* coll, int32_t sfn, int32_t numFiles, bool includeT
 	int64_t docId, char justPrintDups,
 	bool dumpSentences,
 	bool dumpWords);
-//static void dumpTfndb    (char *coll,int32_t sfn,int32_t numFiles,bool includeTree,
-//			   bool verify);
 static int32_t dumpSpiderdb(char* coll, int32_t sfn, int32_t numFiles, bool includeTree,
 	char printStats, int32_t firstIp);
 static void dumpSectiondb(char* coll, int32_t sfn, int32_t numFiles, bool includeTree);
@@ -185,9 +146,6 @@ static void dumpDoledb(char* coll, int32_t sfn, int32_t numFiles, bool includeTr
 void dumpDatedb(char* coll, int32_t sfn, int32_t numFiles, bool includeTree,
 	int64_t termId, bool justVerify);
 void dumpClusterdb(char* coll, int32_t sfn, int32_t numFiles, bool includeTree);
-//void dumpChecksumdb      ( char *coll,int32_t sfn,int32_t numFiles,bool includeTree);
-//void dumpStatsdb 	 ( int32_t startFileNum, int32_t numFiles, bool includeTree,
-//			   int test );
 
 void dumpLinkdb(char* coll, int32_t sfn, int32_t numFiles, bool includeTree,
 	char* url);
@@ -234,46 +192,8 @@ void removeDocIds(char* coll, char* filename);
 static void dumpIndexdbFile(int32_t fn, int64_t off, char* f, int32_t ks,
 	char* NAME = NULL);
 
-//static void dumpCachedRecs  ( char *coll,int32_t sfn,int32_t numFiles,bool includeTree,
-//			   int64_t docId );
-//static bool testBoolean() ;
-//static void qaTest(char *s1, char *s2, char *u, char *q);
-//static void xmlDiffTest(char *f1, char *f2, DiffOpt *opt);
-//void testSpamRules(char *coll,int32_t startFileNum,int32_t numFiles,bool includeTree,
-//		   int64_t docid);
-
-//void takeSnapshotWrapper( int status, void *state);
-
-// JAB: warning abatement
-//static bool checkDataParity ( ) ;
-
-//#endif
-
 static int32_t checkDirPerms(char* dir);
-//static bool fixTitleRecs( char *coll ) ;
-//static int32_t getRecSize ( BigFile *f , int64_t off ) ;
-//static bool addToChecksumdb ( char *coll , TitleRec *tr ) ;
-//static bool addToSpiderdb   ( char *coll , TitleRec *tr ) ;
 
-//Need these two if tr's in addtospiderdb are getting their quality from
-// their root urls.
-/*static HashTableT <int64_t,char> s_rootUrls;
-  static bool loadRootUrls    ( char *filename);*/
-  //static bool addToTfndb      ( char *coll , TitleRec  *tr , int32_t id2 ) ;
-  //static bool addToTfndb2     ( char *coll , SpiderRec *sr , int32_t id2 ) ;
-  //static bool mergeChecksumFiles ( ) ;
-  //static bool genDbs    ( char *coll ) ;
-  //static bool genTfndb  ( char *coll ) ;
-  //static bool fixTfndb  ( char *coll ) ;
-  //static bool makeClusterdb ( char *coll ) ;
-  //static bool genDateRange  ( char *coll ) ;
-  // diff with indexdb in sync/ dir
-  //bool syncIndexdb ( );
-  //bool gbgzip (char *filename);
-  //bool gbgunzip (char *filename);
-  //bool trietest    ( ) ;
-  //bool matchertest ( int argc, char* argv[] );
-  // benchmark RdbTree::addRecord() for indexdb
 bool treetest();
 bool bucketstest(char* dbname);
 bool hashtest();
@@ -282,11 +202,6 @@ bool parseTest(char* coll, int64_t docId, char* query);
 //bool carveTest ( uint32_t radius, char *fname, char* query );
 bool summaryTest1(char* rec, int32_t listSize, char* coll, int64_t docId,
 	char* query);
-//bool summaryTest2   ( char *rec, int32_t listSize, char *coll , int64_t docId ,
-//		      char *query );
-//bool summaryTest3   ( char *rec, int32_t listSize, char *coll , int64_t docId ,
-//		      char *query );
-
 // time a big write, read and then seeks
 bool thrutest(char* testdir, int64_t fileSize);
 void seektest(char* testdir, int32_t numThreads, int32_t maxReadSize,
@@ -299,8 +214,6 @@ bool ramdiskTest();
 void countdomains(char* coll, int32_t numRecs, int32_t verb, int32_t output);
 
 UdpProtocol g_dp; // Default Proto
-
-//void zlibtest ( );
 
 // installFlag konstants 
 typedef enum {
@@ -348,21 +261,15 @@ int collcopy(char* newHostsConf, char* coll, int32_t collnum);
 bool doCmd(const char* cmd, int32_t hostId, char* filename, bool sendToHosts,
 	bool sendToProxies, int32_t hostId2 = -1);
 int injectFile(char* filename, char* ips,
-	//int64_t startDocId ,
-	//int64_t endDocId ,
-	//bool isDelete ) ;
 	char* coll);
 int injectFileTest(int32_t  reqLen, int32_t hid); // generates the file
 void membustest(int32_t nb, int32_t loops, bool readf);
 
 bool dosOpen(int32_t targetIp, uint16_t port, int numSocks);
 
-//void tryMergingWrapper ( int fd , void *state ) ;
 
 void saveRdbs(int fd, void* state);
 bool shutdownOldGB(int16_t port);
-//void resetAll ( );
-//void spamTest ( ) ;
 
 extern void resetPageAddUrl();
 extern void resetHttpMime();
@@ -375,18 +282,6 @@ extern void resetStopWords();
 extern void resetUnicode();
 
 extern void tryToSyncWrapper(int fd, void* state);
-
-#if 0
-void stack_test();
-void stack_test() {
-	char* dummy[7000000];
-	dummy[0] = '\0';
-	dummy[6999999] = '\0';
-	printf("dummy: 0x%x = 0x%x",
-		(unsigned int)&(dummy[0]), (unsigned int)&(dummy[6999999]));
-
-}
-#endif
 
 int main2(int argc, char* argv[]);
 
@@ -421,16 +316,6 @@ int main2(int argc, char* argv[]) {
 	// record time for uptime
 	g_stats.m_uptimeStart = time(NULL);
 
-	// malloc test for efence
-	//char *ff = (char *)mmalloc(100,"efence");
-	//ff[100] = 1;
-
-	// Begin Pointer Check setup
-	//uint32_t firstArg = 0;
-	//ValidPointer vpointerObject((void*)&firstArg);
-	//vpointerObject.isValidPointer(&vpointerObject); // whiny compiler
-	// End Pointer Check setup
-
 	if (argc < 0) {
 	printHelp:
 		SafeBuf sb;
@@ -446,42 +331,12 @@ int main2(int argc, char* argv[]) {
 			"the directory and IP address listed in the "
 			"hosts.conf file it loaded. Things in []'s "
 			"are optional.");
-		/*
-		sb.safePrintf(
-				  "\n\t"
-			 "[hostsConf] is the hosts.conf config file as "
-			 "described in overview.html. If not provided then "
-			 "it is assumed to be ./hosts.conf. If "
-				  "./localhosts.conf exists then that will be "
-				  "used instead of ./hosts.conf. That is "
-				  "convenient to use since it will not be "
-				  "overwritten from git pulls.\n\n" );
-		*/
 		sb.safePrintf(
 			"[CMD] can have the following values:\n\n"
 
 			"-h\tPrint this help.\n\n"
 			"-v\tPrint version and exit.\n\n"
-
-			//"<hostId>\n"
-			//"\tstart the gb process for this <hostId> locally."
-			//" <hostId> is 0 to run as host #0, for instance."
-			//"\n\n"
-
-
-			//"<hostId> -d\n\trun as daemon.\n\n"
 			"-d\tRun as daemon.\n\n"
-
-			//"-o\tprint the overview documentation in HTML. "
-			//"Contains the format of hosts.conf.\n\n"
-
-			// "<hostId> -r\n\tindicates recovery mode, "
-			// "sends email to addresses "
-			// "specified in Conf.h upon startup.\n\n"
-			// "-r\tindicates recovery mode, "
-			// "sends email to addresses "
-			// "specified in Conf.h upon startup.\n\n"
-
 			"start [hostId]\n"
 			"\tStart the gb process on all hosts or just on "
 			"[hostId], if specified, using an ssh command. Runs "
@@ -495,14 +350,6 @@ int main2(int argc, char* argv[]) {
 			"\tLike above but do not use a keepalive loop. So "
 			"if gb crashes it will not auto-resstart.\n\n"
 
-			/*
-			"kstart [hostId]\n"
-			"\tstart the gb process on all hosts or just on "
-			"[hostId] if specified using an ssh command and "
-			"if the gb process cores then restart it. k stands "
-			"for keepalive.\n\n"
-			*/
-
 			"stop [hostId]\n"
 			"\tSaves and exits for all gb hosts or "
 			"just on [hostId], if specified.\n\n"
@@ -515,26 +362,6 @@ int main2(int argc, char* argv[]) {
 			"\tJust saves for all gb hosts or "
 			"just on [hostId], if specified.\n\n"
 
-
-			/*
-			"tmpstart [hostId]\n"
-			"\tstart the gb process on all hosts or just on "
-			"[hostId] if specified, but "
-			"use the ports specified in hosts.conf PLUS one. "
-			"Then you can switch the "
-			"proxy over to point to those and upgrade the "
-			"original cluster's gb. "
-			"That can be done in the Master Controls of the "
-			"proxy using the 'use "
-			"temporary cluster'. Also, this assumes the binary "
-			"name is tmpgb not gb.\n\n"
-
-			"tmpstop [hostId]\n"
-			"\tsaves and exits for all gb hosts or "
-			"just on [hostId] if specified, for the "
-			"tmpstart command.\n\n"
-			*/
-
 			"spidersoff [hostId]\n"
 			"\tDisables spidering for all gb hosts or "
 			"just on [hostId], if specified.\n\n"
@@ -543,42 +370,6 @@ int main2(int argc, char* argv[]) {
 			"\tEnables spidering for all gb hosts or "
 			"just on [hostId], if specified.\n\n"
 
-			/*
-			"cacheoff [hostId]\n"
-			"\tdisables all disk PAGE caches on all hosts or "
-			"just on [hostId] if specified.\n\n"
-
-			"freecache [maxShmid]\n"
-			"\tfinds and frees all shared memory up to shmid "
-			"maxShmid, default is 3000000.\n\n"
-			*/
-
-			/*
-			"ddump [hostId]\n"
-			"\tdump all b-trees in memory to sorted files on "
-			"disk. "
-			"Will likely trigger merges on files on disk. "
-			"Restrict to just host [hostId] if given.\n\n"
-			*/
-
-			/*
-			"pmerge [hostId|hostId1-hostId2]\n"
-			"\tforce merge of posdb files "
-			"just on [hostId] if specified.\n\n"
-
-			"smerge [hostId|hostId1-hostId2]\n"
-			"\tforce merge of sectiondb files "
-			"just on [hostId] if specified.\n\n"
-
-			"tmerge [hostId|hostId1-hostId2]\n"
-			"\tforce merge of titledb files "
-			"just on [hostId] if specified.\n\n"
-
-			"merge [hostId|hostId1-hostId2]\n"
-			"\tforce merge of all rdb files "
-			"just on [hostId] if specified.\n\n"
-			*/
-
 			"dsh <CMD>\n"
 			"\tRun this command on the primary IPs of "
 			"all active hosts in hosts.conf. It will be "
@@ -586,24 +377,11 @@ int main2(int argc, char* argv[]) {
 			"each host. Example: "
 			"gb dsh 'ps auxw; uptime'\n\n"
 
-			/*
-			"dsh2 <CMD>\n"
-			"\trun this command on the secondary IPs of "
-			"all active hosts in hosts.conf. Example: "
-			"gb dsh2 'ps auxw; uptime'\n\n"
-			*/
-
 			"install [hostId]\n"
 			"\tInstall all required files for gb from "
 			"current working directory of the gb binary "
 			"to [hostId]. If no [hostId] is specified, install "
 			"to ALL hosts.\n\n"
-
-			/*
-			"install2 [hostId]\n"
-			"\tlike above, but use the secondary IPs in the "
-			"hosts.conf.\n\n"
-			*/
 
 			"installgb [hostId]\n"
 			"\tLike above, but install just the gb executable.\n\n"
@@ -612,119 +390,9 @@ int main2(int argc, char* argv[]) {
 			"\tLike above, but install just the gb executable "
 			"and using rcp.\n\n"
 
-			/*
-			"installgb2 [hostId]\n"
-			"\tlike above, but use the secondary IPs in the "
-			"hosts.conf.\n\n"
-
-			"installtmpgb [hostId]\n"
-			"\tlike above, but install just the gb executable "
-			"as tmpgb (for tmpstart).\n\n"
-			*/
 			"installconf [hostId]\n"
 			"\tlike above, but install hosts.conf and gb.conf\n\n"
-			/*
-			"installconf2 [hostId]\n"
-			"\tlike above, but install hosts.conf and gbN.conf "
-			"to the secondary IPs.\n\n"
 
-
-			"installcat [hostId]\n"
-			"\tlike above, but install just the catdb files.\n\n"
-
-			"installcat2 [hostId]\n"
-			"\tlike above, but install just the catdb files to "
-						"the secondary IPs.\n\n"
-
-			"installnewcat [hostId]\n"
-			"\tlike above, but install just the new catdb files."
-			"\n\n"
-
-			"installnewcat2 [hostId]\n"
-			"\tlike above, but install just the new catdb files "
-			"to the secondary IPs.\n\n"
-
-			"backupcopy <backupSubdir>\n"
-			"\tsave a copy of all xml, config, data and map files "
-			"into <backupSubdir> which is relative "
-			"to the working dir. Done for all hosts.\n\n"
-
-			"backupmove <backupSubdir>\n"
-			"\tmove all all xml, config, data and map files "
-			"into <backupSubdir> which  is relative "
-			"to the working dir. Done for all hosts.\n\n"
-
-			"backuprestore <backupSubdir>\n"
-			"\tmove all all xml, config, data and map files "
-			"in <backupSubdir>,  which is relative "
-			"to the working dir, into the working dir. "
-			"Will NOT overwrite anything. Done for all "
-			"hosts.\n\n"
-
-			"proxy start [proxyId]\n"
-			"\tStart a proxy that acts as a frontend to gb "
-			"and passes on requests to random machines on "
-			"the cluster given in hosts.conf. Helps to "
-			"distribute the load evenly across all machines.\n\n"
-
-			"proxy load <proxyId>\n"
-			"\tStart a proxy process directly without calling "
-			"ssh. Called by 'gb proxy start'.\n\n"
-
-			"proxy stop [proxyId]\n"
-			"\tStop a proxy that acts as a frontend to gb.\n\n"
-
-			"blasterdiff [-v] [-j] [-p] <file1> <file2> "
-			"<maxNumThreads> <wait>\n"
-			"\tcompare search results between urls in file1 and"
-			"file2 and output the search results in the url"
-			" from file1 not found in the url from file2 "
-			"maxNumThreads is the number of concurrent "
-			"comparisons "
-			"that should be done at one time and wait is the"
-			"time to wait between comparisons.  -v is for "
-			"verbose "
-			" and -j is to just display links not found and "
-			"not "
-			"search for them on server2. If you do not want to"
-			" use the proxy server "
-			"on gk10, use -p\n\n"
-			*/
-
-			/*
-			"blaster [-l|-u|-i] <file> <maxNumThreads> <wait>\n"
-			"\tget documents from the urls given in file. The "
-			"-l argument is to "
-			"automatically get documents "
-			"from the gigablast log file.\n"
-			"\t-u means to inject/index the url into gb.\n"
-			"\t-i means to inject/index the url into gb AND "
-			"add all of its outlinks to\n"
-			"\tspiderdb for spidering, "
-			"which also entails a DNS lookup on each outlink.\n"
-			"\tmaxNumThreads is the"
-			" number of concurrent threads at one time and wait "
-			" is the time to wait between threads.\n\n"
-			*/
-
-			/*
-			"scale <newHosts.conf>\n"
-			"\tGenerate a script to be called to migrate the "
-			"data to the new places. Remaining hosts will "
-			"keep the data they have, but it will be "
-			"filtered during the next merge operations.\n\n"
-
-			"collcopy <newHosts.conf> <coll> <collnum>\n"
-			"\tGenerate a script to copy the collection data on "
-			"the cluster defined by newHosts.conf to the "
-			"current cluster. Remote network must have "
-			"called \"gb ddump\" twice in a row just before to "
-			"ensure all of its data is on disk.\n\n"
-			*/
-
-
-			// gb inject <file> <ip:port> [startdocid]
-			// gb inject titledb <newhosts.conf> [startdocid]
 			"inject <filename> "
 			"<ip:port> [collection]\n"
 			"\tInject all documents in <filename> into the gb "
@@ -733,84 +401,7 @@ int main2(int argc, char* argv[]) {
 			"Uses collection of 'main' if not specified. If "
 			"ip:port is a hosts.conf file then a round-robin "
 			"approach will be used."
-			// "Each document listed in the file "
-			// "must be preceeded by a valid HTTP mime with "
-			// "a Content-Length: field. WARC files are also ok."
 			"\n\n"
-
-			/*
-			"inject titledb-<DIR> <newhosts.conf> [startdocid]\n"
-			"\tInject all pages from all the titledb "
-			"files in the <DIR> directory into the appropriate "
-			"host defined by the newhosts.conf config file. This "
-			"is useful for populating one search engine with "
-			"another. "
-			"\n\n"
-
-			"injecttest <requestLen> [hostId]\n"
-			"\tinject random documents into [hostId]. If [hostId] "
-			"not given 0 is assumed.\n\n"
-
-			"ping <hostId> [clientport]\n"
-			"\tperforms pings to <hostId>. [clientport] defaults "
-			"to 2050.\n\n"
-			*/
-
-			/*
-			"spellcheck <file>\n"
-			"\tspellchecks the the queries in <file>.\n\n"
-
-			"dictlookuptest <file>\n"
-			"\tgets the popularities of the entries in the "
-			"<file>. Used to only check performance of "
-			"getPhrasePopularity.\n\n"
-
-			//"stemmertest <file>\n"
-			//"\truns the stemmer on words in <file>.\n\n"
-
-			//"queryserializetest <file>\n"
-			//"\tserializes every query in <file> and tracks "
-			//"statistics, as well as \t\nverifying consistency; "
-			//"takes raw strings or URLs as input\n\n"
-
-			// less common things
-			"gendict <coll> [numWordsToDump]\n\tgenerate "
-			"dictionary used for spellchecker "
-			"from titledb files in collection <coll>. Use "
-			"first [numWordsToDump] words.\n\n"
-			//#ifndef _LARS_
-			//"gendbs <coll> [hostId]\n\tgenerate missing spiderdb, "
-			//"tfndb and checksumdb files from titledb files.\n\n"
-
-			//"gentfndb <coll> [hostId]\n\tgenerate missing tfndb. "
-			//"titledb disk dumps and tight merges are no "
-			//"longer necessary. Also "
-			//"generates tfndb from spiderdb. tfndb-saved.dat "
-			//"and all tfndb* files in the collection subdir "
-			//"must not exist, so move them to a temp dir.\n\n"
-
-			//"fixtfndb <coll> [hostId]\n\tremove tfndb recs "
-			//"referring to non-existent titledb recs.\n\n"
-
-			//"genclusterdb <coll> [hostId]\n\tgenerate missing "
-			//"clusterdb.\n\n"
-
-			//"gendaterange <coll> [hostId]\n\tgenerate missing "
-			//"date range terms in all title recs.\n\n"
-
-			//"update\tupdate titledb0001.dat\n\n"
-			//"mergechecksumdb\tmerge checksumdb flat files\n\n"
-			"treetest\n\ttree insertion speed test\n\n"
-
-			"bucketstest [dbname]\n\tcompare speed and accuracy of "
-			"buckets vs tree in add, getList and deleteList.  "
-			"With an argument, test validity of db's saved buckets\n\n"
-
-			"hashtest\n\tadd and delete into hashtable test\n\n"
-
-			"parsetest <docIdToTest> [coll] [query]\n\t"
-			"parser speed tests\n\n"
-			*/
 
 			"thrutest [dir] [fileSize]\n\tdisk sequential "
 			"write then read speed tests.\n\n"
@@ -828,63 +419,17 @@ int main2(int argc, char* argv[]) {
 			"memtest\n"
 			"\t Test how much memory we can use\n\n"
 
-			/*
-			// Quality Tests
-			"countdomains <coll> <X>\n"
-			"\tCounts the domains and IPs in collection coll and "
-			"in the first X titledb records.  Results are sorted"
-			"by popularity and stored in the log file. \n\n"
-
-			"cachetest\n\t"
-			"cache stability and speed tests\n\n"
-
-			"ramdisktest\n\t"
-			"test ramdisk functionality\n\n"
-
-			"dosopen <ip> <port> <numThreads>\n"
-			"\tOpen  numThreads tcp sockets to ip:port and just "
-			"sit there.  For testingthe robustness of gb.\n\n"
-
-			"xmldiff [-td] <file1> <file2>\n"
-			"\tTest xml diff routine on file1 and file2.\n"
-			"\t-t: only show diffs in tag structure.\n"
-			"\t-d: run as daemon.\n"
-			"\n"
-
-			"dump e <coll> <UTCtimestamp>\n\tdump all events "
-			"as if the time is UTCtimestamp.\n\n"
-
-			"dump es <coll> <UTCtimestamp>\n\tdump stats for "
-			"all events as if the time is UTCtimestamp.\n\n"
-			*/
-
-			/*
-#ifdef _CLIENT_
-			//there was <hostId> in this command but it
-			// wasn't used in the program, so deleting it from
-			// here
-			"dump <V> [C [X [Y [Z]]]]\n\tdump a db in "
-#else
-			*/
-
-			//"dump <db> <collection> [T]\n\tDump a db from disk. "
 			"dump <db> <collection>\n\tDump a db from disk. "
 			"Example: gb dump t main\n"
 			"\t<collection> is the name of the collection.\n"
 
 			"\t<db> is s to dump spiderdb."
-			//"set [T] to 1 to print "
-			//"new stats. 2 to print old stats. "
-			//"T is ip of firstip."
 			"\n"
 
 			"\t<db> is t to dump titledb. "
-			//"\tT is the first docId to dump. Applies only to "
-			//"titledb. "
 			"\n"
 
 			"\t<db> is p to dump posdb (the index)."
-			//"\tOptional: T is the termid to dump."
 			"\n"
 
 			"\t<db> is D to dump duplicate docids in titledb.\n"
@@ -900,137 +445,6 @@ int main2(int argc, char* argv[]) {
 			"\t<db> is Z to dump statsdb all keys and "
 			"data samples.\n"
 			"\t<db> is L to dump linkdb.\n"
-
-			/*
-			"dump <V> [C [X [Y [Z [T]]]]]\n\tdump a db in "
-			//#endif
-			"working directory.\n"
-			//#ifndef _CLIENT_
-			//#ifndef _METALINCS_
-			//"\tV is u to dump tfndb.\n"
-			"\tV is d to dump datedb.\n"
-			//#endif
-			//#endif
-			"\tV is s to dump spiderdb. set [T] to 1 to print "
-			"new stats. 2 to print old stats. T is ip of firstip."
-			"\n"
-			"\tV is t to dump titledb.\n"
-			//"\tV is ts to dump sentences from events.\n"
-			//"\tV is tw to dump words from events.\n"
-			"\tV is D to dump duplicate docids in titledb.\n"
-			"\tV is c to dump checksumdb.\n"
-			"\tV is S to dump tagdb.\n"
-			"\tV is W to dump tagdb for wget.\n"
-			//"\tV is V to dump revdb.\n"
-			"\tV is x to dump doledb.\n"
-			"\tV is w to dump waiting tree.\n"
-			"\tV is B to dump sectiondb.\n"
-			"\tV is C to dump catdb.\n"
-			"\tV is l to dump clusterdb.\n"
-			"\tV is z to dump statsdb all keys.\n"
-			"\tV is Z to dump statsdb all keys and data samples.\n"
-			"\tV is L to dump linkdb.\n"
-			//"\tV is u to dump tfndb.\n"
-			//"\tV is vu to verify tfndb.\n"
-			"\tC is the name of the collection.\n"
-			"\tX is start file num.    (default  0)\n"
-			"\tY is num files.         (default -1)\n"
-			"\tZ is 1 to include tree. (default  1)\n"
-			//#ifndef _CLIENT_
-			//#ifndef _METALINCS_
-			//#ifndef _GLOBALSPEC_
-			"\tT is the termid to dump. Applies only to indexdb.\n"
-			//#endif
-			//#endif
-			//#endif
-			"\tT is the first docId to dump. Applies only to "
-			"titledb. "
-			//"(default none)\n\n"
-			"\tV is c to dump cached recs.\n"
-
-			"\n"
-
-
-			"dump s [X [Y [Z [C]]]\n"
-			"\tdump spider in working directory.\n"
-			"\tC is the collection name.       (default  none)\n"
-			"\tX is start file num.            (default  0)\n"
-			"\tY is num files.                 (default -1)\n"
-			"\tZ is 1 to include tree.         (default  1)\n"
-			//"\tA is 1 for new urls, 0 for old. (default  1)\n"
-			//"\tA is -1 to dump all urls in all queues.\n"
-			//"\tB is priority of urls.          (default -1)\n"
-			//"\tB is -1 to dump all priorities\n"
-			"\tC is 1 to just show the stats.  (default  0)\n"
-			"\n"
-			*/
-
-
-			//"dump i X Y Z t\n\tdump indexdb termId t in working "
-			//"directory.\n"
-			//"\tX is start file num.     (default  0)\n"
-			//"\tY is num files.          (default -1)\n"
-			//"\tZ is 1 to include tree.  (default  1)\n"
-			//"\tt is the termid to dump. (default none)\n\n"
-			//#ifndef _CLIENT_
-			//#ifndef _METALINCS_
-			/*
-			"dump I [X [V]]\n\tdump indexdb in working "
-			"directory at "
-			"an offset.\n"
-			//#endif
-			//#endif
-			"\tX is the file NAME.      (default  NULL)\n"
-			"\tV is the start offset.   (default  0)\n"
-			*/
-			/*
-			"\n"
-			"dumpmissing <coll> [hostId]\n\t"
-			"dump the docIds in indexdb but not "
-			"in tfndb/titledb to stderr. "
-			" Used for passing in to removedocids.\n"
-			"\n"
-
-			"dumpdups <coll> [hostId]\n\t"
-			"dump the docIds in duplicated in indexdb when "
-			"they should not be to stderr. Usually a sign "
-			"of mis-indexing. Used for passing in to "
-			"removedocids.\n"
-			"\n"
-
-			"removedocids <coll> <fileOfDocIds> "
-			"[hostId|hostId1-hostId2]"
-			"\n\tremoves the docids in fileOfDocIds from indexdb, "
-			"clusterdb, checksumdb and tfndb. Effectively "
-			"completely deleting that docid. "
-			"fileOfDocIds contains one "
-			"docId per line, and nothing more.\n"
-			"\n"
-
-			"setnote <hostid> <note>"
-			"\n\tsets the note for host with hostid <hostid> to "
-			"the given note <note>.\n"
-			"\n"
-
-			"setsparenote <spareid> <note>"
-			"\n\tsets the note for spare with spareid <spareid> to "
-			"the given note <note>.\n"
-			"\n"
-
-			"replacehost <hostid> <spareid>"
-			"\n\treplaces host with hostid <hostid> with the "
-			"spare that has the spareid <spareid>.  the host "
-			"being replaced should already be shut down or dead.\n"
-			"\n"
-
-			"synchost <hostid>"
-			"\n\trecopies this host from its twin. host directory "
-			"must be empty and the host must be marked as dead "
-			"in the current gb. Use synchost2 to use secondary "
-			"IPs.\n"
-			"\n"
-			*/
-			//#endif
 		);
 		SafeBuf sb2;
 		sb2.brify2(sb.getBufStart(), 60, "\n\t", false);
@@ -1040,25 +454,8 @@ int main2(int argc, char* argv[]) {
 		return 0;
 	}
 
-	//SafeBuf tt;
-	//tt.base64Encode("any carnal pleas",16);
-	//fprintf(stderr,"%s\n",tt.getBufStart());
-	//exit(0);
-
-	// get hosts.conf file
-	//char *hostsConf = "./hosts.conf";
-	//int32_t hostId = -1;
 	int32_t  cmdarg = 0;
-	//char *workingDir = NULL;
-	//if(argc >= 3 && argv[1][0]=='-'&&argv[1][1]=='w'&&argv[1][2]=='\0') {
-	// 	//hostsConf = argv[2];
-	// 	workingDir = argv[2];
-	// 	cmdarg    = 3;
-	// }
 
-	// get command
-	//if ( argc <= cmdarg ) goto printHelp;
-	// it might not be there, might be a simple "./gb" 
 	char* cmd = "";
 	if (argc >= 2) {
 		cmdarg = 1;
@@ -1078,30 +475,8 @@ int main2(int argc, char* argv[]) {
 	if (strcmp(cmd, "-v") == 0) {
 		fprintf(stdout, "Gigablast Version: %s\n", getVersion());
 		fprintf(stdout, "Gigablast Architecture: %"INT32"-bit\n", arch);
-		//	fprintf(stderr,"Gigablast %s\nMD5KEY: %s\n"
-		//		"TAG: %s\nPATH:   %s\n",
-		//		GBVersion, GBCommitID, GBTag, GBBuildPath); 
 		return 0;
 	}
-
-	// print overview
-	//if ( strcmp ( cmd , "-o" ) == 0 ) {
-	//	//printOverview ( );
-	//	return 0;
-	//}
-
-	//bool hadHostId = false;
-	// assume our hostId is the command!
-	// now we advance 'cmd' past the hostId if we detect
-	// the presence of more args.
-	// WE NO LONGER do it this way...
-	// if ( is_digit(argv[cmdarg][0]) ) {
-	// 	hostId = atoi(argv[cmdarg]);
-	// 	if(argc > cmdarg+1) {
-	// 		cmd = argv[++cmdarg];
-	// 	}
-	// 	hadHostId = true;
-	// }
 
 	if (strcmp(cmd, "dosopen") == 0) {
 		int32_t ip;
@@ -1117,10 +492,6 @@ int main2(int argc, char* argv[]) {
 
 		return dosOpen(ip, port, numSockets);
 	}
-
-	//SafeBuf sb;
-	//char *str = "fun glassblowing now";
-	//sb.truncateLongWords ( str , strlen(str),10);
 
 	//send an email on startup for -r, like if we are recovering from an
 	//unclean shutdown.
@@ -1147,39 +518,12 @@ int main2(int argc, char* argv[]) {
 		testMandrill = true;
 	}
 
-	/*
-	class foo {
-	public:
-		int32_t poo;
-	};
-	class fart {
-	public:
-		int16_t fart3;
-		char fart1;
-		char fart2;
-	};
-	foo xxx;
-	xxx.poo = 38123;
-	fart *yyy = (fart *)&xxx;
-	fprintf(stderr,"fart1=%"INT32" fart2=%"INT32" fart3=%"INT32"\n",
-		(int32_t)yyy->fart1,(int32_t)yyy->fart2,(int32_t)yyy->fart3);
-	exit(0);
-	*/
-
 	// gb gendbs, preset the hostid at least
-	if ( //strcmp ( cmd , "gendbs"   ) == 0 ||
-		 //strcmp ( cmd , "gentfndb" ) == 0 ||
-		 //strcmp ( cmd , "fixtfndb" ) == 0 ||
-		strcmp(cmd, "dumpmissing") == 0 ||
+	if (strcmp(cmd, "dumpmissing") == 0 ||
 		strcmp(cmd, "dumpdups") == 0 ||
-		//strcmp ( cmd , "gencatdb" ) == 0 ||
-		//strcmp ( cmd , "genclusterdb" ) == 0 ||
-		//strcmp ( cmd , "gendaterange" ) == 0 || 
 		strcmp(cmd, "distributeC") == 0) {
 		// ensure we got a collection name after the cmd
 		if (cmdarg + 2 > argc) goto printHelp;
-		// may also have an optional hostid
-		//if ( cmdarg + 3 == argc ) hostId = atoi ( argv[cmdarg+2] );
 	}
 
 	if ((strcmp(cmd, "countdomains") == 0) && (argc >= (cmdarg + 2))) {
@@ -1187,52 +531,6 @@ int main2(int argc, char* argv[]) {
 		if ((tmp * 10) > g_mem.m_memtablesize)
 			g_mem.m_memtablesize = tmp * 10;
 	}
-
-	// set it for g_hostdb and for logging
-	//g_hostdb.m_hostId = hostId;
-
-	//if ( strcmp ( cmd , "gzip" ) == 0 ) {
-	//	if ( argc > cmdarg+1 ) gbgzip(argv[cmdarg+1]);
-	//	else goto printHelp;
-	//	return 0;
-	//}
-
-	//if ( strcmp ( cmd , "gunzip" ) == 0 ) {
-	//	if ( argc > cmdarg+1 ) gbgunzip(argv[cmdarg+1]);
-	//	else goto printHelp;
-	//	return 0;
-	//}
-
-	// these tests do not need a hosts.conf
-	/*
-	if ( strcmp ( cmd , "trietest" ) == 0 ) {
-		trietest();
-		return 0;
-	}
-	if (strcmp ( cmd, "matchertest" ) == 0 ) {
-		matchertest(argc - 2, argv + 2);
-		return 0;
-	}
-	*/
-
-	/*
-	char cmd3[2048];
-	snprintf(cmd3,2047,
-		 "ulimit -v 25000  ; "
-		 "ulimit -t 30 ; "
-		 "ulimit -a; "
-		 "export ANTIWORDHOME=%s/antiword-dir ; "
-		 "rm poo.txt ; "
-		 "timeout 10s nice -n 19 %s/antiword %s> %s" ,
-		 "/home/mwells/master-testing/" ,
-		 "/home/mwells/master-testing/" ,
-		 "/home/mwells/testing/poo.doc",
-		 "/home/mwells/master-testing/poo.txt ; "
-		 "cat poo.txt"
-		 );
-	system(cmd3);
-	exit(-1);
-	*/
 
 	if (strcmp(cmd, "bucketstest") == 0) {
 		if (argc > cmdarg + 1) bucketstest(argv[cmdarg + 1]);
@@ -1271,10 +569,6 @@ int main2(int argc, char* argv[]) {
 	}
 	if (strcmp(cmd, "parsetest") == 0) {
 		if (cmdarg + 1 >= argc) goto printHelp;
-		// load up hosts.conf
-		//if ( ! g_hostdb.init(hostId) ) {
-		//	log("db: hostdb init failed." ); return 1; }
-		// init our table for doing zobrist hashing
 		if (!hashinit()) {
 			log("db: Failed to init hashtable."); return 1;
 		}
@@ -1288,39 +582,7 @@ int main2(int argc, char* argv[]) {
 		return 0;
 	}
 
-	/*
-		if ( strcmp ( cmd , "carvetest"  ) == 0 ) {
-		 if ( ! g_hostdb.init(hostsConf, hostId) ) {
-			log("db: hostdb init failed." ); return 1; }
-		 if ( ! hashinit() ) {
-			log("db: Failed to init hashtable." ); return 1; }
-		if (!ucInit(g_hostdb.m_dir)) {
-			log("Unicode initialization failed!");
-			return 1;
-		}
-		if (cmdarg+2 >= argc) {
-			log("usage: gb carvetest qt1 ..." ); return 2; }
-		uint32_t radius = atoi(argv[cmdarg+1]);
-		char* fname = argv[cmdarg+2];
-		char buf[65535];
-		*buf = '\0';
-		int virgin = 1;
-		for (int i = cmdarg+3; i < argc; i++) {
-			if (!virgin)
-				strcat(buf, " ");
-			else
-				virgin = 0;
-			strcat(buf, argv[i]);
-		}
-		printf("file: '%s' query: '%s'\n", fname, buf);
-		carveTest(radius, fname, buf);
-		return 0;
-	}
-	*/
-
 	if (strcmp(cmd, "booltest") == 0) {
-		//if ( ! g_hostdb.init(hostId) ) {
-		//	log("db: hostdb init failed." ); return 1; }
 		// init our table for doing zobrist hashing
 		if (!hashinit()) {
 			log("db: Failed to init hashtable."); return 1;
@@ -1333,38 +595,6 @@ int main2(int argc, char* argv[]) {
 		return 0;
 
 	}
-
-	/*
-	//  test json parser error with bad json
-	Json jp;
-	char xxx[1024];
-	//sprintf(xxx,"\"categories\":[\"shop\"");
-	sprintf(xxx,"\"too small\"");
-	jp.parseJsonStringIntoJsonItems(xxx,0);
-	JsonItem *ji = jp.getFirstItem();
-	for ( ; ji ; ji = ji->m_next ) {
-		if ( ji->m_type != JT_NUMBER && ji->m_type != JT_STRING )
-			continue;
-	}
-	*/
-
-
-	/*
-	if ( strcmp ( cmd , "querytest" ) == 0){
-		if ( ! g_hostdb.init(hostsConf, hostId) ) {
-			log("db: hostdb init failed." ); return 1; }
-		// init our table for doing zobrist hashing
-		if ( ! hashinit() ) {
-			log("db: Failed to init hashtable." ); return 1; }
-		if (!ucInit(g_hostdb.m_dir)) {
-			log("Unicode initialization failed!");
-			return 1;
-		}
-		queryTest();
-		return 0;
-
-	}
-	*/
 
 	if (strcmp(cmd, "isportinuse") == 0) {
 		if (cmdarg + 1 >= argc) goto printHelp;
@@ -1415,64 +645,6 @@ int main2(int argc, char* argv[]) {
 		return 0;
 	}
 
-	/*
-	if ( strcmp ( cmd, "qa" ) == 0 ) {
-		if ( ! g_hostdb.init(hostsConf, hostId) ) {
-			log("db: hostdb init failed." ); return 1; }
-		// init our table for doing zobrist hashing
-		if ( ! hashinit() ) {
-			log("db: Failed to init hashtable." ); return 1; }
-		if (!ucInit(g_hostdb.m_dir)) {
-			log("Unicode initialization failed!");
-			return 1;
-		}
-		char *s1 = NULL;
-		char *s2 = NULL;
-		char *u = NULL;
-		char *q = NULL;
-
-		if ( cmdarg+1 < argc ) s1 = argv[cmdarg+1];
-		if ( cmdarg+2 < argc ) s2 = argv[cmdarg+2];
-		if ( cmdarg+3 < argc ) u  = argv[cmdarg+3];
-		if ( cmdarg+4 < argc ) q  = argv[cmdarg+4];
-
-		qaTest(s1, s2, u, q);
-		return 0;
-	}
-	// gb xmldiff file1 file2
-	if (strcmp ( cmd, "xmldiff" )  == 0 ) {
-		if ( cmdarg+2 >= argc ) goto printHelp;
-		// init our table for doing zobrist hashing
-		if ( ! g_hostdb.init(hostsConf, hostId) ) {
-			log("db: hostdb init failed." ); return 1; }
-		if ( ! hashinit() ) {
-			log("db: Failed to init hashtable." ); return 1; }
-		if (!ucInit(g_hostdb.m_dir)) {
-			log("Unicode initialization failed!");
-			return 1;
-		}
-		DiffOpt opt;
-		int nextArg = cmdarg+1;
-		while ( argc > nextArg && argv[nextArg][0] == '-'){
-			char *c = argv[nextArg] + 1;
-			while (*c){
-				switch(*c++){
-				case 't': opt.m_tagOnly = true; break;
-				case 'd': opt.m_debug++       ; break;
-				case 'c': opt.m_context++     ; break;
-				default: goto printHelp;
-				}
-			}
-			nextArg++;
-		}
-		if ( nextArg+1 >= argc ) goto printHelp;
-		char *file1         = argv[nextArg  ];
-		char *file2         = argv[nextArg+1];
-		xmlDiffTest(file1, file2, &opt);
-		return 0;
-	}
-	*/
-
 	// note the stack size for debug purposes
 	struct rlimit rl;
 	getrlimit(RLIMIT_STACK, &rl);
@@ -1506,8 +678,6 @@ int main2(int argc, char* argv[]) {
 	if (strcmp(cmd, "proxy") == 0 &&
 		strcmp(argv[cmdarg + 1], "load") == 0) {
 		isProxy = true;
-		// we need to parse out the hostid too!
-		//if ( cmdarg + 2 < argc ) hostId = atoi ( argv[cmdarg+2] );
 	}
 
 	// this is just like starting up a gb process, but we add one to
@@ -1539,11 +709,7 @@ int main2(int argc, char* argv[]) {
 		char* file = argv[cmdarg + 1];
 		char* ips = argv[cmdarg + 2];
 		char* coll = argv[cmdarg + 3];
-		// int64_t startDocId = 0LL;
-		// int64_t endDocId   = DOCID_MASK;
-		// if ( cmdarg+3 < argc ) startDocId = atoll(argv[cmdarg+3]);
-		// if ( cmdarg+4 < argc ) endDocId   = atoll(argv[cmdarg+4]);
-		//injectFile ( file , ips , startDocId , endDocId , false );
+
 		injectFile(file, ips, coll);
 		return 0;
 	}
@@ -1585,13 +751,6 @@ int main2(int argc, char* argv[]) {
 		loadTimeAdjustment();
 	}
 
-	// the supporting network, used by gov.gigablast.com to get link text
-	// from the larger main index. g_hostdb2. we don't care if this load
-	// fails or not.
-	//char h2[128];
-	//sprintf ( h2 , "%shosts2.conf" , g_hostdb.m_dir );
-	//if ( ! g_hostdb2.init(h2, 0 ,"external") ) {
-	//	log("db: hosts2.conf hostdb init failed." ); return 1; }
 	// init our table for doing zobrist hashing
 	if (!hashinit()) {
 		log("db: Failed to init hashtable."); return 1;
@@ -1674,9 +833,6 @@ int main2(int argc, char* argv[]) {
 			log("db: Loop init failed."); return 1;
 		}
 
-		//if ( ! g_threads.init()     ) {
-		//	log("db: Threads init failed." ); return 1; }
-
 		g_process.init();
 
 		if (!g_process.checkNTPD())
@@ -1684,10 +840,6 @@ int main2(int argc, char* argv[]) {
 
 		if (!g_isYippy && !ucInit(g_hostdb.m_dir))
 			return log("db: Unicode initialization failed!");
-
-		// load speller unifiedDict for spider compression proxy
-		//if ( g_hostdb.m_myHost->m_type & HT_SCPROXY )
-		//	g_speller.init();
 
 		if (!g_udpServer.init(g_hostdb.getMyPort(),
 			&g_dp,
@@ -1719,10 +871,6 @@ int main2(int argc, char* argv[]) {
 			log("db: Failed to init hashtable."); return 1;
 		}
 
-		// Msg13.cpp now uses the address class so it needs this
-		//if ( ! initPlaceDescTable ( ) ) {
-		//	log("events: places table init failed"); return 1; }
-
 	tryagain:
 		if (!g_proxy.initHttpServer(httpPort, httpsPort)) {
 			log("db: HttpServer init failed. Another gb "
@@ -1743,10 +891,6 @@ int main2(int argc, char* argv[]) {
 
 		//we should save gb.conf right ?
 		g_conf.m_save = true;
-
-		// initiazlie Users
-		//if ( ! g_users.init()  ){
-		//log("db: Users init failed. "); return 1;}
 
 		if (!g_loop.runLoop()) {
 			log("db: runLoop failed.");
@@ -1854,28 +998,9 @@ int main2(int argc, char* argv[]) {
 		return 0;
 	}
 
-	// g_conf.init was here
-
-	// now that we have init'd g_hostdb and g_log, call this for an ssh
-	//if ( strcmp ( cmd , "gendbs" ) == 0 && cmdarg + 2 == argc )
-	//	return install ( ifk_gendbs , -1 , NULL , 
-	//			 argv[cmdarg+1] ); // coll
 	if (strcmp(cmd, "distributeC") == 0 && cmdarg + 2 == argc)
 		return install(ifk_distributeC, -1, NULL, argv[cmdarg + 1]);
-	//if ( strcmp ( cmd , "gentfndb" ) == 0 && cmdarg + 2 == argc )
-	//	return install ( ifk_gentfndb , -1 , NULL , 
-	//			 argv[cmdarg+1] ); // coll
 
-	//if ( strcmp ( cmd , "fixtfndb" ) == 0 && cmdarg + 2 == argc )
-	//	return install ( ifk_fixtfndb , -1 , NULL , 
-	//			 argv[cmdarg+1] ); // coll
-
-	//if ( strcmp ( cmd, "genclusterdb" ) == 0 && cmdarg + 2 == argc )
-	//	return install ( ifk_genclusterdb , -1 , NULL ,
-	//			 argv[cmdarg+1] ); // coll
-
-	// . dumpmissing <coll> [hostid]
-	// . if hostid not there, ssh to all using install()
 	if (strcmp(cmd, "dumpmissing") == 0 && cmdarg + 2 == argc)
 		return install(ifk_dumpmissing, -1, NULL,
 			argv[cmdarg + 1]); // coll
@@ -1883,11 +1008,6 @@ int main2(int argc, char* argv[]) {
 		return install(ifk_dumpdups, -1, NULL,
 			argv[cmdarg + 1]); // coll
 
-// . gb removedocids <coll> <docIdsFilename> [hostid1-hostid2]
-// . if hostid not there, ssh to all using install()
-// . use removedocids below if only running locally
-// . cmdarg+3 can be 4 or 5, depending if [hostid1-hostid2] is present
-// . argc is 5 if [hostid1-hostid2] is present, 4 if not
 	if (strcmp(cmd, "removedocids") == 0 && cmdarg + 3 >= 4) {
 		// get hostId to install TO (-1 means all)
 		int32_t hostId = -1;
@@ -1911,8 +1031,6 @@ int main2(int argc, char* argv[]) {
 				argv[cmdarg + 2], // filename
 				argv[cmdarg + 1], // coll
 				-1); // hostid2
-   // otherwise, a hostid was given and we will call
-   // removedocids() directly below
 	}
 
 	// gb ping [hostId] [clientPort]
@@ -1935,91 +1053,7 @@ int main2(int argc, char* argv[]) {
 		injectFileTest(reqLen, hostId);
 		return 0;
 	}
-	// gb updatetitledb
-	/*
-	if ( strcmp ( cmd , "updatetitledb" ) == 0 ) {
-		if ( cmdarg+1 != argc ) goto printHelp;
-		log(LOG_INIT,"db: *-*-*-* Updating Titledb et al.");
-		g_conf.m_spiderdbMinFilesToMerge   = 5;
-		g_conf.m_tfndbMaxDiskPageCacheMem      = 0;
-		//g_conf.m_checksumdbMaxDiskPageCacheMem = 0;
-		g_conf.m_spiderdbMaxDiskPageCacheMem   = 0;
-		//g_conf.m_tfndbMaxTreeMem = 100*1024*1024;
-		// . re-write all the keys so that they contain the site and
-		//   content hashes in the low bits
-		// . there should only be one file for this since we don't
-		//   support  negatives
-		fixTitleRecs ( "" ); // coll
-		return 0;
-	}
-	*/
-	// this is a hack too!
-	/*
-	if ( strcmp ( cmd , "mergechecksumdb" ) == 0 ) {
-		if ( cmdarg+1 != argc ) goto printHelp;
-		log(LOG_INIT,"db: *-*-*-* Merging checksumdb flat files.");
-		int32_t old = g_conf.m_checksumdbMinFilesToMerge ;
-		g_conf.m_checksumdbMinFilesToMerge = 50;
-		// set up checksumdb
-		g_conf.m_checksumdbMaxTreeMem = 50000000; // 50M
-		g_conf.m_maxMem = 1000000000LL; // 1G
-		g_mem.m_maxMem  = 1000000000LL; // 1G
-		// init it
-		if ( ! g_checksumdb.init ( ) ) {
-			log("db: Checksumdb init failed for merge." );
-			return 1;
-		}
-		g_collectiondb.init(true);
-		g_checksumdb.getRdb()->addRdbBase1 ( "finalmerge" );
-		// no, otherwise won't be able to load into tree!
-		//g_conf.m_checksumdbMaxTreeMem = 50*1024*1024;
-		mergeChecksumFiles();
-		// reset so when we save value goes back to original
-		g_conf.m_checksumdbMinFilesToMerge = old;
-		// save tree to disk
-		Rdb *r = g_checksumdb.getRdb();
-		r->m_tree.fastSave ( r->getDir()    ,
-					 r->m_dbname    , // &m_saveFile ,
-					 false          , // useThread   ,
-					 NULL           , // this        ,
-					 NULL           );// doneSaving ) )
-		return 0;
-	}
-	*/
-	/*
-	// gb inject <file> <ip:port> [startdocid]
-	// gb inject titledb <newhosts.conf> [startdocid]
-	if ( strcmp ( cmd , "inject"  ) == 0 ) {
-		if ( argc != cmdarg+3 &&
-			 argc != cmdarg+4 &&
-			 argc != cmdarg+5 )
-			goto printHelp;
-		char *file = argv[cmdarg+1];
-		char *ips  = argv[cmdarg+2];
-		int64_t startDocId = 0LL;
-		int64_t endDocId   = DOCID_MASK;
-		if ( cmdarg+3 < argc ) startDocId = atoll(argv[cmdarg+3]);
-		if ( cmdarg+4 < argc ) endDocId   = atoll(argv[cmdarg+4]);
-		injectFile ( file , ips , startDocId , endDocId , false );
-		return 0;
-	}
-	*/
-	/*
-	if ( strcmp ( cmd , "reject"  ) == 0 ) {
-		if ( argc != cmdarg+3 &&
-			 argc != cmdarg+4 &&
-			 argc != cmdarg+5 )
-			goto printHelp;
-		char *file = argv[cmdarg+1];
-		char *ips  = argv[cmdarg+2];
-		int64_t startDocId = 0LL;
-		int64_t endDocId   = DOCID_MASK;
-		//if ( cmdarg+3 < argc ) startDocId = atoll(argv[cmdarg+3]);
-		//if ( cmdarg+4 < argc ) endDocId   = atoll(argv[cmdarg+4]);
-		injectFile ( file , ips , startDocId , endDocId , true );
-		return 0;
-	}
-	*/
+
 	// gb dsh
 	if (strcmp(cmd, "dsh") == 0) {
 		// get hostId to install TO (-1 means all)
@@ -2053,13 +1087,6 @@ int main2(int argc, char* argv[]) {
 			sscanf(argv[cmdarg + 1], "%"INT32"-%"INT32"", &h1, &h2);
 		return install(ifk_install, h1, NULL, NULL, h2);
 	}
-	// gb install
-	// if ( strcmp ( cmd , "install2" ) == 0 ) {	
-	// 	// get hostId to install TO (-1 means all)
-	// 	int32_t hostId = -1;
-	// 	if ( cmdarg + 1 < argc ) hostId = atoi ( argv[cmdarg+1] );
-	// 	return install ( ifk_install2 , hostId );
-	// }
 	// gb installgb
 	if (strcmp(cmd, "installgb") == 0) {
 		// get hostId to install TO (-1 means all)
@@ -2147,8 +1174,6 @@ int main2(int argc, char* argv[]) {
 				return install(ifk_kstart, h1,
 					NULL, NULL, h2);
 		}
-		// if it is us, do it
-		//if ( hostId != -1 ) goto mainStart;
 		//
 		// default to keepalive start for now!! (was ifk_start)
 		//
@@ -2530,54 +1555,6 @@ int main2(int argc, char* argv[]) {
 		}
 	}
 
-	// gb startclassifier coll ruleset [hostId]
-	/*
-	if ( strcmp ( cmd , "startclassifier" ) == 0 ) {
-		int32_t hostId = 0;
-		char *coll;
-		char *ruleset;
-		char *siteListFile = NULL;
-		if ( cmdarg + 1 < argc ) coll = argv[cmdarg+1];
-		else return false;
-		if ( cmdarg + 2 < argc ) ruleset = argv[cmdarg+2];
-		else return false;
-		if ( cmdarg + 3 < argc ) hostId = atoi ( argv[cmdarg+3] );
-		if ( cmdarg + 4 < argc ) siteListFile = argv[cmdarg+4];
-		char classifierCmd[512];
-		if ( ! siteListFile )
-			sprintf(classifierCmd, "startclassifier=1&c=%s"
-						   "&ruleset=%s", coll, ruleset);
-		else
-			sprintf(classifierCmd, "startclassifier=1&c=%s"
-						   "&ruleset=%s&sitelistfile=%s",
-						   coll, ruleset, siteListFile );
-		return doCmd(classifierCmd , hostId , "admin/tagdb" ,
-				 true , //sendtohosts
-				 false );//sendtoproxies
-	}
-
-	// gb stopclassifier [hostId]
-	if ( strcmp ( cmd , "stopclassifier" ) == 0 ) {
-		char *coll;
-		if ( cmdarg + 1 < argc ) coll = argv[cmdarg+1];
-		else return false;
-		int32_t hostId = 0;
-		if ( cmdarg + 2 < argc ) hostId = atoi ( argv[cmdarg+2] );
-		char classifierCmd[512];
-		sprintf(classifierCmd, "stopclassifier=1&c=%s", coll );
-		return doCmd(classifierCmd , hostId , "admin/tagdb" ,
-				 true , //sendtohosts
-				 false );//sendtoproxies
-	}
-	*/
-
-	// gb [-h hostsConf] <hid>
-	// mainStart:
-
-	// get host info for this host
-	//Host *h = g_hostdb.getHost ( hostId );
-	//if ( ! h ) { log("db: No host has id %"INT32".",hostId); return 1;}
-
 	// once we are in recoverymode, that means we are being restarted
 	// from having cored, so to prevent immediate core and restart
 	// ad inifinitum, look got "sigbadhandler" at the end of the 
@@ -2600,10 +1577,7 @@ int main2(int argc, char* argv[]) {
 	if (!g_conf.init(h9->m_dir)) { // , h->m_hostId ) ) {
 		log("db: Conf init failed."); return 1;
 	}
-	//if ( ! g_hostdb.validateIps ( &g_conf ) ) {
-	//	log("db: Failed to validate ips." ); return 1;}
-	//if ( ! g_hostdb2.validateIps ( &g_conf ) ) {
-	//	log("db: Failed to validate ips." ); return 1;}
+
 
 	// put in read only mode
 	if (useTmpCluster)
@@ -2622,11 +1596,6 @@ int main2(int argc, char* argv[]) {
 	if (!g_loop.init()) {
 		log("db: Loop init failed."); return 1;
 	}
-
-
-	// test the infinite keep alive bug fix. is recovery futile bug.
-	//char *xx=NULL;*xx=0; 
-
 	// the new way to save all rdbs and conf
 	// if g_process.m_powerIsOn is false, logging will not work, so init
 	// this up here. must call after Loop::init() so it can register
@@ -2909,24 +1878,6 @@ int main2(int argc, char* argv[]) {
 #endif
 #endif
 #endif
-		/*
-		else if      ( argv[cmdarg+1][0] == 'c' ) {
-			int64_t docId = 0LL;
-			if ( cmdarg+6 < argc ) docId = atoll1(argv[cmdarg+6]);
-			dumpCachedRecs (coll,startFileNum,numFiles,includeTree,
-					docId);
-		}
-		*/
-		/*
-		else if      ( argv[cmdarg+1][0] == 'R' ) {
-			int64_t docId = 0LL;
-			if ( cmdarg+6 < argc ) docId = atoll1(argv[cmdarg+6]);
-			testSpamRules (coll,startFileNum,numFiles,includeTree,
-					   docId);
-		}
-		*/
-
-
 
 		else goto printHelp;
 		// disable any further logging so final log msg is clear
@@ -2960,30 +1911,6 @@ int main2(int argc, char* argv[]) {
 		g_log.m_disabled = true;
 		return 0;
 	}
-
-	//log("db: RLIMIT_NOFILE = %"INT32"",(int32_t)rlim.rlim_max);
-	//exit(0);
-	// . disable o/s's and hard drive's read ahead 
-	// . set multcount to 16 --> 1 interrupt for every 16 sectors read
-	// . multcount of 16 reduces OS overhead by 30%-50% (more throughput) 
-	// . use hdparm -i to find max mult count
-	// . -S 100 means turn off spinning if idle for 500 seconds
-	// . this should be done in /etc/rc.sysinit or /etc/sysconfig/harddisks
-	//system("hdparm -a 0 -A 0 -m 16 -S 100 /dev/hda");
-	//system("hdparm -a 0 -A 0 -m 16 -S 100 /dev/hdb");
-	//system("hdparm -a 0 -A 0 -m 16 -S 100 /dev/hdc");
-	//system("hdparm -a 0 -A 0 -m 16 -S 100 /dev/hdd");
-	//system ("rm /gigablast/*.dat");
-	//system ("rm /gigablast/*.map");
-
-	//if ( g_hostdb.m_hostId == 0 ) g_conf.m_logDebugUdp = 1;
-	//g_conf.m_spideringEnabled = 1;
-	//g_conf.m_logDebugBuild = 1;
-
-	// temp merge test
-	//RdbList list;
-	//list.testIndexMerge();
-
 	// file creation test, make sure we have dir control
 	if (checkDirPerms(g_hostdb.m_dir) < 0) return 1;
 
@@ -2996,27 +1923,7 @@ int main2(int argc, char* argv[]) {
 	//g_speller.init();
 	//if ( !g_speller.init ( ) ) return 1;
 	g_errno = 0;
-	//g_speller.test ( );
-	//exit(-1);
-	/*
-	char dst[1024];
-	char test[1024];
- spellLoop:
-	test[0] = '\0';
-	gets ( test );
-	if ( test[gbstrlen(test)-1] == '\n' ) test[gbstrlen(test)-1] = '\0';
-	Query qq;
-	qq.set ( test , gbstrlen(test) , NULL , 0 , false );
-	if ( g_speller.getRecommendation ( &qq , dst , 1000 ) )
-		log("spelling suggestion: %s", dst );
-	goto spellLoop;
-	*/
 
-	//if ( strcmp ( cmd , "fixtfndb" ) == 0 ) {	
-	//	char *coll = argv[cmdarg+1];
-	//	// clean out tfndb*.dat
-	//	fixTfndb ( coll ); // coll
-	//}
 
 	// make sure port is available, no use loading everything up then
 	// failing because another process is already running using this port
@@ -3036,31 +1943,6 @@ int main2(int argc, char* argv[]) {
 	//if ( strcmp ( cmd , "gendbs"       ) == 0 ) goto jump;
 	//if ( strcmp ( cmd , "gentfndb"     ) == 0 ) goto jump;
 	if (strcmp(cmd, "gencatdb") == 0) goto jump;
-	//if ( strcmp ( cmd , "genclusterdb" ) == 0 ) goto jump;
-	//	if ( cmd && ! is_digit(cmd[0]) ) goto printHelp;
-
-
-	// if pid file is there then do not start up
-	// g_pidFileName.safePrintf("%spidfile",g_hostdb.m_dir );
-	// if ( doesFileExist ( g_pidFileName.getBufStart() ) ) {
-	// 	fprintf(stderr,"pidfile %s exists. Either another gb "
-	// 		"is already running in this directory or "
-	// 		"it exited uncleanly. Can not start up if that "
-	// 		"file exists.",
-	// 		g_pidFileName.getBufStart() );
-	// 	// if we return 0 then main() should not delete the pidfile
-	// 	return 0;
-	// }
-	// // make a new pidfile
-	// pidFile.safePrintf("%i\n",getpid());
-	// if ( ! pidFile.save ( g_pidFileName.getBufStart() ) ) {
-	// 	log("db: could not save %s",g_pidFileName.getBufStart());
-	// 	return 1;
-	// }
-	// // ok, now if we exit SUCCESSFULLY then delete it. we return an
-	// // exit status of 0
-	// g_createdPidFile = true;
-
 
 	// remove the file called 'cleanexit' so if we get killed suddenly
 	// the bashloop will know we did not exit cleanly
@@ -3075,7 +1957,6 @@ int main2(int argc, char* argv[]) {
 		SafeBuf newName(tmp2, 128);
 		time_t ts = getTimeLocal();
 		struct tm* timeStruct = localtime(&ts);
-		//struct tm *timeStruct = gmtime ( &ts );
 		char ppp[100];
 		strftime(ppp, 100, "%Y-%m-%d-%H-%M-%S", timeStruct);
 		newName.safePrintf("%s-%s", g_hostdb.m_logFilename, ppp);
@@ -3088,18 +1969,6 @@ int main2(int argc, char* argv[]) {
 	if (!g_conf.m_runAsDaemon)
 		log("db: Use 'gb -d' to run as daemon. Example: "
 			"gb -d");
-
-	/*
-	// tmp stuff to generate new query log
-	if ( ! ucInit(g_hostdb.m_dir, true)) return 1;
-	if ( ! g_wiktionary.load() ) return 1;
-	if ( ! g_wiktionary.test() ) return 1;
-	if ( ! g_wiki.load() ) return 1;
-	if ( ! g_speller.init() && g_conf.m_isLive ) return 1;
-	if ( ! g_langList.loadLists ( ) ) log("init: loadLists Failed");
-	if ( ! loadQueryLog() ) return 1;
-	return 0;
-	*/
 
 	// start up log file
 	if (!g_log.init(g_hostdb.m_logFilename)) {
@@ -3180,89 +2049,13 @@ int main2(int argc, char* argv[]) {
 		return 1;
 	}
 
-	// some tests. the greek letter alpha with an accent mark (decompose)
-	/*
-	{
-		char us[] = {0xe1,0xbe,0x80};
-		UChar32 uc = utf8Decode(us);//,&next);
-		UChar32 ttt[32];
-		int32_t klen = recursiveKDExpand(uc,ttt,256);
-		char obuf[64];
-		for ( int32_t i = 0 ; i < klen ; i++ ) {
-			UChar32 ui = ttt[i];
-			int32_t blen = utf8Encode(ui,obuf);
-			obuf[blen]=0;
-			int32_t an = ucIsAlpha(ui);
-
-			fprintf(stderr,"#%"INT32"=%s (alnum=%"INT32")\n",i,obuf,an);
-		}
-		fprintf(stderr,"hey\n");
-		exit(0);
-	}
-	*/
-
-	/*
-
-	  PRINT OUT all Unicode characters and their decompositions
-
-	{
-		for ( int32_t uc = 0 ; uc < 0xe01ef ; uc++ ) {
-			//if ( ! ucIsAlnum(uc) ) continue;
-			UChar32 ttt[32];
-			int32_t klen = recursiveKDExpand(uc,ttt,256);
-			char obuf[64];
-			int32_t clen = utf8Encode(uc,obuf);
-			obuf[clen]=0;
-			// print utf8 char we are decomposing
-			fprintf(stderr,"%"XINT32") %s --> ",uc,obuf);
-			// sanity
-			if ( klen > 1 && ttt[0] == (UChar32)uc ) {
-				fprintf(stderr,"SAME\n");
-				continue;
-			}
-			// print decomposition
-			for ( int32_t i = 0 ; i < klen ; i++ ) {
-				UChar32 ui = ttt[i];
-				char qbuf[64];
-				int32_t blen = utf8Encode(ui,qbuf);
-				qbuf[blen]=0;
-				fprintf(stderr,"%s",qbuf);
-				// show the #
-				fprintf(stderr,"{%"XINT32"}",(int32_t)ui);
-				if ( i+1<klen ) fprintf(stderr,", ");
-			}
-			// show utf8 rep
-			fprintf(stderr," [");
-			for ( int32_t i = 0 ; i < clen ; i++ ) {
-				fprintf(stderr,"0x%hhx",(int)obuf[i]);
-				if ( i+1<clen) fprintf(stderr," ");
-			}
-			fprintf(stderr,"]");
-			fprintf(stderr,"\n");
-		}
-		exit(0);
-	}
-	*/
-
-
-
-
 	// the wiktionary for lang identification and alternate word forms/
 	// synonyms
 	if (!g_wiktionary.load()) return 1;
 	if (!g_wiktionary.test()) return 1;
 
-	// . load synonyms, synonym affinity, and stems
-	// . now we are using g_synonyms
-	//g_thesaurus.init();
-	//g_synonyms.init();
-
 	// the wiki titles
 	if (!g_wiki.load()) return 1;
-
-	// the query log split
-	//if ( ! loadQueryLog() ) return 1;
-
 
 jump:
 	// force give up on dead hosts to false
@@ -3271,44 +2064,12 @@ jump:
 	// shout out if we're in read only mode
 	if (g_conf.m_readOnlyMode)
 		log("db: -- Read Only Mode Set. Can Not Add New Data. --");
-	//#ifdef SPLIT_INDEXDB
-		//if ( g_hostdb.m_indexSplits > 1 )
-		//	log("db: -- Split Index ENABLED. Split count set to: %"INT32" --",
-		//	    g_hostdb.m_indexSplits);
-	//#endif
-
-		// . set up shared mem now, only on udpServer2
-		// . will only set it up if we're the lowest hostId on this ip
-		//if ( ! g_udpServer2.setupSharedMem() ) {
-		//	log("db: SharedMem init failed" ); return 1; }
-		// the robots.txt db
-		//if ( ! g_robotdb.init() ) {
-		//	log("db: Robotdb init failed." ); return 1; }
-
 		// . collectiondb, does not use rdb, loads directly from disk
 		// . do this up here so RdbTree::fixTree() can fix RdbTree::m_collnums
 		// . this is a fake init, cuz we pass in "true"
 	if (!g_isYippy && !g_collectiondb.loadAllCollRecs()) {
 		log("db: Collectiondb load failed."); return 1;
 	}
-
-	// a hack to rename files that were not renamed because of a bug
-	// in the repair/build process
-	/*
-	if ( ! g_titledb2.init2    ( 100000000 ) ) {
-		log("db: Titledb init2 failed." ); return 1; }
-	if ( ! g_titledb2.addRdbBase1  ( "mainRebuild" ) ) {
-		log("db: Titledb addcoll failed." ); return 1; }
-	g_titledb2
-	// get the base
-	RdbBase *base = g_titledb2.m_rdb.m_bases[1];
-	// panic?
-	if ( ! base ) { log("db: titledb2: no base."); return 1; }
-	// now clean them up
-	base->removeRebuildFromFilenames ( ) ;
-	// stop
-	return 1;
-	*/
 
 	// then statsdb
 	if (!g_statsdb.init()) {
@@ -3324,19 +2085,10 @@ jump:
 	if (!g_posdb.init()) {
 		log("db: Posdb init failed."); return 1;
 	}
-	// for sorting results by date
-	//if ( ! g_datedb.init()    ) {
-	//	log("db: Datedb init failed." ); return 1; }
-	// for sorting events by time
-	//if ( ! g_timedb.init()    ) {
-	//	log("db: Datedb init failed." ); return 1; }
 	// then titledb
 	if (!g_titledb.init()) {
 		log("db: Titledb init failed."); return 1;
 	}
-	// then revdb
-	//if ( ! g_revdb.init()    ) {
-	//	log("db: Revdb init failed." ); return 1; }
 	// then tagdb
 	if (!g_tagdb.init()) {
 		log("db: Tagdb init failed."); return 1;
@@ -3349,35 +2101,6 @@ jump:
 	if (!g_users.init()) {
 		log("db: Users init failed. "); return 1;
 	}
-
-	// int64_t uu = gettimeofdayInMilliseconds();
-	// for ( int i = 0 ; i < 10000000 ; i++ )
-	// 	bool x = g_threads.amThread();
-	// int64_t uu2 = gettimeofdayInMilliseconds();
-	// log("tod: took %"INT64,uu2-uu);
-
-	//if ( ! g_syncdb.init() ) {
-	//	log("db: Syncdb init failed." ); return 1; }
-
-	// if generating spiderdb/tfndb/checksumdb, boost minfiles
-	//if ( strcmp ( cmd, "gendbs" ) == 0 ) {
-	//	// don't let spider merge all the time!
-	//	g_conf.m_spiderdbMinFilesToMerge = 20;
-	//	g_conf.m_tfndbMinFilesToMerge    = 5;
-	//	// set up spiderdb
-	//	g_conf.m_spiderdbMaxTreeMem = 200000000; // 200M
-	//	g_conf.m_maxMem = 2950000000LL; // 2G
-	//	g_mem.m_maxMem  = 2950000000LL; // 2G
-	//}
-
-	//if ( strcmp ( cmd, "gentfndb" ) == 0 ) {
-	//	g_conf.m_tfndbMinFilesToMerge = 20;
-	//	// set up tfndb
-	//	g_conf.m_tfndbMaxTreeMem = 200000000; // 200M
-	//	g_conf.m_maxMem = 2000000000LL; // 2G
-	//	g_mem.m_maxMem  = 2000000000LL; // 2G
-	//}
-
 	// then tfndb
 	//if ( ! g_tfndb.init()   ) {
 	//	log("db: Tfndb init failed." ); return 1; }
@@ -3396,21 +2119,6 @@ jump:
 	if (!g_test.init()) {
 		log("db: test init failed"); return 1;
 	}
-
-	// then checksumdb
-	//if ( ! g_checksumdb.init()   ) {
-	//	log("db: Checksumdb init failed." ); return 1; }
-
-
-	// ensure clusterdb tree is big enough for quicker generation
-	//if ( strcmp ( cmd, "genclusterdb" ) == 0 ) {
-	//	g_conf.m_clusterdbMinFilesToMerge = 20;
-	//	// set up clusterdb
-	//	g_conf.m_clusterdbMaxTreeMem = 50000000; // 50M
-	//	g_conf.m_maxMem = 2000000000LL; // 2G
-	//	g_mem.m_maxMem  = 2000000000LL; // 2G
-	//}
-
 	// site clusterdb
 	if (!g_clusterdb.init()) {
 		log("db: Clusterdb init failed."); return 1;
@@ -3440,56 +2148,6 @@ jump:
 	if (!g_collectiondb.addRdbBaseToAllRdbsForEachCollRec()) {
 		log("db: Collectiondb init failed."); return 1;
 	}
-	// . now read in a little bit of each db and make sure the contained
-	//   records belong in our group
-	// . only do this if we have more than one group
-	// . we may have records from other groups if we are scaling, but
-	//   if we cannot find *any* records in our group we probably have
-	//   the wrong data files.
-	//if ( ! checkDataParity() ) return 1;
-
-	// init pageturk
-	//if ( ! g_pageTurk.init()  ){
-	//	log("db: PageTurk init failed. "); return 1;}
-
-	// init the vector cache
-	/*
-	if ( ! g_vectorCache.init ( g_conf.m_maxVectorCacheMem,
-					VECTOR_REC_SIZE-sizeof(key_t),
-					true,
-					g_conf.m_maxVectorCacheMem /
-					  ( sizeof(collnum_t) + 20 +
-					VECTOR_REC_SIZE )        ,
-					true,
-					"vector",
-					false,
-					12,
-					12 ) ) {
-		log("db: Vector Cache init failed." ); return 1; }
-	*/
-	// . gb gendbs 
-	// . hostId should have already been picked up above, so it could be 
-	//   used to initialize all the rdbs
-	//if ( strcmp ( cmd , "gendbs" ) == 0 ) {
-	//	char *coll = argv[cmdarg+1];
-	//	// generate the dbs
-	//	genDbs ( coll ); // coll
-	//	g_log.m_disabled = true;
-	//	return 0;
-	//}
-	//if ( strcmp ( cmd , "gentfndb" ) == 0 ) {
-	//	char *coll = argv[cmdarg+1];
-	//	genTfndb ( coll );
-	//	g_log.m_disabled = true;
-	//	return 0;
-	//}
-	//if ( strcmp ( cmd, "genclusterdb" ) == 0 ) {
-	//	char *coll = argv[cmdarg+1];
-	//	makeClusterdb ( coll );
-	//	g_log.m_disabled = true;
-	//	return 0;
-	//}
-
 	// test all collection dirs for write permission -- metalincs' request
 	int32_t pcount = 0;
 	for (int32_t i = 0; i < g_collectiondb.m_numRecs; i++) {
@@ -3505,17 +2163,6 @@ jump:
 			g_hostdb.m_dir, cr->m_coll, (int32_t)cr->m_collnum);
 		checkDirPerms(tt);
 	}
-
-	// and now that all rdbs have loaded lets count the gbeventcount
-	// keys we have in datedb. those represent the # of events we
-	// have indexed.
-	//g_collectiondb.countEvents();
-
-	//if (!ucInit(g_hostdb.m_dir, true)) {
-	//	log("Unicode initialization failed!");
-	//	return 1;
-	//}
-
 	//
 	// NOTE: ANYTHING THAT USES THE PARSER SHOULD GO BELOW HERE, UCINIT!
 	//
@@ -3524,20 +2171,6 @@ jump:
 	if (!g_speller.init() && g_conf.m_isLive) {
 		return 1;
 	}
-
-	// have to test after unified dict is loaded because if word is
-	// of unknown langid we try to get syns for it anyway if it has
-	// only one possible lang according to unified dict
-	//if ( ! g_wiktionary.test2() ) return 1;
-
-	/*
-	if ( strcmp ( cmd, "gendaterange" ) == 0 ) {
-		char *coll = argv[cmdarg+1];
-		genDateRange ( coll );
-		g_log.m_disabled = true;
-		return 0;
-	}
-	*/
 
 	// load language lists
 	if (!g_langList.loadLists()) {
@@ -3553,28 +2186,7 @@ jump:
 			"support.");
 		//return 1;
 	}
-
-	//if( !g_pageTopDocs.init() ) {
-	//	log( "init: PageTopDocs init failed." );
-	//	return 1;
-	//}
-
-	//if( !g_pageNetTest.init() ) {
-	//	log( "init: PageNetTest init failed." );
-	//	return 1;
-	//}
-
-	//if(!Msg6a::init()) {
-	//	log( "init: Quality Agent init failed." );
-	//}
-
 	if (!g_scraper.init()) return 1;
-
-	//if ( ! DateParse::init()  ) {
-	//	log("db: DateParse init failed." ); return 1; 
-	//}
-
-	//countdomains was HERE, moved up to access more mem.
 
 	// load up the dmoz categories here
 	char structureFile[256];
@@ -3606,26 +2218,6 @@ jump:
 		return 1;
 	}
 
-	//if(!g_classifier.restore()) {
-	//	log("classifier: init failed.");
-	//	//return 1;
-	//}
-
-	// deprecated in favor of Msg13-based throttling
-	//if ( !g_msg6.init() ) {
-	//	log ( "init: msg6 init failed." );
-	//	return 1;
-	//}
-
-	// if(!g_profiler.init()) {
-	// 	log("profiler: init failed.");
-	// }
-	// g_profiler.readSymbolTable();
-
-	//exit(0);
-	// diff with indexdb in sync/ dir
-	//syncIndexdb ( );
-	//exit(-1);
 	// init the cache in Msg40 for caching search results
 	// if cache not initialized now then do it now
 	int32_t maxMem = g_conf.m_searchResultsMaxCacheMem;
@@ -3641,64 +2233,6 @@ jump:
 		log("db: ResultsCache: %s", mstrerror(g_errno));
 		return 1;
 	}
-	/*
-	maxMem = 40000000;
-	int32_t maxNodes2 = maxMem/(8+8+50*(8+4+4));
-	if ( ! g_genericCache[SEORESULTS_CACHEID].init (
-					 maxMem     ,   // max cache mem
-					 -1          ,   // fixedDataSize
-					 false       ,   // support lists of recs?
-					 maxNodes2   ,   // max cache nodes
-					 false       ,   // use half keys?
-					 "seoresults"   ,   // filename
-					 true)){ // save to disk?
-		log("db: ResultsCache: %s",mstrerror(g_errno));
-		return 1;
-	}
-	*/
-	/*
-	int32_t maxMem1 = g_conf.m_siteLinkInfoMaxCacheMem;
-	if ( ! g_genericCache[SITELINKINFO_CACHEID].init (
-					 maxMem1     ,   // max cache mem
-					 4           ,   // fixedDataSize
-					 false       ,   // support lists of recs?
-					 maxMem1/36  ,   // max cache nodes
-					 false       ,   // use half keys?
-					 "sitelinkinfo" ,   // filename
-					 //g_conf.m_siteLinkInfoSaveCache ) ) {
-					 true)){
-		log("db: SiteLinkInfoCache: %s",mstrerror(g_errno));
-		return 1;
-	}
-	int32_t maxMem2a = g_conf.m_siteQualityMaxCacheMem;
-	if ( ! g_genericCache[SITEQUALITY_CACHEID].init (
-					 maxMem2a    ,   // max cache mem
-					 1           ,   // fixedDataSize
-					 false       ,   // support lists of recs?
-					 maxMem2a/36 ,   // max cache nodes
-					 false       ,   // use half keys?
-					 "sitequality" ,   // filename
-					 //g_conf.m_siteQualitySaveCache ) ) {
-					 true)) {
-		log("db: SiteQualityCache: %s",mstrerror(g_errno));
-		return 1;
-	}
-	*/
-	/*
-	int32_t maxMem2b = g_conf.m_siteQualityMaxCacheMem * .10 ;
-	if ( ! g_genericCacheSmallLocal[SITEQUALITY_CACHEID].init (
-					 maxMem2b    ,   // max cache mem
-					 1           ,   // fixedDataSize
-					 false       ,   // support lists of recs?
-					 maxMem2b/36 ,   // max cache nodes
-					 false       ,   // use half keys?
-					 "sitequality" ,   // filename
-					 //g_conf.m_siteQualitySaveCache ) ) {
-					 false)) {
-		log("db: SiteQualityCacheSmallLocal: %s",mstrerror(g_errno));
-		return 1;
-	}
-	*/
 
 	// init minsitenuminlinks buffer
 	if (!g_tagdb.loadMinSiteInlinksBuffer()) {
@@ -3762,13 +2296,6 @@ jump:
 			"running?");
 		// this is dangerous!!! do not do the shutdown thing
 		return 1;
-		/*
-		// just open a socket to port X and send GET /master?save=1
-		if ( shutdownOldGB(h->m_httpPort) ) goto again;
-		log("db: Shutdown failed.");
-		resetAll();
-		return 1;
-		*/
 	}
 
 	if (!Msg1f::init()) {
@@ -3781,23 +2308,8 @@ jump:
 		log("db: registerMsgHandlers failed"); return 1;
 	}
 
-	// for Events.cpp event extraction we need to parse out "places" from 
-	// each doc
-	//if ( ! initPlaceDescTable ( ) ) {
-	//	log("events: places table init failed"); return 1; }
-
-	// init our city lists for mapping a lat/lon to nearest cityid
-	// for getting the timezone for getting all events "today".
-	// city lists are used by the get
-	//if ( ! initCityLists() ) {
-	//	log("events: city lists init failed"); return 1; }
-
-	//if ( ! initCityLists_new() ) {
-	//	log("events: city lists init failed"); return 1; }
-
 	// . get a doc every hour from gigablast.com as a registration thang
 	// . security, man
-	//if((int32_t) g_conf.m_mainExternalIp != atoip ( "207.114.174.29" ,14) ) 
 	g_loop.registerSleepCallback(5000, NULL, getPageWrapper);
 	// save our rdbs every 5 seconds and save rdb if it hasn't dumped
 	// in the last 10 mins
@@ -3823,26 +2335,6 @@ jump:
 		return 0;
 	}
 
-	// gb stemmertest
-	//if ( strcmp ( cmd , "stemmertest" ) == 0 ) {
-	//	if ( argc != cmdarg + 2 ) goto printHelp;
-	//	g_stemmer.test ( argv[cmdarg + 1] );
-	//	return 0;
-	//}
-
-	// gb queryserializetest
-	/*
-	if ( strcmp ( cmd , "queryserializetest" ) == 0 ) {
-		if ( argc != cmdarg + 2 ) goto printHelp;
-		int64_t starttime = gettimeofdayInMilliseconds();
-		QuerySerializeTest( argv[cmdarg + 1] );
-		log(LOG_INFO, "query: took %"INT64"msecs for query serialize" \
-			"test on %s", gettimeofdayInMilliseconds() - starttime,
-			argv[cmdarg + 1]);
-		return 0;
-	}
-	*/
-
 #ifdef _LIMIT10_
 	// how many pages have we indexed so far?
 	//int64_t numPages = g_titledb.getRdb()->getNumGlobalRecs();
@@ -3852,43 +2344,7 @@ jump:
 			"You have exceeded the terms of your license. "
 			"Please contact mwells@gigablast.com for a new license.");
 #endif
-	// bdflush needs to be turned off because we need to control the
-	// writes directly. we do this by killing the write thread.
-	// we kill it when we need to do important reads, otherwise, if
-	// we cannot control the writes it fucks up our reading.
-	// no, now i use fsync(fd) in BigFile.cpp
-	//log("WARNING: burstify bdflush with a "
-	// "'echo 1 > /proc/sys/vm/bdflush' to optimize query response time "
-	//    "during spidering.");
-	//log("WARNING: mount with noatime option to speed up writes.");
-	//log("         since we now call fsync(fd) after each write." );
 
-	// debug msgs
-	//log("REMINDER: make HOT again!");
-	//log("REMINDER: reinsert thread call failed warning in BigFile.cpp.");
-	//log("REMINDER: remove mem leak checking");
-	//log("REMINDER: put thread back in Msg39");
-
-	// . now check with gigablast.com (216.243.113.1) to see if we 
-	//   are licensed, for now, just get the doc
-	// . TODO: implement this (GET /license.html \r\n
-	//                         Host: www.gigablast.com\r\n\r)
-
-	// do the zlib test
-	//zlibtest();
-	// . now m_minToMerge might have changed so try to do a merge
-	// . only does one merge at a time
-	// . other rdb's will sleep and retry until it's their turn
-	//g_indexdb.getRdb()->m_minToMerge = 3;	
-	//g_loop.registerSleepCallback ( 1000 ,
-	//			       NULL ,
-	//			       tryMergingWrapper );
-	// . register a callback to try to merge everything every 2 seconds
-	// . do not exit if we couldn't do this, not a huge deal
-	// . put this in here instead of Rdb.cpp because we don't want
-	//   generator commands merging on us
-	// . the (void *)1 prevents gb from logging merge info every 2 seconds
-	// . niceness is 1
 	if (!g_loop.registerSleepCallback(2000, (void*)1, attemptMergeAll, 1))
 		log("db: Failed to init merge sleep callback.");
 
@@ -3902,29 +2358,6 @@ jump:
 	// try to sync parms (and collection recs) with host 0
 	if (!g_loop.registerSleepCallback(1000, NULL, tryToSyncWrapper, 0))
 		return false;
-
-	//if( !g_loop.registerSleepCallback(2000,(void *)1,controlDumpTopDocs) )
-	//	log("db: Failed to init dump TopDocs sleep callback.");
-
-		// MTS: removing nettest, this breaks NetGear switches when all links
-		//      are transmitting full bore and full duplex.
-	//if( !g_loop.registerSleepCallback(2000,(void *)1,controlNetTest) )
-	//	log("db: Failed to init network test sleep callback.");
-
-	//if( !g_loop.registerSleepCallback(60000,(void *)1,takeSnapshotWrapper))
-	//	log("db: Failed to init Statsdb snapshot sleep callback.");
-
-	// check to make sure we have the latest parms
-	//Msg3e msg3e;  
-	//msg3e.checkForNewParms();
-
-	// this stuff is similar to alden's msg3e but will sync collections
-	// that were added/deletede
-	//if ( ! g_parms.syncParmsWithHost0() ) {
-	//	log("parms: error syncing parms: %s",mstrerror(g_errno));
-	//	return 0;
-	//}
-
 
 	if (g_recoveryMode) {
 		//now that everything is init-ed send the message.
@@ -3958,73 +2391,6 @@ jump:
 	// allow saving of conf again
 	g_conf.m_save = true;
 
-	// test speed of select statement used in Loop::doPoll()
-	// descriptor bits for calling select()
-	/*
-	fd_set readfds;
-	fd_set writefds;
-	fd_set exceptfds;
-	// clear fds for select()
-	FD_ZERO ( &readfds   );
-	FD_ZERO ( &writefds  );
-	FD_ZERO ( &exceptfds );
-	timeval v;
-	v.tv_sec  = 0;
-	v.tv_usec = 1;
-	// set descriptors we should watch
-	for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {
-		if ( g_loop.m_readSlots [i] ) {
-			FD_SET ( i , &readfds   );
-			FD_SET ( i , &exceptfds );
-		}
-		if ( g_loop.m_writeSlots[i] ) {
-			FD_SET ( i , &writefds );
-			FD_SET ( i , &exceptfds );
-		}
-	}
-	// . poll the fd's searching for socket closes
-	// . this takes 113ms with the FD_SET() stuff, and 35ms without
-	//   for doing 10,000 loops... pretty fast.
-	int64_t t1 = gettimeofdayInMilliseconds();
-	int32_t i = 0;
-	for ( i = 0 ; i < 10000 ; i++ ) {
-		// descriptor bits for calling select()
-		fd_set readfds;
-		fd_set writefds;
-		fd_set exceptfds;
-		// clear fds for select()
-		FD_ZERO ( &readfds   );
-		FD_ZERO ( &writefds  );
-		FD_ZERO ( &exceptfds );
-		timeval v;
-		v.tv_sec  = 0;
-		v.tv_usec = 1;
-		// set descriptors we should watch
-		for ( int32_t i = 0 ; i < MAX_NUM_FDS ; i++ ) {
-			if ( g_loop.m_readSlots [i] ) {
-				FD_SET ( i , &readfds   );
-				FD_SET ( i , &exceptfds );
-			}
-			if ( g_loop.m_writeSlots[i] ) {
-				FD_SET ( i , &writefds );
-				FD_SET ( i , &exceptfds );
-			}
-		}
-
-		int32_t n = select (MAX_NUM_FDS,&readfds,&writefds,&exceptfds,&v);
-		if ( n >= 0 ) continue;
-		log("loop: select: %s.",strerror(g_errno));
-		break;
-	}
-	int64_t t2 = gettimeofdayInMilliseconds();
-	log(LOG_INFO,"loop: %"INT32" selects() called in %"INT64" ms.",i,t2-t1);
-	*/
-
-	//spamTest();
-
-	// flush stats
-	//g_statsdb.flush();
-
 	// ok, now activate statsdb
 	g_statsdb.m_disabled = false;
 
@@ -4042,73 +2408,6 @@ jump:
 	// dummy return (0-->normal exit status for the shell)
 	return 0;
 }
-
-/*
-void spamTest ( ) {
-	// quick test
-	// load in sample
-	char *filename = "/home/mwells/poo";
-	int fd = open ( filename , O_RDONLY );
-	char ppp[100000];
-		struct stat stats;
-		stat ( filename , &stats );
-		int32_t size =  stats.st_size;
-	if ( size > 100000 ) size = 99999;
-	logf(LOG_INFO,"linkspam: Read %"INT32" bytes.",(int32_t)size);
-	// copy errno to g_errno
-	read ( fd , ppp  , size );
-	ppp[size]=0;
-	Xml xml;
-	xml.set ( csUTF8,
-		  ppp ,
-		  size ,
-		  false ,
-		  size ,
-		  false ,
-		  TITLEREC_CURRENT_VERSION );
-	Url linker;
-	Url linkee;
-	char *lee = "www.viagrapunch.com";
-	linkee.set ( lee , gbstrlen ( lee ) );
-	char *rr = "http://www.propeciauk.co.uk/links.htm";
-	linker.set ( rr , gbstrlen(rr) );
-	char *note = NULL;
-		int32_t linkNode = -1;
-	Links links;
-	//int32_t siteFileNum = 48;//tr->getSiteFilenum();
-		//Xml *sx = g_tagdb.getSiteXml ( siteFileNum, "main" , 4 );
-		if (!links.set ( true , &xml , &linker ,
-	false, // includeLinkHashes
-						 true , // useBaseHref?
-	TITLEREC_CURRENT_VERSION,
-						 0 )) // niceness ))
-				return;
-	char linkText[1024];
-	if ( linkNode < 0 )
-		logf(LOG_INFO,"linkspam: linkee not found in content.");
-		//int32_t linkTextLen =
-	links.getLinkText ( &linkee ,
-				linkText          ,
-				1023 ,
-				NULL,//&m_itemPtr          ,
-				NULL,//&m_itemLen          ,
-				&linkNode           ,
-				0 ); // niceness );
-	bool ttt = isLinkSpam  ( &linker ,
-				 NULL , //class TitleRec  *tr        ,
-				 &xml ,
-				 &links ,
-				 size ,
-				 &note ,
-				 &linkee ,
-				 linkNode  ,
-				 "main" ,
-				 0 ); // niceness
-	logf(LOG_INFO,"linkspam: linkNode=%"INT32" val=%"INT32" note=%s",
-		 linkNode,(int32_t)ttt,note);
-	exit(0);
-}
-*/
 
 int32_t checkDirPerms(char* dir) {
 	if (g_conf.m_readOnlyMode) return 0;
@@ -4184,15 +2483,7 @@ bool doCmd(const char* cmd, int32_t hostId, char* filename,
 //static TcpSocket   s_s;
 
 void doneCmdAll(void* state) {
-	/*
-	if ( s_sendToProxies ){
-		if ( ! g_loop.registerSleepCallback(1, NULL, doCmdAll,0 ) ){
-			log("admin: Loop init failed.");
-			exit ( 0 );
-		}
-		return;
-	}
-	*/
+
 	log("cmd: completed command");
 	exit(0);
 }
@@ -4979,846 +3270,741 @@ int install(install_flag_konst_t installFlag, int32_t hostId, char* dir,
 			log(LOG_INIT, "admin: %s", tmp);
 			system(tmp);
 		}
-		/*
-		if      ( installFlag == ifk_install2 ) {
+
+		else if (installFlag == ifk_installgb) {
+			// don't copy to ourselves
+			//if ( h2->m_hostId == h->m_hostId ) continue;
+
+			File f;
+			char* target = "gb.new";
+			f.set(g_hostdb.m_myHost->m_dir, target);
+			if (!f.doesExist()) target = "gb";
+
+			sprintf(tmp,
+				"scp -p " // blowfish is faster
+				"%s%s "
+				"%s:%s/gb.installed%s",
+				dir,
+				target,
+				iptoa(h2->m_ip),
+				h2->m_dir,
+				amp);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+		}
+		else if (installFlag == ifk_installgbrcp) {
+			// don't copy to ourselves
+			//if ( h2->m_hostId == h->m_hostId ) continue;
+
+			File f;
+			char* target = "gb.new";
+			f.set(g_hostdb.m_myHost->m_dir, target);
+			if (!f.doesExist()) target = "gb";
+
+			sprintf(tmp,
+				"rcp "
+				"%s%s "
+				"%s:%s/gb.installed%s",
+				dir,
+				target,
+				iptoa(h2->m_ip),
+				h2->m_dir,
+				amp);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+		}
+		else if (installFlag == ifk_installtmpgb) {
 			// don't copy to ourselves
 			//if ( h2->m_hostId == h->m_hostId ) continue;
 			sprintf(tmp,
-				"rcp -r "
-				"%sgb "
-				//"%sgbfilter "
-				"%shosts.conf "
-				"%shosts2.conf "
-				"%sgb.conf "
-				"%stmpgb "
-				//"%scollections.dat "
-				"%sgb.pem "
-				"%sdict "
-				"%sucdata "
-				"%stop100000Alexa.txt "
-				//"%slanglist "
-				"%santiword "
-				"%s.antiword "
-				"badcattable.dat "
-				"catcountry.dat "
-				"%spdftohtml "
-				"%spstotext "
-				"%sxlhtml "
-				"%sppthtml "
-				//"%stagdb*.xml "
-				"%shtml "
-				"%scat "
-				"%s:%s",
+				"scp -p "
+				"%sgb.new "
+				"%s:%s/tmpgb.installed &",
+				dir,
+				iptoa(h2->m_ip),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+		}
+		else if (installFlag == ifk_installconf) {
+			// don't copy to ourselves
+			//if ( h2->m_hostId == h->m_hostId ) continue;
+			sprintf(tmp,
+				"scp -p %sgb.conf %shosts.conf %s:%s %s",
+				dir,
+				dir,
+				//h->m_hostId ,
+				iptoa(h2->m_ip),
+				h2->m_dir,
+				//h2->m_hostId);
+				amp);
+
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			// sprintf(tmp,
+			// 	"scp %shosts.conf %s:%shosts.conf &",
+			// 	dir ,
+			// 	iptoa(h2->m_ip),
+			// 	h2->m_dir);
+			// log(LOG_INIT,"admin: %s", tmp);
+			// system ( tmp );
+			// sprintf(tmp,
+			// 	"scp %shosts2.conf %s:%shosts2.conf &",
+			// 	dir ,
+			// 	iptoa(h2->m_ip),
+			// 	h2->m_dir);
+			// log(LOG_INIT,"admin: %s", tmp);
+			// system ( tmp );
+		}
+		else if (installFlag == ifk_start) {
+			// . save old log now, too
+			//char tmp2[1024];
+			//tmp2[0]='\0';
+			// let's do this for everyone now
+			//if ( h2->m_hostId == 0 )
+			//sprintf(tmp2,
+			//	"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
+			//	"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
+			//	h2->m_hostId   ,
+			//	h2->m_hostId   );
+			// . assume conf file name gbHID.conf
+			// . assume working dir ends in a '/'
+			sprintf(tmp,
+				"ssh %s \"cd %s ; ulimit -c unlimited; "
+				"cp -f gb gb.oldsave ; "
+				"mv -f gb.installed gb ; " // %s"
+				//"./gb %"INT32" >& ./log%03"INT32" &\" %s",
+				// without "sleep 1" ssh seems to exit
+				// bash before it can start gb and gb does
+				// not start up.
+				// hostid is now inferred from path.
+				"./gb & sleep 1\" %s",
+				iptoa(h2->m_ip),
+				h2->m_dir,
+				//tmp2           ,
+				//h2->m_dir      ,
+				//h2->m_hostId   ,
+				//h2->m_hostId   ,
+				amp);
+			// log it
+			//log(LOG_INIT,"admin: %s", tmp);
+			fprintf(stdout, "admin: %s\n", tmp);
+			// execute it
+			system(tmp);
+		}
+		/*
+		// SEQUENTIALLY start
+		else if ( installFlag == ifk_start2 ) {
+			// . save old log now, too
+			char tmp2[1024];
+			tmp2[0]='\0';
+			// let's do this for everyone now
+			//if ( h2->m_hostId == 0 )
+			sprintf(tmp2,
+				"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
+				"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
+				h2->m_hostId   ,
+				h2->m_hostId   );
+			// . assume conf file name gbHID.conf
+			// . assume working dir ends in a '/'
+			char *amp = " &";
+			if ( i > 0 && (i%5) == 0 ) amp = "";
+			sprintf(tmp,
+				"ssh %s \"cd %s ; "
+				"cp -f gb gb.oldsave ; "
+				"mv -f gb.installed gb ; %s"
+				"./gb %"INT32" >& ./log%03"INT32" &\"%s",
+				iptoa(h2->m_ipShotgun),
+				h2->m_dir      ,
+				tmp2           ,
+				//h2->m_dir      ,
+				h2->m_hostId   ,
+				h2->m_hostId   ,
+				amp );
+			// log it
+			log(LOG_INIT,"admin: %s", tmp);
+			// execute it
+			system ( tmp );
+		}
+		*/
+		// start up a dummy cluster using hosts.conf ports + 1
+		else if (installFlag == ifk_tmpstart) {
+			// . assume conf file name gbHID.conf
+			// . assume working dir ends in a '/'
+			sprintf(tmp,
+				"ssh %s \"cd %s ; "
+				"cp -f tmpgb tmpgb.oldsave ; "
+				"mv -f tmpgb.installed tmpgb ; "
+				"%s/tmpgb tmpstarthost "
+				"%"INT32" >& ./tmplog%03"INT32" &\" &",
+				iptoa(h2->m_ip),
+				h2->m_dir,
+				h2->m_dir,
+				h2->m_hostId,
+				h2->m_hostId);
+			// log it
+			log(LOG_INIT, "admin: %s", tmp);
+			// execute it
+			system(tmp);
+		}
+		else if (installFlag == ifk_kstart ||
+			installFlag == ifk_dstart) {
+			char* extraBreak = "";
+			if (installFlag == ifk_dstart)
+				extraBreak = "break;";
+			//keepalive
+			// . save old log now, too
+			//char tmp2[1024];
+			//tmp2[0]='\0';
+			// let's do this for everyone now
+			//if ( h2->m_hostId == 0 )
+			// we do not run as daemon so keepalive loop will
+			// work properly...
+			//sprintf(tmp2,
+			//	"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
+			//	"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
+			//	h2->m_hostId   ,
+			//	h2->m_hostId   );
+			// . assume conf file name gbHID.conf
+			// . assume working dir ends in a '/'
+			//to test add: ulimit -t 10; to the ssh cmd
+			sprintf(tmp,
+				"ssh %s \"cd %s ; ulimit -c unlimited; "
+				"export MALLOC_CHECK_=0;"
+				"cp -f gb gb.oldsave ; "
+				"ADDARGS='' "
+				"INC=1 "
+				//"EXITSTATUS=1 "
+				" ; "
+				"while true; do "
+				//"{ "
+
+				// if gb still running, then do not try to
+				// run it again. we
+				// probably double-called './gb start'.
+				// so see if the port is bound to. 
+				// "./gb isportinuse %i ; "
+				// "if [ \\$? -eq 1 ] ; then "
+				// "echo \"gb or something else "
+				// "is already running on "
+				// "port %i. Not starting.\" ; "
+				// "exit 0; "
+				// "fi ; "
+
+				// ok, the port is available
+				//"echo \"Starting gb\"; "
+
+				//"exit 0; "
+
+				// if pidfile exists then gb is already
+				// running so do not move its log file!
+				// "if [ -f \"./pidfile\" ]; then  "
+				// "echo \"./pidfile exists. can not start "
+				// "gb\" >& /dev/stdout; break; fi;"
+
+				// in case gb was updated...
+				"mv -f gb.installed gb ; "
+
+				// move the log file
+				// "mv ./log%03"INT32" ./log%03"INT32"-\\`date '+"
+				// "%%Y_%%m_%%d-%%H:%%M:%%S'\\` ; " 
+
+				// indicate -l so we log to a logfile
+				"./gb -l "//%"INT32" "
+				"\\$ADDARGS "
+
+				// no longer log to stderr so we can
+				// do log file rotation
+				//" >& ./log%03"INT32""
+				" ;"
+
+				// this doesn't always work so use
+				// the cleanexit file approach.
+				// but if we run a second gb accidentally
+				// it would write a ./cleanexit file 
+				// to get out of its loop and it wouldn't
+				// be deleted! crap. so try this again
+				// for this short cases when we exit right
+				// away.
+				"EXITSTATUS=\\$? ; "
+				// if gb does exit(0) then stop
+				"if [ \\$EXITSTATUS = 0 ]; then break; fi;"
+
+				// also stop if ./cleanexit is there
+				// because the above exit(0) does not always
+				// work for some strange reasons
+				"if [ -f \"./cleanexit\" ]; then  break; fi;"
+				"%s"
+				"ADDARGS='-r'\\$INC ; "
+				"INC=\\$((INC+1));"
+				//"} " 
+				"done >& /dev/null & \" %s",
+				//"done & \" %s",
+				//"done & \" %s",
+
+
+				//"done & \" %s",
+				//"\" %s",
+				iptoa(h2->m_ip),
+				h2->m_dir,
+
+				// for ./gb isportinuse %i
+				// h2->m_httpPort ,
+				// h2->m_httpPort ,
+
+				// for moving log file
+				 // h2->m_hostId   ,
+				 // h2->m_hostId   ,
+
+				//h2->m_dir      ,
+				extraBreak,
+				// hostid is now inferred from path
+				//h2->m_hostId   ,
+				amp);
+
+			// log it
+			//log(LOG_INIT,"admin: %s", tmp);
+			fprintf(stdout, "admin: %s\n", tmp);
+			// execute it
+			system(tmp);
+		}
+		/*
+		else if ( installFlag == ifk_dstart ) {
+			//keepalive
+			// . save old log now, too
+			//char tmp2[1024];
+			//tmp2[0]='\0';
+			// let's do this for everyone now
+			//if ( h2->m_hostId == 0 )
+			// we do not run as daemon so keepalive loop will
+			// work properly...
+			//sprintf(tmp2,
+			//	"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
+			//	"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
+			//	h2->m_hostId   ,
+			//	h2->m_hostId   );
+			// . assume conf file name gbHID.conf
+			// . assume working dir ends in a '/'
+			amp = "&";
+			//if ( i > 0 && (i%5) == 0 ) amp = "";
+			//to test add: ulimit -t 10; to the ssh cmd
+			sprintf(tmp,
+				"ssh %s \"cd %s ; ulimit -c unlimited; "
+				"export MALLOC_CHECK_=0;"
+				"cp -f gb gb.oldsave ; "
+				"mv -f gb.installed gb ; "
+				//"ADDARGS='' ; "
+				//"EXITSTATUS=1 ; "
+				// "while [ \\$EXITSTATUS != 0 ]; do "
+				// "{ "
+
+				// move the log file
+				//"mv ./log%03"INT32" ./log%03"INT32"-\\`date '+"
+				//"%%Y_%%m_%%d-%%H:%%M:%%S'\\` ; "
+
+				"./gb -d "//%"INT32" "
+				//"\\$ADDARGS "
+				//" ;"
+				//" >& ./log%03"INT32" ;"
+
+				//"EXITSTATUS=\\$? ; "
+				//"ADDARGS='-r' ; "
+				//"} "
+				//"done >& /dev/null & \" %s",
+				"\" %s",
+				iptoa(h2->m_ip),
+				h2->m_dir      ,
+
+				// for moving log file
+				// h2->m_hostId   ,
+				// h2->m_hostId   ,
+
+				//h2->m_dir      ,
+
+				// hostid is now inferred from path
+				//h2->m_hostId   ,
+				amp );
+
+			// log it
+			//log(LOG_INIT,"admin: %s", tmp);
+			fprintf(stdout,"admin: %s\n", tmp);
+			// execute it
+			system ( tmp );
+		}
+		*/
+		/*
+		else if ( installFlag == ifk_gendbs ) {
+			// . save old log now, too
+			char tmp2[1024];
+			tmp2[0]='\0';
+			// let's do this for everyone now
+			//if ( h2->m_hostId == 0 )
+			sprintf(tmp2,
+				"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
+				"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
+				h2->m_hostId   ,
+				h2->m_hostId   );
+			// . assume conf file name gbHID.conf
+			// . assume working dir ends in a '/'
+			sprintf(tmp,
+				"ssh %s \"cd %s ; %s"
+				"./gb -c %shosts.conf gendbs %s %"INT32" >&"
+				"./log%03"INT32" &\" &",
+				iptoa(h2->m_ip),
+				h2->m_dir      ,
+				tmp2           ,
+				h2->m_dir      ,
+				coll           ,
+				h2->m_hostId   ,
+				h2->m_hostId   );
+			// log it
+			log(LOG_INFO,"installM %s",tmp);
+			log(LOG_INIT,"admin: %s", tmp);
+			// execute it
+			system ( tmp );
+		}
+
+
+		else if ( installFlag == ifk_fixtfndb ) {
+			// . save old log now, too
+			char tmp2[1024];
+			tmp2[0]='\0';
+			// let's do this for everyone now
+			//if ( h2->m_hostId == 0 )
+			sprintf(tmp2,
+				"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
+				"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
+				h2->m_hostId   ,
+				h2->m_hostId   );
+			// . assume conf file name gbHID.conf
+			// . assume working dir ends in a '/'
+			sprintf(tmp,
+				"ssh %s \"cd %s ; %s"
+				"./gb -c %shosts.conf fixtfndb %s %"INT32" >&"
+				"./log%03"INT32" &\" &",
+				iptoa(h2->m_ip),
+				h2->m_dir      ,
+				tmp2           ,
+				h2->m_dir      ,
+				coll           ,
+				h2->m_hostId   ,
+				h2->m_hostId   );
+			// log it
+			log(LOG_INIT,"admin: %s", tmp);
+			// execute it
+			system ( tmp );
+		}
+		else if ( installFlag == ifk_gentfndb ) {
+			// . save old log now, too
+			char tmp2[1024];
+			tmp2[0]='\0';
+			// let's do this for everyone now
+			//if ( h2->m_hostId == 0 )
+			sprintf(tmp2,
+				"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
+				"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
+				h2->m_hostId   ,
+				h2->m_hostId   );
+			// . assume conf file name gbHID.conf
+			// . assume working dir ends in a '/'
+			sprintf(tmp,
+				"ssh %s \"cd %s ; %s"
+				"./gb -c %shosts.conf gentfndb %s %"INT32" >&"
+				"./log%03"INT32" &\" &",
+				iptoa(h2->m_ip),
+				h2->m_dir      ,
+				tmp2           ,
+				h2->m_dir      ,
+				coll           ,
+				h2->m_hostId   ,
+				h2->m_hostId   );
+			// log it
+			log(LOG_INIT,"admin: %s", tmp);
+			// execute it
+			system ( tmp );
+		}
+		*/
+		else if (installFlag == ifk_installcat) {
+			// . copy catdb files to all hosts
+			// don't copy to ourselves
+			if (h2->m_hostId == 0)
+				continue;
+			/*
+			if ( h2->m_hostId == 0 ) {
+				sprintf(tmp,
+					"cp "
+					"content.rdf.u8 "
+					"structure.rdf.u8 "
+					"gbdmoz.structure.dat "
+					"gbdmoz.content.dat "
+					"%scatdb/",
+					h2->m_dir);
+				log(LOG_INIT,"admin: %s", tmp);
+				system ( tmp );
+				continue;
+			}
+			*/
+			sprintf(tmp,
+				"scp -p "
+				"%scatdb/content.rdf.u8 "
+				"%s:%scatdb/content.rdf.u8",
+				dir,
+				iptoa(h2->m_ip),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"scp -p "
+				"%scatdb/structure.rdf.u8 "
+				"%s:%scatdb/structure.rdf.u8",
+				dir,
+				iptoa(h2->m_ip),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"scp -p "
+				"%scatdb/gbdmoz.structure.dat "
+				"%s:%scatdb/gbdmoz.structure.dat",
+				dir,
+				iptoa(h2->m_ip),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"scp -p "
+				"%scatdb/gbdmoz.content.dat "
+				"%s:%scatdb/gbdmoz.content.dat",
+				dir,
+				iptoa(h2->m_ip),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			//system ( tmp );
+			//sprintf(tmp,
+			//	"scp "
+			//	"%scatdb/gbdmoz.content.dat.diff "
+			//	"%s:%scatdb/gbdmoz.content.dat.diff",
+			//	dir,
+			//	iptoa(h2->m_ip),
+			//	h2->m_dir);
+			//log(LOG_INIT,"admin: %s", tmp);
+			//system ( tmp );
+		}
+		else if (installFlag == ifk_installnewcat) {
+			// . copy catdb files to all hosts
+			// don't copy to ourselves
+			if (h2->m_hostId == 0) continue;
+			sprintf(tmp,
+				"scp -p "
+				"%scatdb/content.rdf.u8.new "
+				"%s:%scatdb/content.rdf.u8.new",
+				dir,
+				iptoa(h2->m_ip),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"scp -p "
+				"%scatdb/structure.rdf.u8.new "
+				"%s:%scatdb/structure.rdf.u8.new",
+				dir,
+				iptoa(h2->m_ip),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"scp -p "
+				"%scatdb/gbdmoz.structure.dat.new "
+				"%s:%scatdb/gbdmoz.structure.dat.new",
+				dir,
+				iptoa(h2->m_ip),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"scp -p "
+				"%scatdb/gbdmoz.content.dat.new "
+				"%s:%scatdb/gbdmoz.content.dat.new",
+				dir,
+				iptoa(h2->m_ip),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"scp -p "
+				"%scatdb/gbdmoz.content.dat.new.diff "
+				"%s:%scatdb/gbdmoz.content.dat.new.diff",
+				dir,
+				iptoa(h2->m_ip),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+		}
+		else if (installFlag == ifk_genclusterdb) {
+			// . save old log now, too
+			char tmp2[1024];
+			tmp2[0] = '\0';
+			// let's do this for everyone now
+			//if ( h2->m_hostId == 0 )
+			//sprintf(tmp2,
+			//	"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
+			//	"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
+			//	h2->m_hostId   ,
+			//	h2->m_hostId   );
+			// . assume conf file name gbHID.conf
+			// . assume working dir ends in a '/'
+			sprintf(tmp,
+				"ssh %s \"cd %s ;"
+				//"%s"
+				"./gb genclusterdb %s %"INT32" >&"
+				"./log%03"INT32"-genclusterdb &\" &",
+				iptoa(h2->m_ip),
+				h2->m_dir,
+				//h2->m_dir      ,
+				//tmp2           ,
+				coll,
+				h2->m_hostId,
+				h2->m_hostId);
+			// log it
+			log(LOG_INIT, "admin: %s", tmp);
+			// execute it
+			system(tmp);
+		}
+		// dsh
+		else if (installFlag == ifk_dsh) {
+			// don't copy to ourselves
+			//if ( h2->m_hostId == h->m_hostId ) continue;
+			sprintf(tmp,
+				"ssh %s 'cd %s ; %s' %s",
+				iptoa(h2->m_ip),
+				h2->m_dir,
+				cmd,
+				amp);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+		}
+		// dsh2
+		else if (installFlag == ifk_dsh2) {
+			sprintf(tmp,
+				"ssh %s 'cd %s ; %s'",
+				iptoa(h2->m_ip),
+				h2->m_dir,
+				cmd);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+		}
+		// installconf2
+		else if (installFlag == ifk_installconf2) {
+			// don't copy to ourselves
+			//if ( h2->m_hostId == h->m_hostId ) continue;
+			sprintf(tmp,
+				"rcp %sgb.conf %shosts.conf %shosts2.conf "
+				"%s:%s &",
 				dir,
 				dir,
 				dir,
-				dir,
-				dir,
-				dir,
-				dir,
-				dir,
-				dir,
-				dir,
-				dir,
-				dir,
-				dir,
-				dir,
-				dir,
-				dir,
-				dir,
-				//iptoa(h2->m_ip2),
+				//h->m_hostId ,
 				iptoa(h2->m_ipShotgun),
 				h2->m_dir);
-			log(LOG_INIT,"admin: %s", tmp);
-			system ( tmp );
-			sprintf(tmp,
-				"rcp %sgb.conf %s:%sgb.conf",
-				dir ,
-				//h->m_hostId ,
-				//iptoa(h2->m_ip),
-		iptoa(h2->m_ipShotgun),
-			h2->m_dir);
 			//h2->m_hostId);
 			log(LOG_INIT, "admin: %s", tmp);
 			system(tmp);
-	}
-	*/
-	else if (installFlag == ifk_installgb) {
-		// don't copy to ourselves
-		//if ( h2->m_hostId == h->m_hostId ) continue;
-
-		File f;
-		char* target = "gb.new";
-		f.set(g_hostdb.m_myHost->m_dir, target);
-		if (!f.doesExist()) target = "gb";
-
-		sprintf(tmp,
-			"scp -p " // blowfish is faster
-			"%s%s "
-			"%s:%s/gb.installed%s",
-			dir,
-			target,
-			iptoa(h2->m_ip),
-			h2->m_dir,
-			amp);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-	}
-	else if (installFlag == ifk_installgbrcp) {
-		// don't copy to ourselves
-		//if ( h2->m_hostId == h->m_hostId ) continue;
-
-		File f;
-		char* target = "gb.new";
-		f.set(g_hostdb.m_myHost->m_dir, target);
-		if (!f.doesExist()) target = "gb";
-
-		sprintf(tmp,
-			"rcp "
-			"%s%s "
-			"%s:%s/gb.installed%s",
-			dir,
-			target,
-			iptoa(h2->m_ip),
-			h2->m_dir,
-			amp);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-	}
-	else if (installFlag == ifk_installtmpgb) {
-		// don't copy to ourselves
-		//if ( h2->m_hostId == h->m_hostId ) continue;
-		sprintf(tmp,
-			"scp -p "
-			"%sgb.new "
-			"%s:%s/tmpgb.installed &",
-			dir,
-			iptoa(h2->m_ip),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-	}
-	else if (installFlag == ifk_installconf) {
-		// don't copy to ourselves
-		//if ( h2->m_hostId == h->m_hostId ) continue;
-		sprintf(tmp,
-			"scp -p %sgb.conf %shosts.conf %s:%s %s",
-			dir,
-			dir,
-			//h->m_hostId ,
-			iptoa(h2->m_ip),
-			h2->m_dir,
-			//h2->m_hostId);
-			amp);
-
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		// sprintf(tmp,
-		// 	"scp %shosts.conf %s:%shosts.conf &",
-		// 	dir ,
-		// 	iptoa(h2->m_ip),
-		// 	h2->m_dir);
-		// log(LOG_INIT,"admin: %s", tmp);
-		// system ( tmp );
-		// sprintf(tmp,
-		// 	"scp %shosts2.conf %s:%shosts2.conf &",
-		// 	dir ,
-		// 	iptoa(h2->m_ip),
-		// 	h2->m_dir);
-		// log(LOG_INIT,"admin: %s", tmp);
-		// system ( tmp );
-	}
-	else if (installFlag == ifk_start) {
-		// . save old log now, too
-		//char tmp2[1024];
-		//tmp2[0]='\0';
-		// let's do this for everyone now
-		//if ( h2->m_hostId == 0 )
-		//sprintf(tmp2,
-		//	"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
-		//	"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
-		//	h2->m_hostId   ,
-		//	h2->m_hostId   );
-		// . assume conf file name gbHID.conf
-		// . assume working dir ends in a '/'
-		sprintf(tmp,
-			"ssh %s \"cd %s ; ulimit -c unlimited; "
-			"cp -f gb gb.oldsave ; "
-			"mv -f gb.installed gb ; " // %s"
-			//"./gb %"INT32" >& ./log%03"INT32" &\" %s",
-			// without "sleep 1" ssh seems to exit
-			// bash before it can start gb and gb does
-			// not start up.
-			// hostid is now inferred from path.
-			"./gb & sleep 1\" %s",
-			iptoa(h2->m_ip),
-			h2->m_dir,
-			//tmp2           ,
-			//h2->m_dir      ,
-			//h2->m_hostId   ,
-			//h2->m_hostId   ,
-			amp);
-		// log it
-		//log(LOG_INIT,"admin: %s", tmp);
-		fprintf(stdout, "admin: %s\n", tmp);
-		// execute it
-		system(tmp);
-	}
-	/*
-	// SEQUENTIALLY start
-	else if ( installFlag == ifk_start2 ) {
-		// . save old log now, too
-		char tmp2[1024];
-		tmp2[0]='\0';
-		// let's do this for everyone now
-		//if ( h2->m_hostId == 0 )
-		sprintf(tmp2,
-			"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
-			"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
-			h2->m_hostId   ,
-			h2->m_hostId   );
-		// . assume conf file name gbHID.conf
-		// . assume working dir ends in a '/'
-		char *amp = " &";
-		if ( i > 0 && (i%5) == 0 ) amp = "";
-		sprintf(tmp,
-			"ssh %s \"cd %s ; "
-			"cp -f gb gb.oldsave ; "
-			"mv -f gb.installed gb ; %s"
-			"./gb %"INT32" >& ./log%03"INT32" &\"%s",
-			iptoa(h2->m_ipShotgun),
-			h2->m_dir      ,
-			tmp2           ,
-			//h2->m_dir      ,
-			h2->m_hostId   ,
-			h2->m_hostId   ,
-			amp );
-		// log it
-		log(LOG_INIT,"admin: %s", tmp);
-		// execute it
-		system ( tmp );
-	}
-	*/
-	// start up a dummy cluster using hosts.conf ports + 1
-	else if (installFlag == ifk_tmpstart) {
-		// . assume conf file name gbHID.conf
-		// . assume working dir ends in a '/'
-		sprintf(tmp,
-			"ssh %s \"cd %s ; "
-			"cp -f tmpgb tmpgb.oldsave ; "
-			"mv -f tmpgb.installed tmpgb ; "
-			"%s/tmpgb tmpstarthost "
-			"%"INT32" >& ./tmplog%03"INT32" &\" &",
-			iptoa(h2->m_ip),
-			h2->m_dir,
-			h2->m_dir,
-			h2->m_hostId,
-			h2->m_hostId);
-		// log it
-		log(LOG_INIT, "admin: %s", tmp);
-		// execute it
-		system(tmp);
-	}
-	else if (installFlag == ifk_kstart ||
-		installFlag == ifk_dstart) {
-		char* extraBreak = "";
-		if (installFlag == ifk_dstart)
-			extraBreak = "break;";
-		//keepalive
-		// . save old log now, too
-		//char tmp2[1024];
-		//tmp2[0]='\0';
-		// let's do this for everyone now
-		//if ( h2->m_hostId == 0 )
-		// we do not run as daemon so keepalive loop will
-		// work properly...
-		//sprintf(tmp2,
-		//	"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
-		//	"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
-		//	h2->m_hostId   ,
-		//	h2->m_hostId   );
-		// . assume conf file name gbHID.conf
-		// . assume working dir ends in a '/'
-		//to test add: ulimit -t 10; to the ssh cmd
-		sprintf(tmp,
-			"ssh %s \"cd %s ; ulimit -c unlimited; "
-			"export MALLOC_CHECK_=0;"
-			"cp -f gb gb.oldsave ; "
-			"ADDARGS='' "
-			"INC=1 "
-			//"EXITSTATUS=1 "
-			" ; "
-			"while true; do "
-			//"{ "
-
-			// if gb still running, then do not try to
-			// run it again. we
-			// probably double-called './gb start'.
-			// so see if the port is bound to. 
-			// "./gb isportinuse %i ; "
-			// "if [ \\$? -eq 1 ] ; then "
-			// "echo \"gb or something else "
-			// "is already running on "
-			// "port %i. Not starting.\" ; "
-			// "exit 0; "
-			// "fi ; "
-
-			// ok, the port is available
-			//"echo \"Starting gb\"; "
-
-			//"exit 0; "
-
-			// if pidfile exists then gb is already
-			// running so do not move its log file!
-			// "if [ -f \"./pidfile\" ]; then  "
-			// "echo \"./pidfile exists. can not start "
-			// "gb\" >& /dev/stdout; break; fi;"
-
-			// in case gb was updated...
-			"mv -f gb.installed gb ; "
-
-			// move the log file
-			// "mv ./log%03"INT32" ./log%03"INT32"-\\`date '+"
-			// "%%Y_%%m_%%d-%%H:%%M:%%S'\\` ; " 
-
-			// indicate -l so we log to a logfile
-			"./gb -l "//%"INT32" "
-			"\\$ADDARGS "
-
-			// no longer log to stderr so we can
-			// do log file rotation
-			//" >& ./log%03"INT32""
-			" ;"
-
-			// this doesn't always work so use
-			// the cleanexit file approach.
-			// but if we run a second gb accidentally
-			// it would write a ./cleanexit file 
-			// to get out of its loop and it wouldn't
-			// be deleted! crap. so try this again
-			// for this short cases when we exit right
-			// away.
-			"EXITSTATUS=\\$? ; "
-			// if gb does exit(0) then stop
-			"if [ \\$EXITSTATUS = 0 ]; then break; fi;"
-
-			// also stop if ./cleanexit is there
-			// because the above exit(0) does not always
-			// work for some strange reasons
-			"if [ -f \"./cleanexit\" ]; then  break; fi;"
-			"%s"
-			"ADDARGS='-r'\\$INC ; "
-			"INC=\\$((INC+1));"
-			//"} " 
-			"done >& /dev/null & \" %s",
-			//"done & \" %s",
-			//"done & \" %s",
-
-
-			//"done & \" %s",
-			//"\" %s",
-			iptoa(h2->m_ip),
-			h2->m_dir,
-
-			// for ./gb isportinuse %i
-			// h2->m_httpPort ,
-			// h2->m_httpPort ,
-
-			// for moving log file
-			 // h2->m_hostId   ,
-			 // h2->m_hostId   ,
-
-			//h2->m_dir      ,
-			extraBreak,
-			// hostid is now inferred from path
-			//h2->m_hostId   ,
-			amp);
-
-		// log it
-		//log(LOG_INIT,"admin: %s", tmp);
-		fprintf(stdout, "admin: %s\n", tmp);
-		// execute it
-		system(tmp);
-	}
-	/*
-	else if ( installFlag == ifk_dstart ) {
-		//keepalive
-		// . save old log now, too
-		//char tmp2[1024];
-		//tmp2[0]='\0';
-		// let's do this for everyone now
-		//if ( h2->m_hostId == 0 )
-		// we do not run as daemon so keepalive loop will
-		// work properly...
-		//sprintf(tmp2,
-		//	"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
-		//	"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
-		//	h2->m_hostId   ,
-		//	h2->m_hostId   );
-		// . assume conf file name gbHID.conf
-		// . assume working dir ends in a '/'
-		amp = "&";
-		//if ( i > 0 && (i%5) == 0 ) amp = "";
-		//to test add: ulimit -t 10; to the ssh cmd
-		sprintf(tmp,
-			"ssh %s \"cd %s ; ulimit -c unlimited; "
-			"export MALLOC_CHECK_=0;"
-			"cp -f gb gb.oldsave ; "
-			"mv -f gb.installed gb ; "
-			//"ADDARGS='' ; "
-			//"EXITSTATUS=1 ; "
-			// "while [ \\$EXITSTATUS != 0 ]; do "
-			// "{ "
-
-			// move the log file
-			//"mv ./log%03"INT32" ./log%03"INT32"-\\`date '+"
-			//"%%Y_%%m_%%d-%%H:%%M:%%S'\\` ; "
-
-			"./gb -d "//%"INT32" "
-			//"\\$ADDARGS "
-			//" ;"
-			//" >& ./log%03"INT32" ;"
-
-			//"EXITSTATUS=\\$? ; "
-			//"ADDARGS='-r' ; "
-			//"} "
-			//"done >& /dev/null & \" %s",
-			"\" %s",
-			iptoa(h2->m_ip),
-			h2->m_dir      ,
-
-			// for moving log file
-			// h2->m_hostId   ,
-			// h2->m_hostId   ,
-
-			//h2->m_dir      ,
-
-			// hostid is now inferred from path
-			//h2->m_hostId   ,
-			amp );
-
-		// log it
-		//log(LOG_INIT,"admin: %s", tmp);
-		fprintf(stdout,"admin: %s\n", tmp);
-		// execute it
-		system ( tmp );
-	}
-	*/
-	/*
-	else if ( installFlag == ifk_gendbs ) {
-		// . save old log now, too
-		char tmp2[1024];
-		tmp2[0]='\0';
-		// let's do this for everyone now
-		//if ( h2->m_hostId == 0 )
-		sprintf(tmp2,
-			"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
-			"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
-			h2->m_hostId   ,
-			h2->m_hostId   );
-		// . assume conf file name gbHID.conf
-		// . assume working dir ends in a '/'
-		sprintf(tmp,
-			"ssh %s \"cd %s ; %s"
-			"./gb -c %shosts.conf gendbs %s %"INT32" >&"
-			"./log%03"INT32" &\" &",
-			iptoa(h2->m_ip),
-			h2->m_dir      ,
-			tmp2           ,
-			h2->m_dir      ,
-			coll           ,
-			h2->m_hostId   ,
-			h2->m_hostId   );
-		// log it
-		log(LOG_INFO,"installM %s",tmp);
-		log(LOG_INIT,"admin: %s", tmp);
-		// execute it
-		system ( tmp );
-	}
-
-
-	else if ( installFlag == ifk_fixtfndb ) {
-		// . save old log now, too
-		char tmp2[1024];
-		tmp2[0]='\0';
-		// let's do this for everyone now
-		//if ( h2->m_hostId == 0 )
-		sprintf(tmp2,
-			"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
-			"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
-			h2->m_hostId   ,
-			h2->m_hostId   );
-		// . assume conf file name gbHID.conf
-		// . assume working dir ends in a '/'
-		sprintf(tmp,
-			"ssh %s \"cd %s ; %s"
-			"./gb -c %shosts.conf fixtfndb %s %"INT32" >&"
-			"./log%03"INT32" &\" &",
-			iptoa(h2->m_ip),
-			h2->m_dir      ,
-			tmp2           ,
-			h2->m_dir      ,
-			coll           ,
-			h2->m_hostId   ,
-			h2->m_hostId   );
-		// log it
-		log(LOG_INIT,"admin: %s", tmp);
-		// execute it
-		system ( tmp );
-	}
-	else if ( installFlag == ifk_gentfndb ) {
-		// . save old log now, too
-		char tmp2[1024];
-		tmp2[0]='\0';
-		// let's do this for everyone now
-		//if ( h2->m_hostId == 0 )
-		sprintf(tmp2,
-			"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
-			"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
-			h2->m_hostId   ,
-			h2->m_hostId   );
-		// . assume conf file name gbHID.conf
-		// . assume working dir ends in a '/'
-		sprintf(tmp,
-			"ssh %s \"cd %s ; %s"
-			"./gb -c %shosts.conf gentfndb %s %"INT32" >&"
-			"./log%03"INT32" &\" &",
-			iptoa(h2->m_ip),
-			h2->m_dir      ,
-			tmp2           ,
-			h2->m_dir      ,
-			coll           ,
-			h2->m_hostId   ,
-			h2->m_hostId   );
-		// log it
-		log(LOG_INIT,"admin: %s", tmp);
-		// execute it
-		system ( tmp );
-	}
-	*/
-	else if (installFlag == ifk_installcat) {
-		// . copy catdb files to all hosts
-		// don't copy to ourselves
-		if (h2->m_hostId == 0)
-			continue;
-		/*
-		if ( h2->m_hostId == 0 ) {
-			sprintf(tmp,
-				"cp "
-				"content.rdf.u8 "
-				"structure.rdf.u8 "
-				"gbdmoz.structure.dat "
-				"gbdmoz.content.dat "
-				"%scatdb/",
-				h2->m_dir);
-			log(LOG_INIT,"admin: %s", tmp);
-			system ( tmp );
-			continue;
 		}
-		*/
-		sprintf(tmp,
-			"scp -p "
-			"%scatdb/content.rdf.u8 "
-			"%s:%scatdb/content.rdf.u8",
-			dir,
-			iptoa(h2->m_ip),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"scp -p "
-			"%scatdb/structure.rdf.u8 "
-			"%s:%scatdb/structure.rdf.u8",
-			dir,
-			iptoa(h2->m_ip),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"scp -p "
-			"%scatdb/gbdmoz.structure.dat "
-			"%s:%scatdb/gbdmoz.structure.dat",
-			dir,
-			iptoa(h2->m_ip),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"scp -p "
-			"%scatdb/gbdmoz.content.dat "
-			"%s:%scatdb/gbdmoz.content.dat",
-			dir,
-			iptoa(h2->m_ip),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		//system ( tmp );
-		//sprintf(tmp,
-		//	"scp "
-		//	"%scatdb/gbdmoz.content.dat.diff "
-		//	"%s:%scatdb/gbdmoz.content.dat.diff",
-		//	dir,
-		//	iptoa(h2->m_ip),
-		//	h2->m_dir);
-		//log(LOG_INIT,"admin: %s", tmp);
-		//system ( tmp );
+		// installcat2
+		else if (installFlag == ifk_installcat2) {
+			// . copy catdb files to all hosts
+			// don't copy to ourselves
+			if (h2->m_hostId == 0) continue;
+			sprintf(tmp,
+				"rcp "
+				"%scatdb/content.rdf.u8 "
+				"%s:%scatdb/content.rdf.u8",
+				dir,
+				iptoa(h2->m_ipShotgun),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"rcp "
+				"%scatdb/structure.rdf.u8 "
+				"%s:%scatdb/structure.rdf.u8",
+				dir,
+				iptoa(h2->m_ipShotgun),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"rcp "
+				"%scatdb/gbdmoz.structure.dat "
+				"%s:%scatdb/gbdmoz.structure.dat",
+				dir,
+				iptoa(h2->m_ipShotgun),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"rcp "
+				"%scatdb/gbdmoz.content.dat "
+				"%s:%scatdb/gbdmoz.content.dat",
+				dir,
+				iptoa(h2->m_ipShotgun),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+		}
+		// installnewcat2
+		else if (installFlag == ifk_installnewcat2) {
+			// . copy catdb files to all hosts
+			// don't copy to ourselves
+			if (h2->m_hostId == 0) continue;
+			sprintf(tmp,
+				"rcp "
+				"%scatdb/content.rdf.u8.new "
+				"%s:%scatdb/content.rdf.u8.new",
+				dir,
+				iptoa(h2->m_ipShotgun),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"rcp "
+				"%scatdb/structure.rdf.u8.new "
+				"%s:%scatdb/structure.rdf.u8.new",
+				dir,
+				iptoa(h2->m_ipShotgun),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"rcp "
+				"%scatdb/gbdmoz.structure.dat.new "
+				"%s:%scatdb/gbdmoz.structure.dat.new",
+				dir,
+				iptoa(h2->m_ipShotgun),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"rcp "
+				"%scatdb/gbdmoz.content.dat.new "
+				"%s:%scatdb/gbdmoz.content.dat.new",
+				dir,
+				iptoa(h2->m_ipShotgun),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+			sprintf(tmp,
+				"rcp "
+				"%scatdb/gbdmoz.content.dat.new.diff "
+				"%s:%scatdb/gbdmoz.content.dat.new.diff",
+				dir,
+				iptoa(h2->m_ipShotgun),
+				h2->m_dir);
+			log(LOG_INIT, "admin: %s", tmp);
+			system(tmp);
+		}
 	}
-	else if (installFlag == ifk_installnewcat) {
-		// . copy catdb files to all hosts
-		// don't copy to ourselves
-		if (h2->m_hostId == 0) continue;
-		sprintf(tmp,
-			"scp -p "
-			"%scatdb/content.rdf.u8.new "
-			"%s:%scatdb/content.rdf.u8.new",
-			dir,
-			iptoa(h2->m_ip),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"scp -p "
-			"%scatdb/structure.rdf.u8.new "
-			"%s:%scatdb/structure.rdf.u8.new",
-			dir,
-			iptoa(h2->m_ip),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"scp -p "
-			"%scatdb/gbdmoz.structure.dat.new "
-			"%s:%scatdb/gbdmoz.structure.dat.new",
-			dir,
-			iptoa(h2->m_ip),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"scp -p "
-			"%scatdb/gbdmoz.content.dat.new "
-			"%s:%scatdb/gbdmoz.content.dat.new",
-			dir,
-			iptoa(h2->m_ip),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"scp -p "
-			"%scatdb/gbdmoz.content.dat.new.diff "
-			"%s:%scatdb/gbdmoz.content.dat.new.diff",
-			dir,
-			iptoa(h2->m_ip),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-	}
-	else if (installFlag == ifk_genclusterdb) {
-		// . save old log now, too
-		char tmp2[1024];
-		tmp2[0] = '\0';
-		// let's do this for everyone now
-		//if ( h2->m_hostId == 0 )
-		//sprintf(tmp2,
-		//	"mv ./log%03"INT32" ./log%03"INT32"-`date '+"
-		//	"%%Y_%%m_%%d-%%H:%%M:%%S'` ; " ,
-		//	h2->m_hostId   ,
-		//	h2->m_hostId   );
-		// . assume conf file name gbHID.conf
-		// . assume working dir ends in a '/'
-		sprintf(tmp,
-			"ssh %s \"cd %s ;"
-			//"%s"
-			"./gb genclusterdb %s %"INT32" >&"
-			"./log%03"INT32"-genclusterdb &\" &",
-			iptoa(h2->m_ip),
-			h2->m_dir,
-			//h2->m_dir      ,
-			//tmp2           ,
-			coll,
-			h2->m_hostId,
-			h2->m_hostId);
-		// log it
-		log(LOG_INIT, "admin: %s", tmp);
-		// execute it
-		system(tmp);
-	}
-	/*
-	// SEQUENTIAL rcps
-	else if ( installFlag == ifk_installgb2 ) {
-		// don't copy to ourselves
-		//if ( h2->m_hostId == h->m_hostId ) continue;
-		char *amp = " &";
-		if ( i > 0 && (i%5) == 0 ) amp = "";
-
-		File f;
-		char *target = "gb.new";
-		f.set(h2->m_dir,target);
-		if ( ! f.doesExist() ) target = "gb";
-
-		sprintf(tmp,
-			"rcp "
-			"%s%s "
-			"%s:%s/gb.installed %s",
-			dir,
-			target ,
-			iptoa(h2->m_ipShotgun),
-			h2->m_dir,
-			amp);
-		log(LOG_INIT,"admin: %s", tmp);
-		system ( tmp );
-	}
-	*/
-	// dsh
-	else if (installFlag == ifk_dsh) {
-		// don't copy to ourselves
-		//if ( h2->m_hostId == h->m_hostId ) continue;
-		sprintf(tmp,
-			"ssh %s 'cd %s ; %s' %s",
-			iptoa(h2->m_ip),
-			h2->m_dir,
-			cmd,
-			amp);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-	}
-	// dsh2
-	else if (installFlag == ifk_dsh2) {
-		// don't copy to ourselves
-		//if ( h2->m_hostId == h->m_hostId ) continue;
-		//sprintf(tmp,
-		//	"ssh %s '%s' &",
-		//	iptoa(h2->m_ipShotgun),
-		//	cmd );
-		sprintf(tmp,
-			"ssh %s 'cd %s ; %s'",
-			iptoa(h2->m_ip),
-			h2->m_dir,
-			cmd);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-	}
-	// installconf2
-	else if (installFlag == ifk_installconf2) {
-		// don't copy to ourselves
-		//if ( h2->m_hostId == h->m_hostId ) continue;
-		sprintf(tmp,
-			"rcp %sgb.conf %shosts.conf %shosts2.conf "
-			"%s:%s &",
-			dir,
-			dir,
-			dir,
-			//h->m_hostId ,
-			iptoa(h2->m_ipShotgun),
-			h2->m_dir);
-		//h2->m_hostId);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-	}
-	// installcat2
-	else if (installFlag == ifk_installcat2) {
-		// . copy catdb files to all hosts
-		// don't copy to ourselves
-		if (h2->m_hostId == 0) continue;
-		sprintf(tmp,
-			"rcp "
-			"%scatdb/content.rdf.u8 "
-			"%s:%scatdb/content.rdf.u8",
-			dir,
-			iptoa(h2->m_ipShotgun),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"rcp "
-			"%scatdb/structure.rdf.u8 "
-			"%s:%scatdb/structure.rdf.u8",
-			dir,
-			iptoa(h2->m_ipShotgun),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"rcp "
-			"%scatdb/gbdmoz.structure.dat "
-			"%s:%scatdb/gbdmoz.structure.dat",
-			dir,
-			iptoa(h2->m_ipShotgun),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"rcp "
-			"%scatdb/gbdmoz.content.dat "
-			"%s:%scatdb/gbdmoz.content.dat",
-			dir,
-			iptoa(h2->m_ipShotgun),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		//system ( tmp );
-		//sprintf(tmp,
-		//	"rcp "
-		//	"%scatdb/gbdmoz.content.dat.diff "
-		//	"%s:%scatdb/gbdmoz.content.dat.diff",
-		//	dir,
-		//	iptoa(h2->m_ip),
-		//	h2->m_dir);
-		//log(LOG_INIT,"admin: %s", tmp);
-		//system ( tmp );
-	}
-	// installnewcat2
-	else if (installFlag == ifk_installnewcat2) {
-		// . copy catdb files to all hosts
-		// don't copy to ourselves
-		if (h2->m_hostId == 0) continue;
-		sprintf(tmp,
-			"rcp "
-			"%scatdb/content.rdf.u8.new "
-			"%s:%scatdb/content.rdf.u8.new",
-			dir,
-			iptoa(h2->m_ipShotgun),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"rcp "
-			"%scatdb/structure.rdf.u8.new "
-			"%s:%scatdb/structure.rdf.u8.new",
-			dir,
-			iptoa(h2->m_ipShotgun),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"rcp "
-			"%scatdb/gbdmoz.structure.dat.new "
-			"%s:%scatdb/gbdmoz.structure.dat.new",
-			dir,
-			iptoa(h2->m_ipShotgun),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"rcp "
-			"%scatdb/gbdmoz.content.dat.new "
-			"%s:%scatdb/gbdmoz.content.dat.new",
-			dir,
-			iptoa(h2->m_ipShotgun),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-		sprintf(tmp,
-			"rcp "
-			"%scatdb/gbdmoz.content.dat.new.diff "
-			"%s:%scatdb/gbdmoz.content.dat.new.diff",
-			dir,
-			iptoa(h2->m_ipShotgun),
-			h2->m_dir);
-		log(LOG_INIT, "admin: %s", tmp);
-		system(tmp);
-	}
-}
-// return 0 on success
-return 0;
+	// return 0 on success
+	return 0;
 }
 
 // . only call this once at start up
@@ -5878,17 +4064,10 @@ bool registerMsgHandlers() {
 
 bool registerMsgHandlers1() {
 	Msg20 msg20;	if (!msg20.registerHandler()) return false;
-	//Msg22 msg22;	if ( ! msg22.registerHandler () ) return false;
-	//Msg23 msg23;	if ( ! msg23.registerHandler () ) return false;
 	Msg2a msg2a;    if (!msg2a.registerHandler()) return false;
-	//Msg36 msg36;	if ( ! msg36.registerHandler () ) return false;
-	//Msg30 msg30;    if ( ! msg30.registerHandler () ) return false;
 	MsgC  msgC;    if (!msgC.registerHandler()) return false;
 
 	if (!Msg22::registerHandler()) return false;
-	//Msg2e msg2e;    if ( ! msg2e.registerHandler () ) return false;
-	// msg handler for pageturk
-	//Msg60 msg60;    if ( ! msg60.registerHandler () ) return false;
 	return true;
 }
 
@@ -5963,475 +4142,12 @@ bool registerMsgHandlers3() {
 	return true;
 }
 
-/*
-void makeNewConf ( int32_t hostId , char *confFilename ) {
-	// read in the conf file
-	//	if ( ! g_conf.init ( confFilename ) ) {
-	g_conf.init ( confFilename ) ;
-	// minimal non-default description into conf
-	char buf[1024];
-	sprintf ( buf ,
-		  "<hostId> %"INT32"</>"
-		  "<dnsIp>209.157.102.11</>"  // ns2.best.com
-		  , hostId );
-	// add it -- the rest will be filled in as defaults
-	g_conf.add ( buf );
-	// save it
-	g_conf.save ();
-}
-*/
+
 
 bool mainShutdown(bool urgent) {
 	return g_process.shutdown(urgent);
 }
 
-/*
-static int32_t s_shutdownCount;
-
-static void doneShutdownServerWrapper ( void *state ) ;
-static bool doneShutdownServer (  ) ;
-static void doneSavingWrapper ( void *state ) ;
-static bool isAllClosed ( ) ;
-bool closeAll ( void *state , void (* callback)(void *state) );
-bool allExit ( ) ;
-
-static bool s_urgent = false ;
-static bool s_shutdownLock = false;
-
-// call this from gdb if stuck in an infinite loop and we need to save all
-bool mainShutdown2 ( ) {
-
-	s_shutdownLock = false;
-
-	g_indexdb.getRdb()->m_isClosed    = false;
-	g_titledb.getRdb()->m_isClosed    = false;
-	g_tfndb.getRdb()->m_isClosed      = false;
-	g_clusterdb.getRdb()->m_isClosed  = false;
-	g_linkdb.getRdb()->m_isClosed    = false;
-	g_checksumdb.getRdb()->m_isClosed = false;
-	g_spiderdb.getRdb()->m_isClosed   = false;
-	g_datedb.getRdb()->m_isClosed     = false;
-	g_tagdb.getRdb()->m_isClosed     = false;
-	g_statsdb.getRdb()->m_isClosed    = false;
-
-	g_indexdb.getRdb()->m_tree.m_needsSave    = false;
-	g_titledb.getRdb()->m_tree.m_needsSave    = false;
-	g_tfndb.getRdb()->m_tree.m_needsSave      = false;
-	g_clusterdb.getRdb()->m_tree.m_needsSave  = false;
-	g_linkdb.getRdb()->m_needsSave           = false;
-	g_checksumdb.getRdb()->m_tree.m_needsSave = false;
-	g_spiderdb.getRdb()->m_tree.m_needsSave   = false;
-	g_datedb.getRdb()->m_tree.m_needsSave     = false;
-	g_tagdb.getRdb()->m_tree.m_needsSave     = false;
-	g_statsdb.getRdb()->m_tree.m_needsSave     = false;
-
-	return mainShutdown ( true );
-}
-
-// . save and exit this server
-// . if easydown is true, we broadcast to all others and wait to complete
-//   the necessary transactions in each udpServer
-bool mainShutdown ( bool urgent ) {
-	// no longer allow threads to do this
-	if ( g_threads.amThread() ) return true;
-	// hack for now
-	//log("FIX THIS HACK");
-	//if ( urgent ) return true; //exit(-1);
-	// . turn off interrupts
-	// . we don't want to be interrupted in here!
-	// . this is really only useful if we're NOT in a thread cuz
-	//   main process could still be interrupted
-	// . if we call it from a thread it just results in us getting an
-	//   interrupt and since the g_interruptsOn flag is false we'll end
-	//   up saying ?wtf?
-	if ( ! g_threads.amThread() ) g_loop.interruptsOff();
-	// ensure this is not re-entered
-	if ( s_shutdownLock ) return true;
-	s_shutdownLock = true;
-	// save current spidering process
-	g_spiderLoop.saveCurrentSpidering();
-	// save the Conf file now
-	g_conf.save();
-	// turn off spidering and addUrl (don't save these)
-	g_conf.m_spideringEnabled = 0;
-	// i keep forgetting to turn add url back on, so don't turn off now
-	//g_conf.m_addUrlEnabled    = 0;
-	// save state for top docs
-	g_pageTopDocs.saveStateToDisk();
-	g_autoBan.save();
-	// save it
-	s_urgent = urgent;
-	// if we're going down hard don't bother waiting on transactions...
-	if ( s_urgent ) {
-		// disable threads from spawning
-		g_threads.disableThreads();
-		// . save the Conf file again since we turned off spider/addurl
-		// . we don't want them to be on after we recover from crash
-		g_conf.save();
-		// . try to save all rdbs
-		// . return false if blocked
-		if ( ! closeAll(NULL,doneSavingWrapper) ) {
-			fprintf(stderr,"why did this block? Please fix asap. "
-				"Important data is not getting saved.\n");
-			return false;
-		}
-		// we didn't block, so they must all be closed
-		return allExit ( );
-	}
-	// . close our tcp server
-	// . this will shut it down right away w/o worrying about completing
-	//   transactions
-	//g_httpServer.reset();
-
-	// . send notes to all the hosts in the network telling them we're
-	//   shutting down
-	// . this uses g_udpServer2
-	// . this returns false if it blocks
-	// . we don't care if it blocks or not
-	// . don't bother asking the hosts to send an email alert for us
-	//   since we're going down gracefully by letting everyone know
-	g_pingServer.broadcastShutdownNotes ( false , // sendEmailAlert?
-						  NULL  ,
-						  NULL  );
-	// reset the shutdown count
-	s_shutdownCount = 0;
-	// log it
-	log(LOG_INFO,"udp: Shutting down servers.");
-	// start shutting down our high priority udp server
-	//if ( g_udpServer2.shutdown ( NULL , doneShutdownServerWrapper ) )
-	//	s_shutdownCount++;
-	// and low priority
-	if ( g_udpServer.shutdown ( NULL , doneShutdownServerWrapper  ) )
-		s_shutdownCount++;
-	if ( g_dnsUdpServer.shutdown ( NULL , doneShutdownServerWrapper  ) )
-		s_shutdownCount++;
-	// bail if we're waiting to complete transactions or something
-	if ( s_shutdownCount < 2 ) return false;
-	// otherwise, did not block
-	return doneShutdownServer();
-}
-
-void doneShutdownServerWrapper ( void *state ) {
-	doneShutdownServer ( );
-}
-
-bool doneShutdownServer (  ) {
-	// inc count
-	s_shutdownCount++;
-	// return if one more to go
-	if ( s_shutdownCount < 2 ) return false;
-	// . otherwise, save contents of each rdb
-	// . this returns false if blocked, true otherwise
-	if ( ! closeAll(NULL,doneSavingWrapper) ) return false;
-	// do not exit if not all closed
-	if ( ! isAllClosed () ) {
-		log(LOG_LOGIC,"db: Not all closed but was exiting.");
-		return false;
-	}
-	// otherwise, nobody blocked
-	return allExit( );
-}
-
-// return false if blocked, true otherwise
-bool closeAll ( void *state , void (* callback)(void *state) ) {
-	// TODO: why is this called like 100x per second when a merge is
-	// going on? why don't we sleep longer in between?
-	g_tagdb.getRdb()->close(state,callback,s_urgent,true);
-	g_catdb.getRdb()->close(state,callback,s_urgent,true);
-	g_indexdb.getRdb()->close(state,callback,s_urgent,true);
-	g_datedb.getRdb()->close(state,callback,s_urgent,true);
-	g_titledb.getRdb()->close(state,callback,s_urgent,true);
-	g_tfndb.getRdb()->close(state,callback,s_urgent,true);
-	g_spiderdb.getRdb()->close(state,callback,s_urgent,true);
-	g_checksumdb.getRdb()->close(state,callback,s_urgent,true);
-	g_clusterdb.getRdb()->close(state,callback,s_urgent,true);
-	g_statsdb.getRdb()->close(state,callback,s_urgent,true);
-
-	g_linkdb.getRdb()->close(state,callback,s_urgent,true);
-
-	g_tagdb2.getRdb()->close(state,callback,s_urgent,true);
-	//g_catdb2.getRdb()->close(state,callback,s_urgent,true);
-	g_indexdb2.getRdb()->close(state,callback,s_urgent,true);
-	g_datedb2.getRdb()->close(state,callback,s_urgent,true);
-	g_titledb2.getRdb()->close(state,callback,s_urgent,true);
-	g_tfndb2.getRdb()->close(state,callback,s_urgent,true);
-	g_spiderdb2.getRdb()->close(state,callback,s_urgent,true);
-	g_checksumdb2.getRdb()->close(state,callback,s_urgent,true);
-	g_clusterdb2.getRdb()->close(state,callback,s_urgent,true);
-
-
-	int32_t count = 0;
-	int32_t need  = 0;
-	count += g_tagdb.getRdb()->isClosed(); need++;
-	count += g_catdb.getRdb()->isClosed(); need++;
-	count += g_indexdb.getRdb()->isClosed(); need++;
-	count += g_datedb.getRdb()->isClosed(); need++;
-	count += g_titledb.getRdb()->isClosed(); need++;
-	count += g_tfndb.getRdb()->isClosed(); need++;
-	count += g_spiderdb.getRdb()->isClosed(); need++;
-	count += g_checksumdb.getRdb()->isClosed(); need++;
-	count += g_clusterdb.getRdb()->isClosed(); need++;
-	count += g_statsdb.getRdb()->isClosed(); need++;
-	count += g_linkdb.getRdb()->isClosed(); need++;
-
-	count += g_tagdb2.getRdb()->isClosed(); need++;
-	//count += g_catdb2.getRdb()->isClosed(); need++;
-	count += g_indexdb2.getRdb()->isClosed(); need++;
-	count += g_datedb2.getRdb()->isClosed(); need++;
-	count += g_titledb2.getRdb()->isClosed(); need++;
-	count += g_tfndb2.getRdb()->isClosed(); need++;
-	count += g_spiderdb2.getRdb()->isClosed(); need++;
-	count += g_checksumdb2.getRdb()->isClosed(); need++;
-	count += g_clusterdb2.getRdb()->isClosed(); need++;
-
-	// . don't try saving collectiondb until everyone else is done
-	// . since we get called like 100x per second when a merge is
-	//   going on, this is a good idea until we fix that problem!
-	if ( count < need ) return false;
-	// this one always blocks
-	g_collectiondb.save();
-	g_repair.save();
-	//this one too
-	g_classifier.save();
-	// close the Chinese parser lexicon stuff
-	//close_lexicon ();
-	// save our caches
-	for ( int32_t i = 0; i < MAX_GENERIC_CACHES; i++ ) {
-		if ( g_genericCache[i].useDisk() )
-			g_genericCache[i].save();
-	}
-	// save dns caches
-	RdbCache *c ;
-	c = g_dnsDistributed.getCache();
-	if ( c->useDisk() ) c->save();
-	// return true if all closed right away w/o blocking
-	return true;
-}
-
-
-void doneSavingWrapper ( void *state ) {
-	// are they all closed now?
-	if ( ! isAllClosed () ) return;
-	allExit ( );
-	return;
-}
-
-void resetAll ( ) {
-	g_log.reset();
-	g_hostdb.reset()  ;
-	g_hostdb2.reset()  ;
-	g_spiderLoop.reset();
-
-	g_indexdb.reset();
-	g_datedb.reset();
-	g_titledb.reset();
-	g_spiderdb.reset();
-	g_tfndb.reset();
-	g_checksumdb.reset();
-	g_clusterdb.reset();
-	g_linkdb.reset();
-	g_tagdb.reset();
-	g_catdb.reset();
-	g_statsdb.reset();
-
-	g_indexdb2.reset();
-	g_datedb2.reset();
-	g_titledb2.reset();
-	g_spiderdb2.reset();
-	g_tfndb2.reset();
-	g_checksumdb2.reset();
-	g_clusterdb2.reset();
-	g_tagdb2.reset();
-	//g_catdb2.reset();
-
-	g_collectiondb.reset();
-	g_categories1.reset();
-	g_categories2.reset();
-	g_robotdb.reset();
-	g_dnsDistributed.reset();
-	g_dnsLocal.reset();
-	g_udpServer.reset();
-	g_dnsUdpServer.reset();
-	//g_udpServer2.reset();
-	g_httpServer.reset();
-	g_loop.reset();
-	for ( int32_t i = 0; i < MAX_GENERIC_CACHES; i++ )
-		g_genericCache[i].reset();
-	g_speller.reset();
-	resetMsg6();
-	g_spiderCache.reset();
-	g_threads.reset();
-	g_ucUpperMap.reset();
-	g_ucLowerMap.reset();
-	g_ucProps.reset();
-	g_ucCombiningClass.reset();
-	g_ucScripts.reset();
-	g_profiler.reset();
-	g_pageTopDocs.destruct();
-	g_pageNetTest.destructor();
-	resetDecompTables();
-	resetCompositionTable();
-	g_langList.reset();
-	g_autoBan.reset();
-	resetPageAddUrl();
-	resetHttpMime();
-	reset_iana_charset();
-	resetAdultBit();
-	resetDomains();
-	resetEntities();
-	resetQuery();
-	resetStopWords();
-	resetUnicode();
-	resetMsg12();
-}
-
-
-void allExitWrapper ( int fd , void *state ) {
-	allExit();
-}
-
-// returns false if blocked, otherwise just exits
-bool allExit ( ) {
-	// . wait for all renames and unlinks to complete
-	// . BUT don't wait more than 100 seconds, we need that core
-	//int32_t t = getTime();
-	static char s_registered = 0;
-	if ( g_unlinkRenameThreads > 0 ) { // && getTime()-t < 100 ) {
-		//static char s_flag = 1;
-		//if ( s_flag ) {
-		log("db: Waiting for file unlink/rename threads to "
-			"complete. numThreads=%"INT32".",(int32_t)g_unlinkRenameThreads);
-		//s_flag = 0;
-		//}
-		if ( ! s_registered &&
-			 ! g_loop.registerSleepCallback(1000,NULL,
-							allExitWrapper) ) {
-			log("db: Failed to register all exit wrapper. "
-				"Sleeping 30 seconds to make sure all unlink/"
-				"rename threads exit.");
-			sleep(30);
-		}
-		else {
-			s_registered = 1;
-			return false;
-		}
-	}
-
-	if ( s_registered )
-		g_loop.unregisterSleepCallback(NULL, allExitWrapper);
-
-	// . this one always blocks
-	// . save the "sync" file last, after all other files have saved
-	//   successfully, because if one has a problem it will need to be
-	//   sync'ed.
-	//g_sync.close();
-	g_collectiondb.save();
-	g_repair.save();
-	// . don't bother resetting if we're urgent
-	// . resetting makes it easier to see what memory has been leaked
-	if ( ! s_urgent ) {
-		resetAll();
-		// print out memory here, not from the destructor cuz it
-		// freezes in malloc for some reason sometimes
-		g_mem.printMem();
-		// . if we're not a panic/urgent dump, don't force dump core
-		// . exit cleanly (0 means no errors)
-		exit(0);
-	}
-
-	// . place breakpoint here for memory leak detection
-	// . then say "print g_mem.printMem()" from gdb
-	// . some TermTable's were not freed for stopWords, obsceneWords, ...
-
-	// . if we the main process we must kill all threads since linux
-	//   has a bug that won't dump our core if threads are about
-	if ( ! g_threads.amThread () ) {
-		// . otherwise, we're the main process
-		// . linux has a bug where the core won't dump when threads
-		//   are running
-		//pthread_kill_other_threads_np();
-		// print it
-		if ( g_loop.m_shutdown != 1 )
-			fprintf(stderr,"allExit: dumping core after saving\n");
-	}
-	// print out memory here, not from the destructor cuz it freezes
-	// in malloc for some reason sometimes
-	g_mem.printMem();
-	// . this forces an abnormal termination which will cause a core dump
-	// . do not dump core on SIGHUP signals any more though
-	if ( g_loop.m_shutdown != 1 ) abort();
-	else                          exit(0);
-	// a dummy return to keep compiler happy
-	return false;
-}
-
-// return false if one or more is still not closed yet
-bool isAllClosed ( ) {
-	int32_t count = 0;
-	int32_t need  = 0;
-	// this one always blocks
-	count += g_collectiondb.save(); need++;
-	count += g_tagdb.getRdb()->isClosed();	need++;
-	count += g_catdb.getRdb()->isClosed();	need++;
-	count += g_indexdb.getRdb()->isClosed(); need++;
-	count += g_datedb.getRdb()->isClosed();	need++;
-	count += g_titledb.getRdb()->isClosed(); need++;
-	count += g_tfndb.getRdb()->isClosed();	need++;
-	count += g_spiderdb.getRdb()->isClosed(); need++;
-	count += g_checksumdb.getRdb()->isClosed(); need++;
-	count += g_clusterdb.getRdb()->isClosed(); need++;
-	count += g_statsdb.getRdb()->isClosed(); need++;
-	count += g_linkdb.getRdb()->isClosed(); need++;
-
-	count += g_tagdb2.getRdb()->isClosed();	need++;
-	//count += g_catdb2.getRdb()->isClosed();	need++;
-	count += g_indexdb2.getRdb()->isClosed(); need++;
-	count += g_datedb2.getRdb()->isClosed();	need++;
-	count += g_titledb2.getRdb()->isClosed(); need++;
-	count += g_tfndb2.getRdb()->isClosed();	need++;
-	count += g_spiderdb2.getRdb()->isClosed(); need++;
-	count += g_checksumdb2.getRdb()->isClosed(); need++;
-	count += g_clusterdb2.getRdb()->isClosed(); need++;
-
-	// . the sync file is now saved in g_collectiondb.save()
-	// . this one always blocks
-	//g_sync.close();
-	// return and wait if not
-	return ( count >= need );
-}
-*/
-
-
-//#include "./libmpm/mp_malloc.h"
-/*
-void zlibtest() {
-	char *ptrs[1000];
-	int32_t  lens[1000];
-	for ( int32_t j = 0 ; j < 220000 ; j++ ) {
-		log("pass=%"INT32"",j);
-		Msg0 *m = new (Msg0);
-		delete (m);
-	}
-	return;
-	for ( int32_t j = 0 ; j < 120000 ; j++ ) {
-		log("pass=%"INT32"",j);
-		// malloc 1,000 bufs of size about 100-64k each
-		for ( int32_t i = 0 ; i < 100 ; i++ ) {
-			int32_t  bufSize = 1000 + (rand() % 65000);
-			ptrs[i] = (char *)mmalloc ( bufSize , "ztest" );
-			if ( ! ptrs[i] ) {
-				log("no mem!"); exit(-1); }
-			lens[i] = bufSize;
-			// simple write
-			for ( int32_t k = 0 ; k < bufSize ; k+=900 )
-			ptrs[i][k] = 'a' + (rand() % 64);
-		}
-		// now free them
-		for ( int32_t i = 0 ; i < 100 ; i++ )
-			mfree (ptrs[i] , lens[i] , "ztest" );
-	}
-}
-*/
 
 #include "Rdb.h"
 #include "Xml.h"
@@ -6457,12 +4173,7 @@ void dumpTitledb(char* coll, int32_t startFileNum, int32_t numFiles, bool includ
 	if (!hashinit()) {
 		log("db: Failed to init hashtable."); return;
 	}
-	//g_conf.m_spiderdbMaxTreeMem = 1024*1024*30;
-	//g_conf.m_checksumdbMaxDiskPageCacheMem = 0;
-	//g_conf.m_spiderdbMaxDiskPageCacheMem   = 0;
-	//g_conf.m_tfndbMaxDiskPageCacheMem = 0;
 	g_titledb.init();
-	//g_collectiondb.init(true);
 	g_titledb.getRdb()->addRdbBase1(coll);
 	key_t startKey;
 	key_t endKey;
@@ -6662,63 +4373,14 @@ loop:
 		//struct tm *timeStruct = gmtime ( &ts );
 		char ppp[100];
 		strftime(ppp, 100, "%b-%d-%Y-%H:%M:%S", timeStruct);
-		//ppp[strlen(ppp)-2]='\0';
 
-		/*
-		  BEGIN MOD FOR DUMPING STUFF TO RE-LINK ANALYZE
-
-		LinkInfo *info = tr.getLinkInfo();
-		int32_t nLinkTexts = info->getNumLinkTexts();
-		if ( nLinkTexts > 10 ) continue;
-		// continue if spidered after june 14
-		if ( timeStruct->tm_mon == 5 && // june
-			 timeStruct->tm_mday >= 14 ) continue;
-		// get sum of them link texts
-		int32_t sum = 0;
-		char *pp = NULL;
-		int32_t nexti = 0;
-		uint32_t baseScore = 0;
-		for ( int32_t i = 0 ; i < nLinkTexts ; i++ ) {
-			info->getLinkText ( 0 ,
-						NULL , // len
-						NULL , // itemPtr
-						NULL ,  // itemLen
-						&baseScore ,
-						NULL , // quality
-						NULL , // numLinks
-						NULL , // docId
-						NULL , // ip
-						&nexti , // nexti
-						&pp  );// nextp
-			sum += baseScore;
-		}
-		// skip if not very high scoring
-		// *100/256 to get the percentages seen in PageTitledb.cpp
-		if ( sum < 10000 ) continue;
-		// print it
-		log ( LOG_INFO, "%s %"INT32" links sum %"INT32"",
-			  tr.getUrl()->getUrl(), nLinkTexts , sum );
-		// continue
-		continue;
-		*/
-		//uint32_t ms = 0;
 		LinkInfo* info = xd->ptr_linkInfo1;//tr.getLinkInfo();
-		//for ( Inlink*k=NULL;info&&(k=info->getNextInlink(k)); ){
-		//	// returns NULL if none
-		//	if ( k->m_baseScore > (int32_t)ms ) ms = k->m_baseScore;
-		//}
-		// normalize
-		//ms = ((int64_t)ms * 100LL) / 256LL;
 
 		char foo[1024];
 		foo[0] = '\0';
 		//if ( tr.getVersion() >= 86 ) 
 		sprintf(foo,
-			//"tw=%"INT32" hw=%"INT32" upw=%"INT32" "
 			"sni=%"INT32" ",
-			//(int32_t)xd->m_titleWeight,
-			//(int32_t)xd->m_headerWeight,
-			//(int32_t)xd->m_urlPathWeight,
 			(int32_t)xd->m_siteNumInlinks);
 
 		char* ru = xd->ptr_redirUrl;
@@ -6787,79 +4449,7 @@ loop:
 	if (startKey < *(key_t*)list.getLastKey()) return;
 	goto loop;
 }
-/*
-void dumpTfndb (char *coll,int32_t startFileNum,int32_t numFiles,bool includeTree ,
-		bool verify) {
-	//g_conf.m_spiderdbMaxTreeMem = 1024*1024*30;
-	//g_conf.m_checksumdbMaxDiskPageCacheMem = 0;
-	//g_conf.m_spiderdbMaxDiskPageCacheMem   = 0;
-	g_conf.m_tfndbMaxDiskPageCacheMem = 0;
-	g_tfndb.init ();
-	//g_collectiondb.init(true);
-	g_tfndb.getRdb()->addRdbBase1(coll );
-	key_t startKey ;
-	key_t endKey   ;
-	startKey.setMin();
-	endKey.setMax();
-	// turn off threads
-	g_threads.disableThreads();
-	// get a meg at a time
-	int32_t minRecSizes = 1024*1024;
-	Msg5 msg5;
-	RdbList list;
-	key_t oldk; oldk.setMin();
- loop:
-	// use msg5 to get the list, should ALWAYS block since no threads
-	if ( ! msg5.getList ( RDB_TFNDB     ,
-				  coll          ,
-				  &list         ,
-				  startKey      ,
-				  endKey        ,
-				  minRecSizes   ,
-				  includeTree   ,
-				  false         , // add to cache?
-				  0             , // max cache age
-				  startFileNum  ,
-				  numFiles      ,
-				  NULL          , // state
-				  NULL          , // callback
-				  0             , // niceness
-				  false         )){// err correction?
-		log(LOG_LOGIC,"db: getList did not block.");
-		return;
-	}
-	// all done if empty
-	if ( list.isEmpty() ) return;
-	// loop over entries in list
-	for ( list.resetListPtr() ; ! list.isExhausted() ;
-		  list.skipCurrentRecord() ) {
-		key_t k    = list.getCurrentKey();
-		if ( verify ) {
-			if ( oldk > k )
-				fprintf(stdout,"got bad key order. "
-					"%"XINT32"/%"XINT64" > %"XINT32"/%"XINT64"\n",
-					oldk.n1,oldk.n0,k.n1,k.n0);
-			oldk = k;
-			continue;
-		}
-		int64_t docId = g_tfndb.getDocId        ( &k );
-		//int32_t      e     = g_tfndb.getExt          ( k );
-		int32_t      tfn   = g_tfndb.getTfn ( &k );
-		//int32_t  clean = 0  ; if ( g_tfndb.isClean ( k ) ) clean= 1;
-		int32_t  half  = 0  ; if ( k.n0 & 0x02           ) half = 1;
-		char *dd    = "" ; if ( (k.n0 & 0x01) == 0    ) dd   =" (del)";
-		fprintf(stdout,
-			"%08"XINT32" %016"XINT64" docId=%012"INT64" "
-			"tfn=%03"INT32" half=%"INT32" %s\n",
-			k.n1,k.n0,docId,tfn,half,dd);
-	}
-	startKey = *(key_t *)list.getLastKey();
-	startKey += (uint32_t) 1;
-	// watch out for wrap around
-	if ( startKey < *(key_t *)list.getLastKey() ) return;
-	goto loop;
-}
-*/
+
 void dumpWaitingTree(char* coll) {
 	RdbTree wt;
 	if (!wt.set(0, -1, true, 20000000, true, "waittree2",
@@ -6899,12 +4489,7 @@ void dumpWaitingTree(char* coll) {
 
 
 void dumpDoledb(char* coll, int32_t startFileNum, int32_t numFiles, bool includeTree) {
-	//g_conf.m_spiderdbMaxTreeMem = 1024*1024*30;
-	//g_conf.m_checksumdbMaxDiskPageCacheMem = 0;
-	//g_conf.m_spiderdbMaxDiskPageCacheMem   = 0;
-	//g_conf.m_doledbMaxDiskPageCacheMem = 0;
 	g_doledb.init();
-	//g_collectiondb.init(true);
 	g_doledb.getRdb()->addRdbBase1(coll);
 	key_t startKey;
 	key_t endKey;
@@ -10613,7 +8198,7 @@ bool matchertest ( int argc, char* argv[] ) {
 	uint8_t* content[numFiles];
 	uint32_t len[numFiles];
 	for (int i = 0; i < numFiles; i++) {
-		FILE *pf = fopen(argv[i], "rb");
+		FILE* pf = fopen(argv[i], "rb");
 		if (pf == NULL) {
 			fprintf(stderr, "unable to open '%s'\n",
 				argv[i]);
@@ -10625,7 +8210,7 @@ bool matchertest ( int argc, char* argv[] ) {
 			return false;
 		}
 		len[i] = sb.st_size;
-		content[i] = (uint8_t*) mmalloc(len[i], "file");
+		content[i] = (uint8_t*)mmalloc(len[i], "file");
 		if (content == NULL) {
 			fprintf(stderr, "unable to malloc '%s'\n", argv[i]);
 			return false;
@@ -10653,17 +8238,17 @@ bool matchertest ( int argc, char* argv[] ) {
 	//matcherMM.Dump();
 
 	const int numMatchers = 4;
-	Matcher* matchers[numMatchers]  =	{	&matcherBMM,
+	Matcher* matchers[numMatchers] = { &matcherBMM,
 							&matcherSATM,
 							&matcherMBTM,
 							&matcherMM,
-						};
-	char* matcherNames[numMatchers] = 	{
+	};
+	char* matcherNames[numMatchers] = {
 							"BitMatrixMatcher",
 							"SmallAsciiTrieMatcher",
 							"MediumBinaryTrieMatcher",
 							"MatrixMatcher"
-						};
+	};
 
 
 	// --------------------------------------------------------------------
@@ -10682,8 +8267,8 @@ bool matchertest ( int argc, char* argv[] ) {
 				uint16_t termNum;
 				while (icursor < iend) {
 					icursor = matcher->Exec(icursor,
-								iend - icursor,
-								&termNum);
+						iend - icursor,
+						&termNum);
 					hits++;
 					if (icursor == NULL)
 						break;
@@ -10695,7 +8280,7 @@ bool matchertest ( int argc, char* argv[] ) {
 			gettimeofday(&tv, NULL);
 			uint64_t tElapsed = (tv.tv_sec * 1000000 + tv.tv_usec) -
 				tStart;
-			fprintf(stderr,"STAT %24s %6llduS %4dKB %4d hits %s\n",
+			fprintf(stderr, "STAT %24s %6llduS %4dKB %4d hits %s\n",
 				matcherNames[matcherix],
 				tElapsed / iterExec, len[fileix] / 1024,
 				hits - 1, argv[fileix]);
@@ -10705,40 +8290,40 @@ bool matchertest ( int argc, char* argv[] ) {
 	return true;
 }
 
-bool trietest ( ) {
+bool trietest() {
 	//TrieMatcher<uint8_t,8> matcher;
 	MatrixMatcher matcher;
 	MatchTerm terms[3];
-	terms[0].m_term = (uint8_t*) "jackie";
+	terms[0].m_term = (uint8_t*)"jackie";
 	terms[0].m_termSize = 6;
-	terms[1].m_term = (uint8_t*) "jack";
-	terms[1].m_termSize = 4;
-	terms[2].m_term = (uint8_t*) "sandi";
-	terms[2].m_termSize = 5;
-	matcher.Compile(terms, 3, false);
-	matcher.Dump();
-	uint16_t numTerm;
-	const uint8_t* pos;
-	#define STRING (uint8_t*) "this is jAck's test for Sandi's enjoyment"
-	for (int i = 0; i < 10; i++) {
-		pos = matcher.Exec(STRING, gbstrlen((char*) STRING), &numTerm);
+terms[1].m_term = (uint8_t*)"jack";
+terms[1].m_termSize = 4;
+terms[2].m_term = (uint8_t*)"sandi";
+terms[2].m_termSize = 5;
+matcher.Compile(terms, 3, false);
+matcher.Dump();
+uint16_t numTerm;
+const uint8_t* pos;
+#define STRING (uint8_t*) "this is jAck's test for Sandi's enjoyment"
+for (int i = 0; i < 10; i++) {
+	pos = matcher.Exec(STRING, gbstrlen((char*)STRING), &numTerm);
+	if (pos != NULL) {
+		fprintf(stderr, "term[%d] '%s' -> %s\n",
+			numTerm, terms[numTerm].m_term, pos);
+		pos += gbstrlen((char*)terms[numTerm].m_term);
+		pos = matcher.Exec(pos, gbstrlen((char*)pos), &numTerm);
 		if (pos != NULL) {
 			fprintf(stderr, "term[%d] '%s' -> %s\n",
 				numTerm, terms[numTerm].m_term, pos);
-			pos += gbstrlen((char*) terms[numTerm].m_term);
-			pos = matcher.Exec(pos, gbstrlen((char*) pos), &numTerm);
-			if (pos != NULL) {
-				fprintf(stderr, "term[%d] '%s' -> %s\n",
-					numTerm, terms[numTerm].m_term, pos);
-				pos += gbstrlen((char*) terms[numTerm].m_term);
-				pos = matcher.Exec(pos, gbstrlen((char*) pos),
-						&numTerm);
-				if (pos != NULL)
-					exit(1);
-			}
+			pos += gbstrlen((char*)terms[numTerm].m_term);
+			pos = matcher.Exec(pos, gbstrlen((char*)pos),
+				&numTerm);
+			if (pos != NULL)
+				exit(1);
 		}
 	}
-	return false;
+}
+return false;
 }
 */
 
@@ -15185,27 +12770,6 @@ loop:
 		// advance this for next read
 		s_off += len;
 
-		//if ( ! strncmp(pbuf,"URL: ", 5 ) ) {
-		// if it's not a mime header assume just a url
-		//if ( strncmp(pbuf,"GET /",5) &&
-		//     strncmp(pbuf,"POST /",6) ) {
-		// skip "URL: "
-		/*
-		if ( strncmp(pbuf,"+++URL: ",8) == 0 )
-				url = pbuf + 8;
-			else
-				url = pbuf;
-			// find \n
-			pbuf = strchr(pbuf,'\n');
-			*pbuf = '\0';
-			pbuf++;
-			int32_t len = pbuf - buf;
-			toRead -= len;
-			s_off += len;
-		}
-		*/
-		// should be a mime that starts with GET or POST
-		//char *mimePtr = pbuf;
 		HttpMime m;
 		if (!m.set(pbuf, toRead, NULL)) {
 			if (toRead > 128) toRead = 128;
@@ -15250,8 +12814,6 @@ loop:
 			exit(0);
 		}
 		// alloc space for mime and content
-		//reqAlloc = 5000;
-		//if ( ! url ) reqAlloc += m.getMimeLen() + contentLen ;
 		reqAlloc = contentPtrLen + 2 + 6000;
 		// make space for content
 		req = (char*)mmalloc(reqAlloc, "maininject");
@@ -15298,41 +12860,6 @@ loop:
 		if (!url) {
 			// what is this?
 			char* xx = NULL;*xx = 0;
-			/*
-			// stick mime in there
-			gbmemcpy ( rp , mimePtr , m.getMimeLen() );
-			// skip that
-			rp += m.getMimeLen();
-			// turn \n\n into \r\n\r\n
-			if ( rp[-2] == '\n' && rp[-1] == '\n' ) {
-				rp[-2] = '\r';
-				rp[ 0] = '\r';
-				rp[ 1] = '\n';
-				rp += 2;
-			}
-			// advance
-			s_off += m.getMimeLen();
-			// read from file into content
-			int32_t contRead = contentLen;
-			if ( s_off + contRead > fsize ) {
-				log("build: inject: Content-Length of %"INT32" "
-					"specified "
-					"for content at offset %"INT64" would breech "
-					"EOF",
-					contentLen,s_off);
-				exit(0);
-			}
-			if ( contRead != s_file.read ( rp ,contRead , s_off)) {
-				log("build: inject: Read of %s failed at "
-					"offset %"INT64"",
-					s_file.getFilename(), s_off);
-				exit(0);
-			}
-			// skip that
-			rp += contRead;
-			// success
-			s_off += contRead;
-			*/
 		}
 
 		// store the content after the &ucontent
@@ -15387,16 +12914,8 @@ loop:
 		9999 * 60 * 1000, // timeout, 60days
 		-1, // maxTextDocLen
 		-1);// maxOtherDocLen
-// launch another if blocked
-//if ( ! status ) return;
 	if (!status) {
-		//int32_t nh = g_hostdb.getNumHosts();
-		//nh = (nh * 15) / 10;
-		//if ( nh > MAX_INJECT_SOCKETS - 10 ) 
-		//	nh = MAX_INJECT_SOCKETS - 10;
-		//if ( nh < 5 ) nh = 5;
-		// limit to one socket right now
-		//if ( ++s_outstanding < 1 ) goto loop;
+
 		if (++s_outstanding < MAX_INJECT_SOCKETS) goto loop;
 		return;
 	}
@@ -15479,10 +12998,6 @@ readMore:
 			}
 			exit(0);
 		}
-
-		// mark the end of what we read
-		//char *fend = buf + toRead;
-
 		// point to what we read
 		s_pbuf = s_buf;
 		s_pbufEnd = s_buf + bytesRead;
@@ -15554,8 +13069,8 @@ loop:
 	if (!warcConType) {
 		log("inject: could not find Content-Type:");
 		if (s_outstanding) {
-			log("inject: waiting for socks");return;		
-}
+			log("inject: waiting for socks");return;
+		}
 		exit(0);
 	}
 	warcConType += 13;
@@ -15568,8 +13083,8 @@ loop:
 		log("inject: could not find WARC "
 			"Content-Length:");
 		if (s_outstanding) {
-			log("inject: waiting for socks");return;		
-}
+			log("inject: waiting for socks");return;
+		}
 		exit(0);
 	}
 	warcContentLenStr += 15;
@@ -15671,10 +13186,6 @@ loop:
 	// should be a mime that starts with GET or POST
 	HttpMime m;
 	if (!m.set(httpReply, httpReplySize, NULL)) {
-		// 	if ( httpReplySize > 128 ) httpReplySize = 128;
-	  // 	httpReply [ httpReplySize ] = '\0';
-	  // 	log("build: inject: Failed to set mime at offset "
-	  // 	    "%"INT64" where request=%s",s_off,httpReply);
 		log("inject: failed to set http mime at %"INT64" in file"
 			, oldOff);
 		goto loop;

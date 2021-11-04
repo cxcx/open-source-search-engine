@@ -282,61 +282,6 @@ bool sendPageResults(TcpSocket* s, HttpRequest* hr) {
 	// what format should search results be in? default is html
 	char format = hr->getReplyFormat();//getFormatFromRequest ( hr );
 
-	// get the dmoz catid if given
-	//int32_t searchingDmoz = hr->getLong("dmoz",0);
-
-	//
-	// DO WE NEED TO ALTER cr->m_siteListBuf for a widget?
-	//
-	// when a wordpress user changes the "Websites to Include" for
-	// her widget, it should send a /search?sites=xyz.com&wpid=xxx
-	// request here... 
-	// so we need to remove her old sites and add in her new ones.
-	// 
-	/*
-
-	  MDW TURN BACK ON IN A DAY. do indexing or err pages first.
-
-	// get wordpressid supplied with all widget requests
-	char *wpid = hr->getString("wpid");
-	// we have to add set &spidersites=1 which all widgets should do
-	if ( wpid ) {
-		// this returns NULL if cr->m_siteListBuf would be unchanged
-		// because we already have the whiteListBuf sites in there
-		// for this wordPressId (wpid)
-		SafeBuf newSiteListBuf;
-		makeNewSiteList( &si->m_whiteListBuf,
-				 cr->m_siteListBuf ,
-				 wpid ,
-				 &newSiteListBuf);
-		// . update the list of sites to crawl/search & show in widget
-		// . if they give an empty list then allow that, stops crawling
-		SafeBuf parmList;
-		g_parms.addNewParmToList1 ( &parmList,
-						cr->m_collnum,
-						newSiteListBuf,
-						0,
-						"sitelist");
-		// send the parms to all hosts in the network
-		g_parms.broadcastParmList ( &parmList ,
-						NULL,//s,// state is socket i guess
-						NULL);//doneBroadcastingParms2 );
-		// nothing left to do now
-		return g_httpServer.sendDynamicPage(s,
-							"OK",//sb.getBufStart(),
-							2,//sb.length(),
-							cacheTime,//0,
-							false, // POST?
-							"text/html",
-							200,  // httpstatus
-							NULL, // cookie
-							"UTF-8"); // charset
-	}
-	*/
-
-
-
-
 	//
 	// . send back page frame with the ajax call to get the real
 	//   search results. do not do this if a "&dir=" (dmoz category)
@@ -430,13 +375,6 @@ bool sendPageResults(TcpSocket* s, HttpRequest* hr) {
 			, h32
 			, rand64
 		);
-		//
-		// . login bar
-		// . proxy will replace it byte by byte with a login/logout
-		//   link etc.
-		//
-		//g_proxy.insertLoginBarDirective(&sb);
-
 		// 
 		// logo header
 		//
@@ -671,41 +609,12 @@ bool sendPageResults(TcpSocket* s, HttpRequest* hr) {
 	// . don't get ads if we're not on the first page of results
 	// . query must be NULL terminated
 	st->m_gotAds = true;
-	/*
-	if (si->m_adFeedEnabled && ! si->m_xml && si->m_docsWanted > 0) {
-				int32_t pageNum = (si->m_firstResultNum/si->m_docsWanted) + 1;
-		st->m_gotAds = st->m_ads.
-			getAds(si->m_displayQuery    , //query
-				   si->m_displayQueryLen , //q len
-				   pageNum               , //page num
-							   si->m_queryIP         ,
-				   si->m_coll2           , //coll
-				   st                    , //state
-				   gotAdsWrapper         );//clbk
-		}
-	*/
+
 
 	// LAUNCH SPELLER
 	// get our spelling correction if we should (spell checker)
 	st->m_gotSpell = true;
 	st->m_spell[0] = '\0';
-	/*
-	if ( si->m_spellCheck &&
-		 cr->m_spellCheck &&
-		 g_conf.m_doSpellChecking ) {
-		st->m_gotSpell = g_speller.
-			getRecommendation( &st->m_q,          // Query
-					   si->m_spellCheck,  // spellcheck
-					   st->m_spell,       // Spell buffer
-					   MAX_FRAG_SIZE,     // spell buf size
-					   false,      // narrow search?
-					   NULL,//st->m_narrow  // narrow buf
-					   MAX_FRAG_SIZE,    // narrow buf size
-					   NULL,// num of narrows  ptr
-					   st,               // state
-					   gotSpellingWrapper );// callback
-	}
-	*/
 
 	// LAUNCH RESULTS
 
@@ -742,19 +651,6 @@ void doneRedownloadingWrapper(void* state) {
 	// resume
 	gotResults(st);
 }
-
-/*
-void gotSpellingWrapper( void *state ){
-	// cast our State0 class from this
-	State0 *st = (State0 *) state;
-	// log the error first
-	if ( g_errno ) log("query: speller: %s.",mstrerror(g_errno));
-	// clear any error cuz spellchecks aren't needed
-	g_errno = 0;
-	st->m_gotSpell = true;
-	gotState(st);
-}
-*/
 
 void gotResultsWrapper(void* state) {
 	// cast our State0 class from this
@@ -3200,46 +3096,6 @@ bool printInlinkText(SafeBuf* sb, Msg20Reply* mr, SearchInput* si,
 		// skip it if nothing highlighted
 		if (hi.getNumMatches() == 0) continue;
 
-		if (si->m_format == FORMAT_XML) {
-			sb->safePrintf("\t\t\t<inlink "
-				"docId=\"%"INT64"\" "
-				"url=\"",
-				k->m_docId);
-			// encode it for xml
-			sb->htmlEncode(k->getUrl(),//ptr_urlBuf,
-				k->size_urlBuf - 1, false);
-			sb->safePrintf("\" "
-				//"hostId=\"%"UINT32"\" "
-				"firstindexed=\"%"UINT32"\" "
-				// not accurate!
-				//"lastspidered=\"%"UINT32"\" "
-				"wordposstart=\"%"INT32"\" "
-				"id=\"%"INT32"\" "
-				"siterank=\"%"INT32"\" "
-				"text=\"",
-				//hh ,
-				//(int32_t)k->m_datedbDate,
-				(uint32_t)k->m_firstIndexedDate,
-				//(uint32_t)k->m_lastSpidered,
-				(int32_t)k->m_wordPosStart,
-				inlinkId,
-				//linkScore);
-				(int32_t)k->m_siteRank
-			);
-			// HACK!!!
-			k->m_siteHash = inlinkId;
-			// inc it
-			inlinkId++;
-			// encode it for xml
-			if (!sb->htmlEncode(hb.getBufStart(),
-				hb.length(),
-				false))
-				return false;
-			sb->safePrintf("\"/>\n");
-			continue;
-		}
-
-
 		if (firstTime) {
 			sb->safePrintf("<font size=-1>");
 			sb->safePrintf("<table border=1>"
@@ -3405,7 +3261,6 @@ bool printResult(State0* st, int32_t ix, int32_t* numPrintedSoFar) {
 		return true;
 	}
 
-
 	// int16_tcuts
 	SearchInput* si = &st->m_si;
 	Msg40* msg40 = &st->m_msg40;
@@ -3418,14 +3273,6 @@ bool printResult(State0* st, int32_t ix, int32_t* numPrintedSoFar) {
 	int64_t d = msg40->getDocId(ix);
 	// this is normally a double, but cast to float
 	float docScore = (float)msg40->getScore(ix);
-
-	// do not print if it is a summary dup or had some error
-	// int32_t level = (int32_t)msg40->getClusterLevel(ix);
-	// if ( level != CR_OK &&
-	//      level != CR_INDENT )
-	// 	return true;
-
-
 
 	if (si->m_docIdsOnly) {
 		if (si->m_format == FORMAT_XML)
@@ -4553,60 +4400,6 @@ badformat:
 	if (si->m_format == FORMAT_HTML)
 		printTimeAgo(sb, ts, "modified", si);
 
-	//
-	// more xml stuff
-	//
-	if (si->m_format == FORMAT_XML) {
-		// doc size in Kilobytes
-		sb->safePrintf("\t\t<size><![CDATA[%4.0fk]]></size>\n",
-			(float)mr->m_contentLen / 1024.0);
-		sb->safePrintf("\t\t<sizeInBytes>%"INT32"</sizeInBytes>\n",
-			mr->m_contentLen);
-		// . docId for possible cached link
-		// . might have merged a bunch together
-		sb->safePrintf("\t\t<docId>%"INT64"</docId>\n", mr->m_docId);
-		sb->safePrintf("\t\t<docScore>%f</docScore>\n", docScore);
-	}
-
-	if (si->m_format == FORMAT_XML && mr->m_contentType != CT_STATUS) {
-		// . show the site root
-		// . for hompages.com/users/fred/mypage.html this will be
-		//   homepages.com/users/fred/
-		// . for www.xyz.edu/~foo/burp/ this will be
-		//   www.xyz.edu/~foo/ etc.
-		int32_t  siteLen = 0;
-		char* site = NULL;
-		// seems like this isn't the way to do it, cuz Tagdb.cpp
-		// adds the "site" tag itself and we do not always have it
-		// in the XmlDoc::ptr_tagRec... so do it this way:
-		site = mr->ptr_site;
-		siteLen = mr->size_site - 1;
-		//char *site=uu.getSite( &siteLen , si->m_coll, false, tagRec);
-		sb->safePrintf("\t\t<site><![CDATA[");
-		if (site && siteLen > 0) sb->safeMemcpy(site, siteLen);
-		sb->safePrintf("]]></site>\n");
-		//int32_t sh = hash32 ( site , siteLen );
-		//sb->safePrintf ("\t\t<siteHash32>%"UINT32"</siteHash32>\n",sh);
-		//int32_t dh = uu.getDomainHash32 ();
-		//sb->safePrintf ("\t\t<domainHash32>%"UINT32"</domainHash32>\n",dh);
-		// spider date
-		sb->safePrintf("\t\t<spidered>%"UINT32"</spidered>\n",
-			(uint32_t)mr->m_lastSpidered);
-		// backwards compatibility for buzz
-		sb->safePrintf("\t\t<firstIndexedDateUTC>%"UINT32""
-			"</firstIndexedDateUTC>\n",
-			(uint32_t)mr->m_firstIndexedDate);
-		sb->safePrintf("\t\t<contentHash32>%"UINT32""
-			"</contentHash32>\n",
-			(uint32_t)mr->m_contentHash32);
-		// pub date
-		int32_t datedbDate = mr->m_datedbDate;
-		// show the datedb date as "<pubDate>" for now
-		if (datedbDate != -1)
-			sb->safePrintf("\t\t<pubdate>%"UINT32"</pubdate>\n",
-				(uint32_t)datedbDate);
-	}
-
 	if (si->m_format == FORMAT_JSON) {
 		// doc size in Kilobytes
 		sb->safePrintf("\t\t\"size\":\"%4.0fk\",\n",
@@ -4657,7 +4450,6 @@ badformat:
 	}
 
 
-
 	// . we also store the outlinks in a linkInfo structure
 	// . we can call LinkInfo::set ( Links *outlinks ) to set it
 	//   in the msg20
@@ -4682,19 +4474,6 @@ badformat:
 			(int32_t)k->m_firstIndexedDate,
 			(int32_t)k->m_datedbDate);
 
-	if (si->m_format == FORMAT_XML) {
-		// result
-		sb->safePrintf("\t\t<language><![CDATA[%s]]>"
-			"</language>\n",
-			getLanguageString(mr->m_language));
-		sb->safePrintf("\t\t<langAbbr>%s</langAbbr>\n",
-			getLangAbbr(mr->m_language));
-		char* charset = get_charset_str(mr->m_charset);
-		if (charset)
-			sb->safePrintf("\t\t<charset><![CDATA[%s]]>"
-				"</charset>\n", charset);
-	}
-
 	if (si->m_format == FORMAT_JSON) {
 		// result
 		sb->safePrintf("\t\t\"language\":\"%s\",\n",
@@ -4705,26 +4484,6 @@ badformat:
 		if (charset)
 			sb->safePrintf("\t\t\"charset\":\"%s\",\n", charset);
 	}
-
-	//
-	// end more xml stuff
-	//
-
-
-
-	if (si->m_format == FORMAT_HTML) {
-		int32_t lang = mr->m_language;
-		if (lang) sb->safePrintf(" - %s", getLanguageString(lang));
-		uint16_t cc = mr->m_computedCountry;
-		if (cc) sb->safePrintf(" - %s", g_countryCode.getName(cc));
-		char* charset = get_charset_str(mr->m_charset);
-		if (charset) sb->safePrintf(" - %s ", charset);
-	}
-
-	if (si->m_format == FORMAT_HTML) sb->safePrintf("<br>\n");
-
-	//char *coll = si->m_cr->m_coll;
-
 	// print the [cached] link?
 	bool printCached = true;
 	if (mr->m_noArchive) printCached = false;
@@ -4779,248 +4538,9 @@ badformat:
 	// unhide the divs on click
 	int32_t placeHolder = -1;
 	int32_t placeHolderLen = 0;
-	if (si->m_format == FORMAT_HTML && si->m_getDocIdScoringInfo) {
-		// place holder for backlink table link
-		placeHolder = sb->length();
-		sb->safePrintf(" - <a onclick="
-
-			"\""
-			"var e = document.getElementById('bl%"INT32"');"
-			"if ( e.style.display == 'none' ){"
-			"e.style.display = '';"
-			"}"
-			"else {"
-			"e.style.display = 'none';"
-			"}"
-			"\""
-			" "
-
-			"style="
-			"cursor:hand;"
-			"cursor:pointer;"
-			"color:blue;>"
-			"<u>00000 backlinks</u>"
-			"</a>\n"
-			, ix
-		);
-		placeHolderLen = sb->length() - placeHolder;
-	}
-
-
-	if (si->m_format == FORMAT_HTML && si->m_getDocIdScoringInfo) {
-		// unhide the scoring table on click
-		sb->safePrintf(" - <a onclick="
-
-			"\""
-			"var e = document.getElementById('sc%"INT32"');"
-			"if ( e.style.display == 'none' ){"
-			"e.style.display = '';"
-			"}"
-			"else {"
-			"e.style.display = 'none';"
-			"}"
-			"\""
-			" "
-
-			"style="
-			"cursor:hand;"
-			"cursor:pointer;"
-			"color:blue;>"
-			"scoring"
-			"</a>\n"
-			, ix
-		);
-	}
-
-	if (si->m_format == FORMAT_HTML) {
-		// reindex
-		sb->safePrintf(" - <a style=color:blue; href=\"/addurl?"
-			"urls=");
-		sb->urlEncode(url, gbstrlen(url), false);
-		uint64_t rand64 = gettimeofdayInMillisecondsLocal();
-		sb->safePrintf("&c=%s&rand64=%"UINT64"\">respider</a>\n",
-			coll, rand64);
-	}
-
-	if (si->m_format == FORMAT_HTML) {
-		sb->safePrintf(" - "
-			"<a style=color:blue; "
-			"href=\"/search?sb=1&c=%s&"
-			//"q=url2%%3A" 
-			"q=gbfieldmatch%%3AgbssUrl%%3A"
-			, coll
-		);
-		// do not include ending \0
-		sb->urlEncode(mr->ptr_ubuf, mr->size_ubuf - 1, false);
-		sb->safePrintf("\">"
-			"spider info</a>\n"
-		);
-	}
-
-	//
-	// show rainbow sections link
-	//
-	if (si->m_format == FORMAT_HTML) {
-		sb->safePrintf(" - <a style=color:blue; href=\""
-			"/get?"
-			// show rainbow sections
-			"page=4&"
-			"q=%s&"
-			"qlang=%s&"
-			"c=%s&"
-			"d=%"INT64"&"
-			"cnsp=0\">"
-			"sections</a>\n",
-			st->m_qesb.getBufStart(),
-			// "qlang" parm
-			si->m_defaultSortLang,
-			coll,
-			mr->m_docId);
-	}
-
-	if (si->m_format == FORMAT_HTML) {
-		sb->safePrintf(" - <a style=color:blue; href=\""
-			"/get?"
-			// show rainbow sections
-			"page=1&"
-			//"q=%s&"
-			//"qlang=%s&"
-			"c=%s&"
-			"d=%"INT64"&"
-			"cnsp=0\">"
-			"page info</a>\n",
-			//st->m_qe , 
-			// "qlang" parm
-			//si->m_defaultSortLang,
-			coll,
-			mr->m_docId);
-	}
-
-	// this stuff is secret just for local guys! not any more
-	if (si->m_format == FORMAT_HTML) {
-		// now the ip of url
-		//int32_t urlip = msg40->getIp(i);
-		// don't combine this with the sprintf above cuz
-		// iptoa uses a static local buffer like ctime()
-		sb->safePrintf(//"<br>"
-			" - <a style=color:blue; href=\"/search?"
-			"c=%s&sc=1&dr=0&q=ip:%s&"
-			"n=100&usecache=0\">%s</a>\n",
-			coll, iptoa(mr->m_ip), iptoa(mr->m_ip));
-		// ip domain link
-		unsigned char* us = (unsigned char*)&mr->m_ip;//urlip;
-		sb->safePrintf(" - <a style=color:blue; "
-			"href=\"/search?c=%s&sc=1&dr=0&n=100&"
-			"q=ip:%"INT32".%"INT32".%"INT32"&"
-			"usecache=0\">%"INT32".%"INT32".%"INT32"</a>\n",
-			coll,
-			(int32_t)us[0], (int32_t)us[1], (int32_t)us[2],
-			(int32_t)us[0], (int32_t)us[1], (int32_t)us[2]);
-
-	}
 
 	char dbuf[MAX_URL_LEN];
 	int32_t dlen = uu.getDomainLen();
-	if (si->m_format == FORMAT_HTML) {
-		gbmemcpy(dbuf, uu.getDomain(), dlen);
-		dbuf[dlen] = '\0';
-		// newspaperarchive urls have no domain
-		if (dlen == 0) {
-			dlen = uu.getHostLen();
-			gbmemcpy(dbuf, uu.getHost(), dlen);
-			dbuf[dlen] = '\0';
-		}
-	}
-
-
-	// admin always gets the site: option so he can ban
-	if (si->m_format == FORMAT_HTML) {
-		sb->safePrintf(" - "
-			" <a style=color:blue; href=\"/search?"
-			"q=site%%3A%s&sc=0&c=%s\">"
-			"domain</a>\n",
-			dbuf,
-			coll);//, dbuf );
-	}
-
-
-	if (si->m_format == FORMAT_HTML && si->m_doSiteClustering) {
-		char hbuf[MAX_URL_LEN];
-		int32_t hlen = uu.getHostLen();
-		gbmemcpy(hbuf, uu.getHost(), hlen);
-		hbuf[hlen] = '\0';
-
-		// make the cgi parm to add to the original url
-		char tmp[512];
-		SafeBuf qq(tmp, 512);
-		qq.safePrintf("q=");
-		qq.urlEncode("site:");
-		qq.urlEncode(hbuf);
-		qq.urlEncode(" | ");
-		qq.safeStrcpy(st->m_qesb.getBufStart());
-		qq.nullTerm();
-		// get the original url and add/replace in query
-		char tmp2[512];
-		SafeBuf newUrl(tmp2, 512);
-		replaceParm(qq.getBufStart(), &newUrl, hr);
-		// put show more results from this site link
-		sb->safePrintf(" - <nobr><a href=\"%s\">"
-			"more from this site</a></nobr>"
-			, newUrl.getBufStart()
-		);
-		if (indent) sb->safePrintf("</blockquote><br>\n");
-		//else sb->safePrintf ( "<br><br>\n");
-	}
-
-
-	if (si->m_format == FORMAT_HTML && (isAdmin || cr->m_isCustomCrawl)) {
-		char* un = "";
-		int32_t  banVal = 1;
-		if (mr->m_isBanned) {
-			un = "UN";
-			banVal = 0;
-		}
-		// don't put on a separate line because then it is too
-		// easy to mis-click on it
-		sb->safePrintf(//"<br>"
-			" - "
-			" <a style=color:green; href=\"/admin/tagdb?"
-			"user=admin&"
-			"tagtype0=manualban&"
-			"tagdata0=%"INT32"&"
-			"u=%s&c=%s\">"
-			"<nobr>%sBAN %s"
-			"</nobr></a>\n"
-			, banVal
-			, dbuf
-			, coll
-			, un
-			, dbuf);
-		//banSites->safePrintf("%s+", dbuf);
-		dlen = uu.getHostLen();
-		gbmemcpy(dbuf, uu.getHost(), dlen);
-		dbuf[dlen] = '\0';
-		sb->safePrintf(" - "
-			" <a style=color:green; href=\"/admin/tagdb?"
-			"user=admin&"
-			"tagtype0=manualban&"
-			"tagdata0=%"INT32"&"
-			"u=%s&c=%s\">"
-			"<nobr>%sBAN %s</nobr></a>\n"
-			, banVal
-			, dbuf
-			, coll
-			, un
-			, dbuf
-		);
-
-		if (mr->size_gbAdIds > 0)
-			sb->safePrintf("<a href=\"/search?"
-				"q=%s"
-				"&sc=1&dr=0&c=%s&n=200&rat=0\">"
-				"Ad Id</a>\n",
-				mr->ptr_gbAdIds, coll);
-	}
 
 	if (mr->size_metadataBuf && si->m_format == FORMAT_JSON) {
 		sb->safePrintf("\t\t\"metadata\":[");
@@ -5069,331 +4589,13 @@ badformat:
 	}
 
 
-	// end serp div
-	if (si->m_format == FORMAT_WIDGET_IFRAME ||
-		si->m_format == FORMAT_WIDGET_APPEND ||
-		si->m_format == FORMAT_WIDGET_AJAX)
-		sb->safePrintf("</div><hr>");
-
-
-	if (si->m_format == FORMAT_HTML)
-		sb->safePrintf("<br><br>\n");
-
-	// search result spacer
-	if (si->m_format == FORMAT_WIDGET_IFRAME ||
-		si->m_format == FORMAT_WIDGET_APPEND ||
-		si->m_format == FORMAT_WIDGET_AJAX)
-		sb->safePrintf("<div style=line-height:%"INT32"px;><br></div>",
-			(int32_t)SERP_SPACER);
-
-
 	// inc it
 	*numPrintedSoFar = *numPrintedSoFar + 1;
 
-	// done?
-	DocIdScore* dp = msg40->getScoreInfo(ix);
-	if (!dp) {
-		if (si->m_format == FORMAT_XML)
-			sb->safePrintf("\t</result>\n\n");
-		if (si->m_format == FORMAT_JSON) {
-			// remove last ,\n
-			sb->m_length -= 2;
-			sb->safePrintf("\n\t}\n\n");
-		}
-		// wtf?
-		//char *xx=NULL;*xx=0;
-		// at least close up the table
-		if (si->m_format != FORMAT_HTML) return true;
-
-		sb->safePrintf("</table>\n");
-
-		return true;
-	}
-
-
-	//
-	// scoring info tables
-	//
-
-	int32_t nr = dp->m_numRequiredTerms;
-	if (nr == 1) nr = 0;
-	// print breakout tables here for distance matrix
-	//SafeBuf bt;
-	// final score calc
-	char tmp[1024];
-	SafeBuf ft(tmp, 1024);;
-	// int16_tcut
-	//Query *q = si->m_q;
-
-	// put in a hidden div so you can unhide it
-	if (si->m_format == FORMAT_HTML)
-		sb->safePrintf("<div id=bl%"INT32" style=display:none;>\n", ix);
-
-	// print xml and html inlinks
-	int32_t numInlinks = 0;
-	printInlinkText(sb, mr, si, &numInlinks);
-
-
-	if (si->m_format == FORMAT_HTML) {
-		sb->safePrintf("</div>");
-		sb->safePrintf("<div id=sc%"INT32" style=display:none;>\n", ix);
-	}
-
-
-	// if pair changes then display the sum
-	int32_t lastTermNum1 = -1;
-	int32_t lastTermNum2 = -1;
-
-	float minScore = -1;
-
-	int32_t lastTermNum = -1;
-
-	int32_t numSingles = dp->m_numSingles;
-	// do not print this if we got pairs
-	if (dp->m_numPairs) numSingles = 0;
-
-	for (int32_t i = 0; i < numSingles; i++) {
-		float totalSingleScore = 0.0;
-		// print all the top winners for this single
-		SingleScore* fss = &dp->m_singleScores[i];
-		// if same combo as last time skip
-		if (fss->m_qtermNum == lastTermNum) continue;
-		// do not reprint for this query term num
-		lastTermNum = fss->m_qtermNum;
-		bool firstTime = true;
-		// print all singles for this combo
-		for (int32_t j = i; j < dp->m_numSingles; j++) {
-			// get it
-			SingleScore* ss = &dp->m_singleScores[j];
-			// stop if different single now
-			if (ss->m_qtermNum != fss->m_qtermNum) break;
-			// skip if 0. skip neighborhoods i guess
-			if (ss->m_finalScore == 0.0) continue;
-			// first time?
-			if (firstTime && si->m_format == FORMAT_HTML) {
-				Query* q = &si->m_q;
-				printSingleTerm(sb, q, ss);
-				printScoresHeader(sb);
-				firstTime = false;
-			}
-			// print it
-			printSingleScore(sb, si, ss, mr, msg40);
-			// add up
-			totalSingleScore += ss->m_finalScore;
-		}
-		if (ft.length()) ft.safePrintf(" , ");
-		ft.safePrintf("%f", totalSingleScore);
-		// min?
-		if (minScore < 0.0 || totalSingleScore < minScore)
-			minScore = totalSingleScore;
-		// we need to set "ft" for xml stuff below
-		if (si->m_format != FORMAT_HTML) continue;
-		//sb->safePrintf("<table border=1><tr><td><center><b>");
-		// print pair text
-		//int32_t qtn = fss->m_qtermNum;
-		//sb->safeMemcpy(q->m_qterms[qtn].m_term ,
-		//	      q->m_qterms[qtn].m_termLen );
-		//sb->safePrintf("</b></center></td></tr>");
-		sb->safePrintf("<tr><td><b>%.04f</b></td>"
-			"<td colspan=20>total of above scores</td>"
-			"</tr>",
-			totalSingleScore);
-		// close table from printScoresHeader
-		if (!firstTime) sb->safePrintf("</table><br>");
-	}
-
-	char* ff = "";
-	if (si->m_useMinAlgo) ff = "MIN ";
-	char* ff2 = "sum";
-	if (si->m_useMinAlgo) ff2 = "min";
-	//if ( nr ) sb->safePrintf("</table>");
-	//sb->safePrintf("<br>");
-	// final score!!!
-	if (si->m_format == FORMAT_XML) {
-		sb->safePrintf("\t\t<siteRank>%"INT32"</siteRank>\n",
-			(int32_t)dp->m_siteRank);
-
-		sb->safePrintf("\t\t<numGoodSiteInlinks>%"INT32""
-			"</numGoodSiteInlinks>\n",
-			(int32_t)mr->m_siteNumInlinks);
-
-		struct tm* timeStruct3;
-		timeStruct3 = gmtime((time_t*)&mr->m_pageInlinksLastUpdated);
-		char tmp3[64];
-		strftime(tmp3, 64, "%b-%d-%Y(%H:%M:%S)", timeStruct3);
-		// -1 means unknown
-		if (mr->m_pageNumInlinks >= 0)
-			// how many inlinks, external and internal, we have
-			// to this page not filtered in any way!!!
-			sb->safePrintf("\t\t<numTotalPageInlinks>%"INT32""
-				"</numTotalPageInlinks>\n"
-				, mr->m_pageNumInlinks
-			);
-		// how many inlinking ips we got, including our own if
-		// we link to ourself
-		sb->safePrintf("\t\t<numUniqueIpsLinkingToPage>%"INT32""
-			"</numUniqueIpsLinkingToPage>\n"
-			, mr->m_pageNumUniqueIps
-		);
-		// how many inlinking cblocks we got, including our own if
-		// we link to ourself
-		sb->safePrintf("\t\t<numUniqueCBlocksLinkingToPage>%"INT32""
-			"</numUniqueCBlocksLinkingToPage>\n"
-			, mr->m_pageNumUniqueCBlocks
-		);
-
-		// how many "good" inlinks. i.e. inlinks whose linktext we
-		// count and index.
-		sb->safePrintf("\t\t<numGoodPageInlinks>%"INT32""
-			"</numGoodPageInlinks>\n"
-			"\t\t<pageInlinksLastComputedUTC>%"UINT32""
-			"</pageInlinksLastComputedUTC>\n"
-			, mr->m_pageNumGoodInlinks
-			, (uint32_t)mr->m_pageInlinksLastUpdated
-		);
-
-
-		float score = msg40->getScore(ix);
-		sb->safePrintf("\t\t<finalScore>%f</finalScore>\n", score);
-		sb->safePrintf("\t\t<finalScoreEquationCanonical>"
-			"<![CDATA["
-			"Final Score = (siteRank/%.01f+1) * "
-			"(%.01f [if not foreign language]) * "
-			"(%s of above matrix scores)"
-			"]]>"
-			"</finalScoreEquationCanonical>\n"
-			, SITERANKDIVISOR
-			, si->m_sameLangWeight //SAMELANGMULT
-			, ff2
-		);
-		sb->safePrintf("\t\t<finalScoreEquation>"
-			"<![CDATA["
-			"<b>%.03f</b> = (%"INT32"/%.01f+1) " // * %s("
-			, dp->m_finalScore
-			, (int32_t)dp->m_siteRank
-			, SITERANKDIVISOR
-			//, ff
-		);
-		// then language weight
-		if (si->m_queryLangId == 0 ||
-			mr->m_language == 0 ||
-			si->m_queryLangId == mr->m_language)
-			sb->safePrintf(" * %.01f",
-				si->m_sameLangWeight);//SAMELANGMULT);
- // the actual min then
-		sb->safePrintf(" * %.03f", minScore);
-		// no longer list all the scores
-		//sb->safeMemcpy ( &ft );
-		sb->safePrintf(//")"
-			"]]>"
-			"</finalScoreEquation>\n");
-		sb->safePrintf("\t</result>\n\n");
-		return true;
-	}
-
-	if (si->m_format != FORMAT_HTML) return true;
-
-	char* cc = getCountryCode(mr->m_country);
-	if (mr->m_country == 0) cc = "Unknown";
-
-	sb->safePrintf("<table border=1>"
-
-		"<tr><td colspan=10><b><center>"
-		"final score</center></b>"
-		"</td></tr>"
-
-		"<tr>"
-		"<td>docId</td>"
-		"<td>%"INT64"</td>"
-		"</tr>"
-
-		"<tr>"
-		"<td>site</td>"
-		"<td>%s</td>"
-		"</tr>"
-
-		"<tr>"
-		"<td>hopcount</td>"
-		"<td>%"INT32"</td>"
-		"</tr>"
-
-		"<tr>"
-		"<td>language</td>"
-		"<td><font color=green><b>%s</b></font></td>"
-		"</tr>"
-
-		"<tr>"
-		"<td>country</td>"
-		"<td>%s</td>"
-		"</tr>"
-
-		"<tr>"
-		"<td>siteRank</td>"
-		"<td><font color=blue>%"INT32"</font></td>"
-		"</tr>"
-
-		"<tr><td colspan=100>"
-		, dp->m_docId
-		, mr->ptr_site
-		, (int32_t)mr->m_hopcount
-		//, getLanguageString(mr->m_summaryLanguage)
-		, getLanguageString(mr->m_language) // use page language
-		, cc
-		, (int32_t)dp->m_siteRank
-	);
-
-	// list all final scores starting with pairs
-	sb->safePrintf("<b>%f</b> = "
-		"(<font color=blue>%"INT32"</font>/%.01f+1)"
-		, dp->m_finalScore
-		, (int32_t)dp->m_siteRank
-		, SITERANKDIVISOR
-	);
-
-	// if lang is different
-	if (si->m_queryLangId == 0 ||
-		mr->m_language == 0 ||
-		si->m_queryLangId == mr->m_language)
-		sb->safePrintf(" * <font color=green><b>%.01f</b></font>",
-			si->m_sameLangWeight);//SAMELANGMULT);
-
-// list all final scores starting with pairs
-	sb->safePrintf(" * %s("
-		, ff
-	);
-	sb->safeMemcpy(&ft);
-	sb->safePrintf(")</td></tr></table><br>");
-
-	// put in a hidden div so you can unhide it
-	sb->safePrintf("</div>\n");
-
-	// result is in a table so we can put the result # in its own column
-	sb->safePrintf("</td></tr></table>");
-
-
-
-	// space out 0000 backlinks
-	char* p = sb->getBufStart() + placeHolder;
-	int32_t plen = placeHolderLen;
-	if (numInlinks == 0)
-		memset(p, ' ', plen);
-	if (numInlinks > 0 && numInlinks < 99999) {
-		char* ss = strstr(p, "00000");
-		if (ss) {
-			char c = ss[5];
-			sprintf(ss, "%5"INT32"", numInlinks);
-			ss[5] = c;
-		}
-	}
-	// print "1 backlink" not "1 backlinks"
-	if (numInlinks == 1) {
-		char* xx = strstr(p, "backlinks");
-		if (xx) xx[8] = ' ';
-	}
-
+	sb->m_length -= 2;
+	sb->safePrintf("\n\t}\n");
 	return true;
 }
-
 
 
 
@@ -5411,18 +4613,6 @@ bool printPairScore(SafeBuf* sb, SearchInput* si, PairScore* ps,
 
 	int32_t qtn1 = ps->m_qtermNum1;
 	int32_t qtn2 = ps->m_qtermNum2;
-
-	/*
-	  unsigned char drl1 = ps->m_diversityRankLeft1;
-	  unsigned char drl2 = ps->m_diversityRankLeft2;
-	  float dvwl1 = getDiversityWeight(dr1);
-	  float dvwl2 = getDiversityWeight(dr2);
-
-	  unsigned char drr1 = ps->m_diversityRankRight1;
-	  unsigned char drr2 = ps->m_diversityRankRight2;
-	  float dvwr1 = getDiversityWeight(dr1);
-	  float dvwr2 = getDiversityWeight(dr2);
-	*/
 
 	unsigned char de1 = ps->m_densityRank1;
 	unsigned char de2 = ps->m_densityRank2;
