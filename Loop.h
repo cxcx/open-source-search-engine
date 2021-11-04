@@ -18,7 +18,7 @@
 #define QUERYPRIORITYWEIGHT 16
 #define QUICKPOLL_INTERVAL 10
 
-int gbsystem(char *cmd);
+int gbsystem(char* cmd);
 FILE* gbpopen(char* cmd);
 
 
@@ -27,11 +27,11 @@ FILE* gbpopen(char* cmd);
 
 // we have 2 arrays of slots, m_readSlots and m_writeSlots
 class Slot {
- public:
-	void   *m_state;
-	void  (* m_callback)(int fd, void *state);
+public:
+	void* m_state;
+	void  (*m_callback)(int fd, void* state);
 	// the next Slot that's registerd on this fd
-	Slot   *m_next;
+	Slot* m_next;
 	// save niceness level for doPoll() to segregate
 	int32_t    m_niceness;
 	// last time we called m_callback for this fd
@@ -46,7 +46,7 @@ class Slot {
 	// when we were last called in ms time (only valid for sleep callbacks)
 	int64_t m_lastCall;
 	// linked list of available slots
-	Slot     *m_nextAvail;
+	Slot* m_nextAvail;
 };
 
 #define  sleep(a) { char *xx=NULL;*xx=0; }
@@ -75,7 +75,7 @@ extern bool g_isHot;
 extern bool g_inSigHandler;
 
 // a debugging tool really
-extern bool g_interruptsOn ;
+extern bool g_interruptsOn;
 
 // are there pending signals for which we should call g_udpServer.makeCallbacks
 extern bool g_someAreQueued;
@@ -103,15 +103,15 @@ extern int32_t g_numSigIOs;
 extern int32_t g_numSigOthers;
 
 
-extern char g_niceness ;
+extern char g_niceness;
 
 // we make sure the same callback/handler is not hogging the cpu when it is
 // niceness 0 and we do not interrupt it, so this is a critical check
-extern class UdpSlot *g_callSlot;
+extern class UdpSlot* g_callSlot;
 
 class Loop {
 
- public:
+public:
 
 	// constructor and stuff
 	Loop();
@@ -122,7 +122,7 @@ class Loop {
 
 	// set up the signal handlers or block the signals for queueing
 	bool init();
-	
+
 	// . call this to begin polling/selecting of all registered fds
 	// . returns false on error
 	bool runLoop();
@@ -130,48 +130,48 @@ class Loop {
 	// . register this "fd" with "callback"
 	// . "callback" will be called when fd is ready for reading
 	// . "timeout" is -1 if this never timesout
-	bool registerReadCallback  ( int   fd    ,
-				     void *state , 
-				     void (* callback)(int fd,void *state ) ,
-				     int32_t  niceness );//= MAX_NICENESS ) ;
+	bool registerReadCallback(int   fd,
+		void* state,
+		void (*callback)(int fd, void* state),
+		int32_t  niceness);//= MAX_NICENESS ) ;
 
-	// . register this "fd" with "callback"
-	// . "callback" will be called when fd is ready for reading
-	// . "callback" will be called when there is an error on fd
-	bool registerWriteCallback ( int   fd    ,
-				     void *state ,
-				     void (* callback)(int fd, void *state ) , 
-	 			     int32_t   niceness ); 
+// . register this "fd" with "callback"
+// . "callback" will be called when fd is ready for reading
+// . "callback" will be called when there is an error on fd
+	bool registerWriteCallback(int   fd,
+		void* state,
+		void (*callback)(int fd, void* state),
+		int32_t   niceness);
 
 	// . register this callback to be called every second
 	// . TODO: implement "seconds" parameter
-	bool registerSleepCallback ( int32_t milliseconds ,
-				     void *state, 
-				     void (* callback)(int fd,void *state ) ,
-				     int32_t niceness = 1 );
+	bool registerSleepCallback(int32_t milliseconds,
+		void* state,
+		void (*callback)(int fd, void* state),
+		int32_t niceness = 1);
 
 	// unregister call back for reading, writing or sleeping
-	void unregisterReadCallback  ( int fd, void *state ,
-				       void (* callback)(int fd,void *state),
-				       bool silent = false );
-	void unregisterWriteCallback ( int fd, void *state ,
-	 			       void (* callback)(int fd,void *state)); 
-	void unregisterSleepCallback ( void *state ,
-				       void (* callback)(int fd,void *state));
+	void unregisterReadCallback(int fd, void* state,
+		void (*callback)(int fd, void* state),
+		bool silent = false);
+	void unregisterWriteCallback(int fd, void* state,
+		void (*callback)(int fd, void* state));
+	void unregisterSleepCallback(void* state,
+		void (*callback)(int fd, void* state));
 
 	// sets up for signal capture by us, g_loop
-	bool setNonBlocking ( int fd , int32_t niceness ) ;
+	bool setNonBlocking(int fd, int32_t niceness);
 
 	// . keep this public so sighandler() can call it
 	// . we also call it from HttpServer::getMsgPieceWrapper() to
 	//   notify a socket that it's m_sendBuf got some new data to send
-	void callCallbacks_ass (bool forReading, int fd, int64_t now = 0LL,
-				int32_t niceness = -1 );
+	void callCallbacks_ass(bool forReading, int fd, int64_t now = 0LL,
+		int32_t niceness = -1);
 
 	// set to true by sigioHandler() so doPoll() will be called
 	bool m_needToPoll;
 
-	
+
 	int64_t   m_lastPollTime;
 	bool        m_inQuickPoll;
 	bool        m_needsToQuickPoll;
@@ -181,9 +181,9 @@ class Loop {
 	itimerval   m_noInterrupt;
 	bool        m_isDoingLoop;
 	// call this when you don't want to be interrupted
-	void interruptsOff ( ) ;
+	void interruptsOff();
 	// and this to resume being interrupted
-	void interruptsOn ( ) ;
+	void interruptsOn();
 
 	// the sighupHandler() will set this to 1 when we receive
 	// a SIGHUP, 2 if a thread crashed, 3 if we got a SIGPWR
@@ -199,27 +199,27 @@ class Loop {
 	void quickPoll(int32_t niceness, const char* caller = NULL, int32_t lineno = 0);
 
 	// called when sigqueue overflows and we gotta do a select() or poll()
-	void doPoll ( );
- private:
+	void doPoll();
+private:
 
 
-	void unregisterCallback ( Slot **slots , int fd , void *state ,
-				  void (* callback)(int fd,void *state) ,
-				  bool silent , // = false );
-				  bool forReading );
+	void unregisterCallback(Slot** slots, int fd, void* state,
+		void (*callback)(int fd, void* state),
+		bool silent, // = false );
+		bool forReading);
 
-	bool addSlot ( bool forReading , int fd , void *state , 
-		       void (* callback)(int fd , void *state ) ,
-		       int32_t niceness , int32_t tick = 0x7fffffff ) ;
+	bool addSlot(bool forReading, int fd, void* state,
+		void (*callback)(int fd, void* state),
+		int32_t niceness, int32_t tick = 0x7fffffff);
 
 	// set how long to pause waiting for signals (in milliseconds)
-	void setSigWaitTime ( int32_t ms ) ;
+	void setSigWaitTime(int32_t ms);
 
 	// now we use a linked list of pre-allocated slots to avoid a malloc
 	// failure which can cause the merge to dump with "URGENT MERGE FAILED"
 	// message becaise it could not register the sleep wrapper to wait
-	Slot *getEmptySlot (         ) ;
-	void  returnSlot   ( Slot *s ) ;
+	Slot* getEmptySlot();
+	void  returnSlot(Slot* s);
 
 	// . these arrays map an fd to a Slot (see above for Slot definition)
 	// . that slot may chain to other slots if more than one procedure
@@ -228,17 +228,17 @@ class Loop {
 	// . m_read/writeFds[i] is NULL if no one is waiting on fd #i
 	// . fd of MAX_NUM_FDS   is used for sleep callbacks
 	// . fd of MAX_NUM_FDS+1 is used for thread exit callbacks
-	Slot *m_readSlots  [MAX_NUM_FDS+2];
-	Slot *m_writeSlots [MAX_NUM_FDS+2];
+	Slot* m_readSlots[MAX_NUM_FDS + 2];
+	Slot* m_writeSlots[MAX_NUM_FDS + 2];
 
 	// the minimal tick time in milliseconds (ms)
 	int32_t m_minTick;
 
 	// now we pre-allocate our slots to prevent nasty coredumps from merge
 	// because it could not register a sleep callback with us
-	Slot *m_slots;
-	Slot *m_head;
-	Slot *m_tail;
+	Slot* m_slots;
+	Slot* m_head;
+	Slot* m_tail;
 };
 
 extern class Loop g_loop;

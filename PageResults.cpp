@@ -282,61 +282,6 @@ bool sendPageResults(TcpSocket* s, HttpRequest* hr) {
 	// what format should search results be in? default is html
 	char format = hr->getReplyFormat();//getFormatFromRequest ( hr );
 
-	// get the dmoz catid if given
-	//int32_t searchingDmoz = hr->getLong("dmoz",0);
-
-	//
-	// DO WE NEED TO ALTER cr->m_siteListBuf for a widget?
-	//
-	// when a wordpress user changes the "Websites to Include" for
-	// her widget, it should send a /search?sites=xyz.com&wpid=xxx
-	// request here... 
-	// so we need to remove her old sites and add in her new ones.
-	// 
-	/*
-
-	  MDW TURN BACK ON IN A DAY. do indexing or err pages first.
-
-	// get wordpressid supplied with all widget requests
-	char *wpid = hr->getString("wpid");
-	// we have to add set &spidersites=1 which all widgets should do
-	if ( wpid ) {
-		// this returns NULL if cr->m_siteListBuf would be unchanged
-		// because we already have the whiteListBuf sites in there
-		// for this wordPressId (wpid)
-		SafeBuf newSiteListBuf;
-		makeNewSiteList( &si->m_whiteListBuf,
-				 cr->m_siteListBuf ,
-				 wpid ,
-				 &newSiteListBuf);
-		// . update the list of sites to crawl/search & show in widget
-		// . if they give an empty list then allow that, stops crawling
-		SafeBuf parmList;
-		g_parms.addNewParmToList1 ( &parmList,
-						cr->m_collnum,
-						newSiteListBuf,
-						0,
-						"sitelist");
-		// send the parms to all hosts in the network
-		g_parms.broadcastParmList ( &parmList ,
-						NULL,//s,// state is socket i guess
-						NULL);//doneBroadcastingParms2 );
-		// nothing left to do now
-		return g_httpServer.sendDynamicPage(s,
-							"OK",//sb.getBufStart(),
-							2,//sb.length(),
-							cacheTime,//0,
-							false, // POST?
-							"text/html",
-							200,  // httpstatus
-							NULL, // cookie
-							"UTF-8"); // charset
-	}
-	*/
-
-
-
-
 	//
 	// . send back page frame with the ajax call to get the real
 	//   search results. do not do this if a "&dir=" (dmoz category)
@@ -430,13 +375,6 @@ bool sendPageResults(TcpSocket* s, HttpRequest* hr) {
 			, h32
 			, rand64
 		);
-		//
-		// . login bar
-		// . proxy will replace it byte by byte with a login/logout
-		//   link etc.
-		//
-		//g_proxy.insertLoginBarDirective(&sb);
-
 		// 
 		// logo header
 		//
@@ -671,41 +609,12 @@ bool sendPageResults(TcpSocket* s, HttpRequest* hr) {
 	// . don't get ads if we're not on the first page of results
 	// . query must be NULL terminated
 	st->m_gotAds = true;
-	/*
-	if (si->m_adFeedEnabled && ! si->m_xml && si->m_docsWanted > 0) {
-				int32_t pageNum = (si->m_firstResultNum/si->m_docsWanted) + 1;
-		st->m_gotAds = st->m_ads.
-			getAds(si->m_displayQuery    , //query
-				   si->m_displayQueryLen , //q len
-				   pageNum               , //page num
-							   si->m_queryIP         ,
-				   si->m_coll2           , //coll
-				   st                    , //state
-				   gotAdsWrapper         );//clbk
-		}
-	*/
+
 
 	// LAUNCH SPELLER
 	// get our spelling correction if we should (spell checker)
 	st->m_gotSpell = true;
 	st->m_spell[0] = '\0';
-	/*
-	if ( si->m_spellCheck &&
-		 cr->m_spellCheck &&
-		 g_conf.m_doSpellChecking ) {
-		st->m_gotSpell = g_speller.
-			getRecommendation( &st->m_q,          // Query
-					   si->m_spellCheck,  // spellcheck
-					   st->m_spell,       // Spell buffer
-					   MAX_FRAG_SIZE,     // spell buf size
-					   false,      // narrow search?
-					   NULL,//st->m_narrow  // narrow buf
-					   MAX_FRAG_SIZE,    // narrow buf size
-					   NULL,// num of narrows  ptr
-					   st,               // state
-					   gotSpellingWrapper );// callback
-	}
-	*/
 
 	// LAUNCH RESULTS
 
@@ -742,19 +651,6 @@ void doneRedownloadingWrapper(void* state) {
 	// resume
 	gotResults(st);
 }
-
-/*
-void gotSpellingWrapper( void *state ){
-	// cast our State0 class from this
-	State0 *st = (State0 *) state;
-	// log the error first
-	if ( g_errno ) log("query: speller: %s.",mstrerror(g_errno));
-	// clear any error cuz spellchecks aren't needed
-	g_errno = 0;
-	st->m_gotSpell = true;
-	gotState(st);
-}
-*/
 
 void gotResultsWrapper(void* state) {
 	// cast our State0 class from this

@@ -80,8 +80,6 @@ bool HttpServer::init ( int16_t port,
 			   port                        ,
 			   //&g_conf.m_httpMaxSockets     ) ) return false;
 			   &g_conf.m_httpMaxSockets  ) ) return false;
-	//g_conf.m_httpMaxReadBufSize , 
-	//g_conf.m_httpMaxSendBufSize ) ) return false;
 	// set our secure TcpServer class
 	if ( ! m_ssltcp.init ( handlerWrapper,
 			       getMsgSize,
@@ -582,76 +580,6 @@ void HttpServer::requestHandler ( TcpSocket *s ) {
 	// parse the http request
 	HttpRequest r;
 
-	// debug
-	/*
-	unsigned char foo[1024];
-	unsigned char *pp = foo;
-	pp += sprintf ( (char *)pp,"GET /search?qcs=iso-8859-1&k0c=107207&code=1M9VNT6&spell=1&ns=2&nrt=0&rat=0&sc=1&DR=1&qh=0&bq2&q=");
-	//pp += sprintf ( (char *)pp,"GET /search?k0c=107207&code=1M9VNT6&spell=1&ns=2&nrt=0&rat=0&sc=1&DR=1&qh=0&bq2&q=");
-
-	static char ddd[] = {
-		0xc3, 0x83, 0xc6, 0x92, 0xc3, 0xa2, 0xe2, 0x80, 0x9e, 0xc2, 
-		0xa2, 0xc3, 0x83, 0xc2, 0xa2, 0xc3, 0xa2, 0xe2, 0x80, 0x9a, 
-		0xc2, 0xac, 0xc3, 0x82, 0xc2, 0xa6, 0xc3, 0x83, 0xc6, 0x92, 
-		0xc3, 0xa2, 0xe2, 0x80, 0x9e, 0xc2, 0xa2, 0xc3, 0x83, 0xe2, 
-		0x80, 0x9a, 0xc3, 0x82, 0xc2, 0x81, 0xc3, 0x83, 0xc6, 0x92, 
-		0xc3, 0xa2, 0xe2, 0x80, 0x9e, 0xc2, 0xa2, 0xc3, 0x83, 0xc2, 
-		
-		0xa2, 0xc3, 0xa2, 0xe2, 0x80, 0x9a, 0xc2, 0xac, 0xc3, 0x82, 
-		0xc2, 0xa1, 0xc3, 0x83, 0xc6, 0x92, 0xc3, 0xa2, 0xe2, 0x80, 
-		0x9e, 0xc2, 0xa2, 0xc3, 0x83, 0xe2, 0x80, 0xb9, 0xc3, 0xa2, 
-		0xe2, 0x82, 0xac, 0xc2, 0xa0, 0xc3, 0x83, 0xc6, 0x92, 0xc3, 
-		0xa2, 0xe2, 0x80, 0x9e, 0xc2, 0xa2, 0xc3, 0x83, 0xc2, 0xa2, 
-		0xc3, 0xa2, 0xe2, 0x80, 0x9a, 0xc2, 0xac, 0xc3, 0x82, 0xc2, 
-		0xa6, 0x20, 0xc3, 0x83, 0xc6, 0x92, 0xc3, 0x8b, 0xc5, 0x93, 
-		0xc3, 0x83, 0xe2, 0x80, 0x9a, 0xc3, 0x82, 0xc2, 0xa7, 0xc3, 
-		0x83, 0xc6, 0x92, 0xc3, 0xa2, 0xe2, 0x80, 0x9e, 0xc2, 0xa2, 
-		0xc3, 0x83, 0xc2, 0xa2, 0xc3, 0xa2, 0xe2, 0x80, 0x9a, 0xc2, 
-		0xac, 0xc3, 0x85, 0xc2, 0xbe, 0xc3, 0x83, 0xc6, 0x92, 0xc3, 
-		0xa2, 0xe2, 0x80, 0x9e, 0xc2, 0xa2, 0xc3, 0x83, 0xc2, 0xa2, 
-		0xc3, 0xa2, 0xe2, 0x80, 0x9a, 0xc2, 0xac, 0xc3, 0x82, 0xc2, 
-		0xa6, 0xc3, 0x83, 0xc6, 0x92, 0xc3, 0xa2, 0xe2, 0x80, 0x9e, 
-		0xc2, 0xa2, 0xc3, 0x83, 0xc2, 0xa2, 0xc3, 0xa2, 0xe2, 0x80, 
-		0x9a, 0xc2, 0xac, 0xc3, 0x82, 0xc2, 0xa0, 0xc3, 0x83, 0xc6, 
-		0x92, 0xc3, 0x8b, 0xc5, 0x93, 0xc3, 0x83, 0xe2, 0x80, 0x9a, 
-		0xc3, 0x82, 0xc2, 0xb8, 0xc3, 0x83, 0xc6, 0x92, 0xc3, 0xa2, 
-		0xe2, 0x80, 0x9e, 0xc2, 0xa2, 0xc3, 0x83, 0xe2, 0x80, 0xb9, 
-		0xc3, 0xa2, 0xe2, 0x82, 0xac, 0xc2, 0xa0, 0xc3, 0x83, 0xc6, 
-		0x92, 0xc3, 0xa2, 0xe2, 0x80, 0x9e, 0xc2, 0xa2, 0xc3, 0x83, 
-		0xc2, 0xa2, 0xc3, 0xa2, 0xe2, 0x80, 0x9a, 0xc2, 0xac, 0xc3, 
-		0x82, 0xc2, 0xa6, 0xc3, 0x83, 0xc6, 0x92, 0xc3, 0x8b, 0xc5, 
-		0x93, 0xc3, 0x83, 0xe2, 0x80, 0x9a, 0xc3, 0x82, 0xc2, 0xa9, 
-		0x20, 0xc3, 0x83, 0xc6, 0x92, 0xc3, 0x8b, 0xc5, 0x93, 0xc3, 
-		0x83, 0xe2, 0x80, 0x9a, 0xc3, 0x82, 0xc2, 0xa7, 0xc3, 0x83, 
-		0xc6, 0x92, 0xc3, 0xa2, 0xe2, 0x80, 0x9e, 0xc2, 0xa2, 0xc3, 
-		0x83, 0xc2, 0xa2, 0xc3, 0xa2, 0xe2, 0x80, 0x9a, 0xc2, 0xac, 
-		0xc3, 0x85, 0xc2, 0xbe, 0xc3, 0x83, 0xc6, 0x92, 0xc3, 0x8b, 
-		0xc5, 0x93, 0xc3, 0x83, 0xe2, 0x80, 0x9a, 0xc3, 0x82, 0xc2, 
-		0xa8, 0xc3, 0x83, 0xc6, 0x92, 0xc3, 0xa2, 0xe2, 0x80, 0x9e, 
-		0xc2, 0xa2, 0xc3, 0x83, 0xe2, 0x80, 0xa6, 0xc3, 0x82, 0xc2, 
-		0xa0, 0xc3, 0x83, 0xc6, 0x92, 0xc3, 0x8b, 0xc5, 0x93, 0xc3, 
-		0x83, 0xe2, 0x80, 0x9a, 0xc3, 0x82, 0xc2, 0xa6, 0xc3, 0x83, 
-		0xc6, 0x92, 0xc3, 0xa2, 0xe2, 0x80, 0x9e, 0xc2, 0xa2, 0xc3, 
-		0x83, 0xe2, 0x80, 0xa6, 0xc3, 0x82, 0xc2, 0xa0, 0xc3, 0x83, 
-		0xc6, 0x92, 0xc3, 0x8b, 0xc5, 0x93, 0xc3, 0x83, 0xe2, 0x80, 
-		0x9a, 0xc3, 0x82, 0xc2, 0xa9, 0x00, 0x00, 0xda, 0xda, 0xda, 
-		0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 
-		0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 
-		0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 0xda, 0x74, 
-		0x65, 0x73, 0x2c, 0x20, 0x68, 0x59, 0x00, 0x00, 0x00, 0xac, 
-		0xed, 0x3b, 0x09, 0xac, 0xed, 0x3b, 0x09, 0x78, 0x51, 0xa7, 
-		0x24, 0xf8, 0xd0, 0xa7, 0x24, 0x00, 0x00, 0x00, 0x00, 0x0a, 
-		0x00};
-
-	for ( int32_t i = 0 ; i < 435 ; i++ ) {
-		//	again:
-		*pp = ddd[i]; // rand() % 256;
-		//if ( *pp < 0x80 ) goto again;
-		pp++;
-	}
-	*pp = 0;
-	*/
-
 	// . since we own the data, we'll free readBuf on r's destruction
 	// . this returns false and sets g_errno on error
 	// . but it should still set m_request to the readBuf to delete it
@@ -662,28 +590,10 @@ void HttpServer::requestHandler ( TcpSocket *s ) {
 	//   it's from lenny
 	bool status = r.set ( s->m_readBuf , s->m_readOffset , s ) ;
 
-	//bool status = r.set ( (char *)foo , pp - foo , s ) ;
-	// is this the admin
-	//bool isAdmin       = g_collectiondb.isAdmin ( &r , s );
 	// i guess assume MASTER admin...
-	//bool isAdmin = g_users.hasPermission ( &r , PAGE_MASTER , s );
 	bool isAdmin = r.isLocal();
 	// never proxy admin pages for security reasons
 	if ( s->m_udpSlot ) isAdmin = false;
-	//bool isIpInNetwork = g_hostdb.isIpInNetwork ( s->m_ip );
-	// . if host does not allow http requests (except for admin) then bail
-	// . used to prevent seo/email spammers from querying other machines
-	//   and getting around our seo robot protection
-	//if ( ! g_conf.m_httpServerEnabled  ) {
-	//&& ! isAdmin  &&
-	     // quick hack so we can add ips to the connect ips list in
-	     // the master controls security table
-	  //   ! g_conf.isConnectIp ( s->m_ip ) ) {
-	//	log("query: Returning 403 Forbidden. HttpServer is disabled "
-	//	    "in the master controls. ip=%s",iptoa(s->m_ip));
-	//	sendErrorReply ( s , 403 , "Forbidden" );
-	//	return;
-	//}
 
 	// get the server this socket uses
 	TcpServer *tcp = s->m_this;
@@ -705,14 +615,6 @@ void HttpServer::requestHandler ( TcpSocket *s ) {
 		// do not consider injects to be coming from admin ever
 		isAdmin = false;
 	}
-
-	// enforce open connections here
-	//if ( used >= g_conf.m_httpMaxSockets + 10 ) {
-	//	log("query: Too many sockets open for ip=%s. Destroying.",
-	//	    iptoa(s->m_ip));
-	//	m_tcp.destroySocket ( s ); 
-	//	return; 
-	//}
 
 	// enforce the open socket quota iff not admin and not from intranet
 	if ( ! isAdmin && tcp->m_numIncomingUsed >= max && 
@@ -738,14 +640,6 @@ void HttpServer::requestHandler ( TcpSocket *s ) {
 		return; 
 	}
 
-	// . read Buf should be freed on s's recycling/destruction in TcpServer
-	// . always free the readBuf since TcpServer does not
-	// . be sure not to set s->m_readBuf to NULL because it's used by
-	//   TcpServer to determine if we're sending/reading a request/reply
-	// mfree ( s->m_readBuf , s->m_readBufSize );
-	// set status to false if it's not a HEAD or GET request
-	//if ( ! r.isGETRequest() && ! r.isHEADRequest() ) status = false;
-	// if the HttpRequest was bogus come here
 	if ( ! status ) {
 		// log a bad request
 		log("http: Got bad request from %s: %s",
@@ -785,47 +679,10 @@ void HttpServer::requestHandler ( TcpSocket *s ) {
 	strftime ( buf , 100 , "%b %d %T", timeStruct);
 	// save ip in case "s" gets destroyed
 	int32_t ip = s->m_ip;
-	// . likewise, set cgi buf up here, too
-	// . if it is a post request, log the posted data, too
-	/*
-	char cgi[20058];
-	cgi[0] = '\0';
-	if ( r.isPOSTRequest() ) {
-		int32_t  plen = r.m_cgiBufLen;
-		if (  plen >= 20052 ) plen = 20052;
-		char *pp1 = cgi ;
-		char *pp2 = r.m_cgiBuf;
-		// . when parsing cgi parms, HttpRequest converts the 
-		//   &'s to \0's so it can avoid having to malloc a 
-		//   separate m_cgiBuf
-		// . now it also converts ='s to 0's, so flip flop back
-		//   and forth
-		char dd = '=';
-		for ( int32_t i = 0 ; i < plen ; i++ , pp1++, pp2++ ) {
-			if ( *pp2 == '\0' ) { 
-				*pp1 = dd;
-				if ( dd == '=' ) dd = '&';
-				else             dd = '=';
-				continue;
-			}
-			if ( *pp2 == ' ' ) *pp1 = '+';
-			else               *pp1 = *pp2;
-		}
-		if ( r.m_cgiBufLen >= 20052 ) {
-			pp1[0]='.'; pp1[1]='.'; pp1[2]='.'; pp1 += 3; }
-		*pp1 = '\0';
-	}
-	*/
-
 	//get this value before we send the reply, because r can be 
 	//destroyed when we send.
 	int32_t dontLog = r.getLong("dontlog",0);
-	// turn off for now
-	//dontLog = 0;
 
-	// !!!!
-	// TcpServer::sendMsg() may free s->m_readBuf if doing udp forwarding
-	// !!!!
 	char stackMem[1024];
 	int32_t maxLen = s->m_readOffset;
 	if ( maxLen > 1020 ) maxLen = 1020;
@@ -847,25 +704,6 @@ void HttpServer::requestHandler ( TcpSocket *s ) {
 		char *ref = r.getReferer();
 		// skip over http:// in the referer
 		if ( strncasecmp ( ref , "http://" , 7 ) == 0 ) ref += 7;
-
-		// fix cookie for logging
-		/*
-		char cbuf[5000];
-		char *p  = r.m_cookiePtr;
-		int32_t  plen = r.m_cookieLen;
-		if ( plen >= 4998 ) plen = 4998;
-		char *pend = r.m_cookiePtr + plen;
-		char *dst = cbuf;
-		for ( ; p < pend ; p++ ) {
-			*dst = *p;
-			if ( ! *p ) *dst = ';';
-			dst++;
-		}
-		*dst = '\0';
-		*/
-
-		// store the page access request in accessdb
-		//g_accessdb.addAccess ( &r , ip );
 
 		// if autobanned and we should not log, return now
 		if ( g_msg && ! g_conf.m_logAutobannedQueries && 
@@ -894,62 +732,15 @@ void HttpServer::requestHandler ( TcpSocket *s ) {
 			      //r.m_cookiePtr,
 			      //r.getUserAgent(),
 			      g_msg);
-		/*
-		else if ( g_conf.m_logHttpRequests ) 
-			logf (LOG_INFO,"http: %s %s %s %s %s "
-			      //"cookie=\"%s\" "
-			      //"%s "
-			      "%s",
-			      buf,iptoa(ip),
-			      s->m_readBuf,//r.getRequest(),
-			      cgi,
-			      ref,
-			      //cbuf,//r.m_cookiePtr,
-			      //r.getUserAgent(),
-			      g_msg);
-		*/
 	}
-
-	// if no error, we completed w/o blocking so return
-	//if ( ! g_errno ) return;
-	// if g_errno was set then send an error msg
-	//return sendErrorReply ( s, 500 , mstrerror(g_errno) );
 }
-
-/*
-// it's better to hardcode this so we never lose it!
-bool sendPageRobotsTxt ( TcpSocket *s , HttpRequest *r ) {
-	SafeBuf sb;
-	sb.safePrintf ( "User-Agent: *\n"
-			"Disallow: *\n"
-			//"Disallow: /search?makewidget=1\n"
-			//"Disallow: /search?clockset=\n"
-			"\n"
-			);
-	// this should copy it since sb is on stack
-	return g_httpServer.sendDynamicPage ( s ,
-					      sb.getBufStart(),
-					      sb.m_length ,
-					      0 ,
-					      "text/html");
-}
-*/
 
 bool endsWith(char *haystack, int haystackLen, char *needle, int needleLen) {
     return haystackLen >= needleLen && !strncmp(haystack + haystackLen - needleLen, needle, needleLen);
 }
 
-#include "Pages.h" // sendPageAPI, printApiForPage()
+#include "Pages.h"  
 
-// . reply to a GET (including partial get) or HEAD request
-// . HEAD just returns the MIME header for the file requested
-// . returns false if blocked, true otherwise
-// . sets g_errno on error
-// . it calls TcpServer::sendMsg(s,...) 
-// .   with a File * as the callback data
-// .   and with cleanUp() as the callback function
-// . if sendMsg(s,...) blocks this cleanUp() will be called before the
-//   socket gets recycled or destroyed (on error)
 bool HttpServer::sendReply ( TcpSocket  *s , HttpRequest *r , bool isAdmin) {
 
 	// get the server this socket uses
@@ -1062,8 +853,6 @@ bool HttpServer::sendReply ( TcpSocket  *s , HttpRequest *r , bool isAdmin) {
 		sb.load ( "./tmpiaout" );
 		// remove those pesky ^M guys. i guess ia is windows based.
 		sb.safeReplace3("\r","");
-		//log("system: output(%"INT32"=%s",sb.getBufStart(),
-		//sb.length());
 		return g_httpServer.sendDynamicPage(s,
 						    sb.getBufStart(),
 						    sb.length(),
@@ -1072,16 +861,6 @@ bool HttpServer::sendReply ( TcpSocket  *s , HttpRequest *r , bool isAdmin) {
 						    -1, NULL,
 						    "UTF-8");
 	}
-		
-
-	// . is it a diffbot api request, like "GET /api/*"
-	// . ie "/api/startcrawl" or "/api/stopcrawl" etc.?
-	//if ( strncmp ( path , "/api/" , 5 ) == 0 )
-	//	// this will call g_httpServer.sendDynamicPage() to send
-	//	// back the reply when it is done generating the reply.
-	//	// this function is in Diffbot.cpp.
-	//	return handleDiffbotRequest ( s , r );
-
 
 	// for adding to browser list of search engines
 	if ( strncmp ( path, "/eventguru.xml", 14 ) == 0 )  {
@@ -1113,10 +892,6 @@ bool HttpServer::sendReply ( TcpSocket  *s , HttpRequest *r , bool isAdmin) {
 	bool isGigablast = false;
 	if ( strcasecmp ( h , "www.gigablast.com" ) == 0 ) isGigablast = true;
 	if ( strcasecmp ( h , "gigablast.com"     ) == 0 ) isGigablast = true;
-	//bool isNewSite = false;
-	//if ( gb_strcasestr ( h , "eventwidget.com"   ) ) isNewSite = true;
-	//if ( gb_strcasestr ( h , "eventguru.com"     ) ) isNewSite = true;
-	//isNewSite = true;
 
 	// get the dynamic page number, is -1 if not a dynamic page
 	int32_t n = g_pages.getDynamicPageNumber ( r );
@@ -1189,8 +964,6 @@ bool HttpServer::sendReply ( TcpSocket  *s , HttpRequest *r , bool isAdmin) {
 						    "UTF-8");
 	}
 
-
-
 	// map to new events page if we are eventguru.com
 	//if ( isNewSite && ( n == PAGE_RESULTS || n == PAGE_ROOT ) )
 	//	return sendPageEvents ( s , r );
@@ -1198,71 +971,11 @@ bool HttpServer::sendReply ( TcpSocket  *s , HttpRequest *r , bool isAdmin) {
 	if ( n == PAGE_RESULTS ) // || n == PAGE_ROOT )
 		return sendPageResults ( s , r );
 
-	// . redirect eventwidget.com search traffic to results
-	// . i think this is a zombie bot click farm!
-	// . i did a check and its pretty worthless!!
-	//if ( ! strncmp ( path ,"/search.cfm", pathLen ) )
-	//	return sendPageEvents ( s , r );		
-	
-	// let's try without this for now
-	//if ( g_loop.m_inQuickPoll && niceness ) {
-	//	//log(LOG_WARN, "saving request for later. %"INT32" %"INT32" %"INT32"",
-	//	//	    (int32_t)s, (int32_t)r, n);
-	//	addToQueue(s, r, n);
-	//	if(g_errno) 
-	//		return g_httpServer.sendErrorReply(s,505,
-	//						   mstrerror(g_errno));
-	//	return true;
-	//}
-	//g_loop.canQuickPoll(niceness);
-
-	// for flurbit.com old layout
-	//if ( ! strncmp ( path ,"/addevent", pathLen ) ) {
-	//	if ( ! isNewSite ) return sendPageAddEvent2 ( s , r );
-	//	else               return sendPageAddEvent  ( s , r );
-	//}
-
-	// prints out stats for widgetmasters so they can see the traffic
-	// they sent to us...
-	//if ( ! strncmp ( path ,"/account", pathLen ) ) {
-	//	return sendPageAccount ( s , r );
-	//}
-
 
 	// . if not dynamic this will be -1
 	// . sendDynamicReply() returns false if blocked, true otherwise
 	// . it sets g_errno on error
 	if ( n >= 0 ) return g_pages.sendDynamicReply ( s , r , n );
-
-
-	//if ( ! strncmp ( path ,"/widget.html", pathLen ) )
-	//	return sendPageWidget ( s , r );
-
-	// use a standard robots. do not allow someone to forget to have
-	// that file in place!! let google hit us now that browse.html
-	// is dynamic and the urls seem static so they should be digested
-	// by google bot
-	//if ( ! strncmp ( path ,"/robots.txt", pathLen ) )
-	//	return sendPageRobotsTxt ( s , r );
-
-	//if ( ! strncmp ( path ,"/sitemap.xml", pathLen ) )
-	//	return sendPageSiteMap ( s , r );
-
-	//if ( ! isNewSite ) {
-	//	// for the old flurbit layout
-	//	if ( ! strncmp ( path ,"/browse.html", pathLen ) )
-	//		return sendPageBrowse ( s , r );
-	//}
-
-	// comment out for old flurbit layout
-	//if ( ! strncmp ( path ,"/help.html", pathLen ) )
-	//	return sendPageAbout ( s , r , path );
-
-	//if ( ! strncmp ( path ,"/adv.html", pathLen ) )
-	//	return sendPageAdvanced ( s , r );
-
-	//if ( ! strncmp ( path ,"/about.html", pathLen ) )
-	//	return sendPageAbout ( s , r );
 
 	if ( ! strncmp ( path ,"/help.html", pathLen ) )
 		return sendPageHelp ( s , r );
