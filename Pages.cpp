@@ -28,7 +28,7 @@ static WebPage s_pages[] = {
 	// publicly accessible pages
 	{ PAGE_ROOT      , "index.html"    , 0 , "root" , 0 , 0 ,
 	  "search page to query",
-	    NULL , 0 ,NULL,NULL,
+	    sendPageRoot , 0 ,NULL,NULL,
 	  PG_NOAPI|PG_ACTIVE},
 
 	{ PAGE_RESULTS   , "search"        , 0 , "search" , 0 , 0 ,
